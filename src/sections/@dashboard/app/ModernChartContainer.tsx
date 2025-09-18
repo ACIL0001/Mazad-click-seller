@@ -32,7 +32,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const TimeframeButton = styled(Button)(({ theme, active }) => ({
+const TimeframeButton = styled(Button)<{ active?: boolean }>(({ theme, active }) => ({
   borderRadius: 16,
   textTransform: 'none',
   fontWeight: 600,

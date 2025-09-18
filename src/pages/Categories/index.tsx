@@ -44,7 +44,7 @@ import Breadcrumb from '@/components/Breadcrumbs';
 import Label from '../../components/Label';
 import { useTheme } from '@mui/material/styles';
 import { CategoryAPI } from '@/api/category';
-import ICategory from '@/types/Category';
+import ICategory, { CATEGORY_TYPE } from '@/types/Category';
 
 // Category Detail Modal
 interface CategoryDetailModalProps {
@@ -232,10 +232,26 @@ export default function Categories() {
 
       if (result && result.data) {
         console.log('Categories data structure:', JSON.stringify(result.data, null, 2));
-        setCategories(result.data);
+        // Convert Category[] to ICategory[]
+        const convertedCategories: ICategory[] = result.data.map((category: any) => ({
+          _id: category._id,
+          name: category.name,
+          type: category.type === 'PRODUCT' ? CATEGORY_TYPE.PRODUCT : CATEGORY_TYPE.SERVICE,
+          thumb: category.thumb || { _id: '', url: '', filename: '' },
+          attributes: category.attributes || []
+        }));
+        setCategories(convertedCategories);
       } else if (Array.isArray(result)) {
         console.log('Categories array structure:', JSON.stringify(result, null, 2));
-        setCategories(result);
+        // Convert Category[] to ICategory[] for direct array response
+        const convertedCategories: ICategory[] = result.map((category: any) => ({
+          _id: category._id,
+          name: category.name,
+          type: category.type === 'PRODUCT' ? CATEGORY_TYPE.PRODUCT : CATEGORY_TYPE.SERVICE,
+          thumb: category.thumb || { _id: '', url: '', filename: '' },
+          attributes: category.attributes || []
+        }));
+        setCategories(convertedCategories);
       } else {
         console.error('Unexpected API response format:', result);
         enqueueSnackbar('Invalid data format received', { variant: 'error' });

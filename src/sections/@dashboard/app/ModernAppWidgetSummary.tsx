@@ -52,18 +52,34 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const IconContainer = styled(Box)(({ theme, color }) => ({
-  width: { xs: 60, sm: 70, md: 75, lg: 80, xl: 85 },
-  height: { xs: 60, sm: 70, md: 75, lg: 80, xl: 85 },
+const IconContainer = styled(Box)<{ color?: string }>(({ theme, color = 'primary' }) => ({
+  width: 60,
+  height: 60,
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
   marginBottom: theme.spacing(2),
-  background: `linear-gradient(135deg, ${alpha(theme.palette[color || 'primary'].main, 0.1)} 0%, ${alpha(theme.palette[color || 'primary'].light, 0.05)} 100%)`,
-  border: `2px solid ${alpha(theme.palette[color || 'primary'].main, 0.1)}`,
+  background: `linear-gradient(135deg, ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.1)} 0%, ${alpha((theme.palette as any)[color]?.light || theme.palette.primary.light, 0.05)} 100%)`,
+  border: `2px solid ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.1)}`,
   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  [theme.breakpoints.up('sm')]: {
+    width: 70,
+    height: 70,
+  },
+  [theme.breakpoints.up('md')]: {
+    width: 75,
+    height: 75,
+  },
+  [theme.breakpoints.up('lg')]: {
+    width: 80,
+    height: 80,
+  },
+  [theme.breakpoints.up('xl')]: {
+    width: 85,
+    height: 85,
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -72,7 +88,7 @@ const IconContainer = styled(Box)(({ theme, color }) => ({
     right: -2,
     bottom: -2,
     borderRadius: '50%',
-    background: `conic-gradient(from 0deg, ${theme.palette[color || 'primary'].main}, ${theme.palette[color || 'primary'].light}, ${theme.palette[color || 'primary'].main})`,
+    background: `conic-gradient(from 0deg, ${(theme.palette as any)[color]?.main || theme.palette.primary.main}, ${(theme.palette as any)[color]?.light || theme.palette.primary.light}, ${(theme.palette as any)[color]?.main || theme.palette.primary.main})`,
     opacity: 0,
     transition: 'opacity 0.3s ease',
     zIndex: -1,
@@ -89,13 +105,25 @@ const IconContainer = styled(Box)(({ theme, color }) => ({
 
 const StatsNumber = styled(Typography)(({ theme }) => ({
   fontWeight: 800,
-  fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.3rem', lg: '2.5rem', xl: '2.7rem' },
+  fontSize: '1.8rem',
   lineHeight: 1,
   background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
   backgroundClip: 'text',
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
   transition: 'all 0.3s ease',
+  [theme.breakpoints.up('sm')]: {
+    fontSize: '2.2rem',
+  },
+  [theme.breakpoints.up('md')]: {
+    fontSize: '2.3rem',
+  },
+  [theme.breakpoints.up('lg')]: {
+    fontSize: '2.5rem',
+  },
+  [theme.breakpoints.up('xl')]: {
+    fontSize: '2.7rem',
+  },
 }));
 
 // ----------------------------------------------------------------------
@@ -183,7 +211,7 @@ export default function ModernAppWidgetSummary({
             width: 60,
             height: 60,
             borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(theme.palette[color].main, 0.1)} 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.1)} 0%, transparent 70%)`,
             opacity: hovered ? 1 : 0,
             transform: hovered ? 'scale(1.5)' : 'scale(1)',
             transition: 'all 0.4s ease',
@@ -194,11 +222,13 @@ export default function ModernAppWidgetSummary({
         <IconContainer className="icon-container" color={color}>
           <Iconify 
             icon={icon} 
-            width={{ xs: 28, sm: 32, md: 36, lg: 40, xl: 44 }} 
-            height={{ xs: 28, sm: 32, md: 36, lg: 40, xl: 44 }} 
+            width={28}
+            height={28}
             sx={{ 
-              color: theme.palette[color].main,
-              filter: `drop-shadow(0 4px 8px ${alpha(theme.palette[color].main, 0.3)})`,
+              color: (theme.palette as any)[color]?.main || theme.palette.primary.main,
+              filter: `drop-shadow(0 4px 8px ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.3)})`,
+              width: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
+              height: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
             }} 
           />
         </IconContainer>
@@ -269,7 +299,7 @@ export default function ModernAppWidgetSummary({
                   width: 4,
                   height: 4,
                   borderRadius: '50%',
-                  background: theme.palette[color].main,
+                  background: (theme.palette as any)[color]?.main || theme.palette.primary.main,
                   top: `${20 + Math.random() * 60}%`,
                   left: `${20 + Math.random() * 60}%`,
                   animation: `float${index} 2s infinite ease-in-out`,

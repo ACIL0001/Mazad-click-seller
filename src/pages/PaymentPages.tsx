@@ -39,7 +39,7 @@ const PaymentFormContainer = styled(Paper)(({ theme }) => ({
   },
 }));
 
-const PaymentMethodCard = styled(Card)(({ theme, selected }) => ({
+const PaymentMethodCard = styled(Card)<{ selected?: boolean }>(({ theme, selected }) => ({
   cursor: 'pointer',
   borderRadius: 12,
   border: '2px solid',

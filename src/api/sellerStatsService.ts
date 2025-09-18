@@ -285,10 +285,6 @@ export class SellerStatsService {
     return SellerStatsAPI.getSellerRanking();
   }
 
-  // Get recent activity
-  static async getRecentActivity(limit: number = 10): Promise<any> {
-    return SellerStatsAPI.getRecentActivity(limit);
-  }
 
   // Track view
   static async trackView(auctionId: string, viewType?: string, metadata?: any): Promise<any> {

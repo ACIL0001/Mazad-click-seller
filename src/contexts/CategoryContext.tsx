@@ -2,7 +2,7 @@
 
 import { useState, useEffect, createContext } from 'react';
 import useAuth from '../hooks/useAuth';
-import ICategory from '@/types/Category';
+import ICategory, { CATEGORY_TYPE } from '@/types/Category';
 import { CategoryAPI } from '@/api/category';
 
 
@@ -23,12 +23,20 @@ const CategoryProvider = ({ children }: any) => {
     const { isReady, isLogged } = useAuth();
 
     const updateCategory = async () => {
-
-    CategoryAPI.getCategories().then(({ data }: { data: ICategory[] }) => {
-
-      setCategories(data)
-
-    });
+    try {
+      const response = await CategoryAPI.getCategories();
+      // Convert Category[] to ICategory[]
+      const convertedCategories: ICategory[] = response.data.map((category: any) => ({
+        _id: category._id,
+        name: category.name,
+        type: category.type === 'PRODUCT' ? CATEGORY_TYPE.PRODUCT : CATEGORY_TYPE.SERVICE,
+        thumb: category.thumb || { _id: '', url: '', filename: '' },
+        attributes: category.attributes || []
+      }));
+      setCategories(convertedCategories);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
   };
 
   useEffect(() => {
