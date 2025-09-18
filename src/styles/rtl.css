@@ -1,0 +1,542 @@
+/* RTL Support Styles */
+.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Dashboard Layout RTL Support */
+.rtl .MuiDrawer-root .MuiDrawer-paper {
+  right: 0;
+  left: auto;
+}
+
+.rtl .MuiAppBar-root {
+  right: 280px;
+  left: auto;
+}
+
+/* Main content area adjustments for RTL */
+[dir="rtl"] .MuiDrawer-root .MuiDrawer-paper {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiAppBar-root {
+  right: 280px;
+  left: auto;
+}
+
+/* Flex direction adjustments for RTL layout */
+[dir="rtl"] .dashboard-layout {
+  flex-direction: row-reverse;
+}
+
+/* Sidebar positioning in RTL */
+[dir="rtl"] .MuiDrawer-docked {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  border-right: none;
+}
+
+/* Navbar adjustments for RTL */
+[dir="rtl"] .MuiToolbar-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL navbar specific adjustments */
+[dir="rtl"] .MuiAppBar-root .MuiToolbar-root {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .MuiAppBar-root .MuiStack-root {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .MuiAppBar-root .MuiBox-root {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .MuiAppBar-root .MuiIconButton-root {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+[dir="rtl"] .MuiAppBar-root .MuiButton-root {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+/* RTL badge positioning in navbar */
+[dir="rtl"] .MuiAppBar-root .MuiBadge-root .MuiBadge-badge {
+  right: auto;
+  left: 0;
+}
+
+/* Force RTL layout for navbar items */
+[dir="rtl"] .MuiAppBar-root .MuiToolbar-root > * {
+  flex-direction: row-reverse;
+}
+
+/* Ensure navbar items are properly ordered in RTL */
+[dir="rtl"] .MuiAppBar-root .MuiToolbar-root .MuiBox-root {
+  justify-content: flex-start !important;
+}
+
+/* Main content margin adjustments for RTL */
+[dir="rtl"] .dashboard-main-content {
+  margin-right: 280px;
+  margin-left: 0;
+}
+
+[dir="ltr"] .dashboard-main-content {
+  margin-left: 280px;
+  margin-right: 0;
+}
+
+/* Drawer anchor positioning for RTL */
+[dir="rtl"] .MuiDrawer-root[anchor="right"] .MuiDrawer-paper {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .MuiDrawer-root[anchor="left"] .MuiDrawer-paper {
+  left: 0;
+  right: auto;
+}
+
+/* AppBar positioning adjustments */
+[dir="rtl"] .MuiAppBar-root {
+  right: 280px !important;
+  left: auto !important;
+}
+
+[dir="ltr"] .MuiAppBar-root {
+  left: 280px !important;
+  right: auto !important;
+}
+
+/* Content spacing for RTL layout */
+[dir="rtl"] .MuiContainer-root {
+  padding-right: 16px;
+  padding-left: 16px;
+}
+
+/* Navigation section RTL adjustments */
+[dir="rtl"] .MuiListItemButton-root {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .MuiListItemIcon-root {
+  margin-right: 0;
+  margin-left: 16px;
+  min-width: auto;
+}
+
+[dir="rtl"] .MuiListItemText-root {
+  text-align: right;
+}
+
+/* Account section RTL adjustments */
+[dir="rtl"] .account-style {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .account-style .MuiBox-root {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+.rtl .MuiTextField-root .MuiInputBase-input {
+  text-align: right;
+}
+
+.rtl .MuiTableCell-root {
+  text-align: right;
+}
+
+.rtl .MuiTableHead-root .MuiTableCell-root {
+  text-align: right;
+}
+
+.rtl .MuiCard-root .MuiCardContent-root {
+  text-align: right;
+}
+
+.rtl .MuiTypography-root {
+  text-align: right;
+}
+
+.rtl .MuiButton-root {
+  text-align: right;
+}
+
+.rtl .MuiMenuItem-root {
+  text-align: right;
+}
+
+.rtl .MuiList-root .MuiListItem-root {
+  text-align: right;
+}
+
+.rtl .MuiDialog-root .MuiDialogContent-root {
+  text-align: right;
+}
+
+.rtl .MuiDialog-root .MuiDialogTitle-root {
+  text-align: right;
+}
+
+.rtl .MuiSnackbar-root .MuiAlert-root {
+  text-align: right;
+}
+
+/* RTL-specific spacing adjustments */
+.rtl .MuiStack-root > * {
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+}
+
+.rtl .MuiStack-root > *:last-child {
+  margin-right: 0 !important;
+}
+
+/* RTL icon positioning */
+.rtl .MuiIconButton-root {
+  transform: scaleX(-1);
+}
+
+/* RTL form field adjustments */
+.rtl .MuiFormControl-root .MuiInputLabel-root {
+  text-align: right;
+}
+
+.rtl .MuiFormControl-root .MuiInputBase-input {
+  text-align: right;
+}
+
+/* RTL navigation adjustments */
+.rtl .MuiDrawer-root .MuiDrawer-paper {
+  direction: rtl;
+}
+
+.rtl .MuiAppBar-root .MuiToolbar-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL table adjustments */
+.rtl .MuiTable-root .MuiTableHead-root .MuiTableRow-root .MuiTableCell-root {
+  text-align: right;
+}
+
+.rtl .MuiTable-root .MuiTableBody-root .MuiTableRow-root .MuiTableCell-root {
+  text-align: right;
+}
+
+/* RTL modal adjustments */
+.rtl .MuiDialog-root .MuiDialog-paper {
+  direction: rtl;
+}
+
+/* RTL popover adjustments */
+.rtl .MuiPopover-root .MuiPaper-root {
+  direction: rtl;
+}
+
+/* RTL menu adjustments */
+.rtl .MuiMenu-root .MuiPaper-root {
+  direction: rtl;
+}
+
+/* RTL tooltip adjustments */
+.rtl .MuiTooltip-root .MuiTooltip-tooltip {
+  text-align: right;
+}
+
+/* RTL chart adjustments */
+.rtl .recharts-wrapper {
+  direction: rtl;
+}
+
+/* RTL date picker adjustments */
+.rtl .MuiDatePicker-root .MuiPickersDay-root {
+  text-align: center;
+}
+
+/* RTL time picker adjustments */
+.rtl .MuiTimePicker-root .MuiClock-root {
+  direction: rtl;
+}
+
+/* RTL autocomplete adjustments */
+.rtl .MuiAutocomplete-root .MuiInputBase-input {
+  text-align: right;
+}
+
+/* RTL select adjustments */
+.rtl .MuiSelect-select {
+  text-align: right;
+}
+
+/* RTL checkbox and radio adjustments */
+.rtl .MuiFormControlLabel-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL switch adjustments */
+.rtl .MuiSwitch-root {
+  direction: rtl;
+}
+
+/* RTL slider adjustments */
+.rtl .MuiSlider-root {
+  direction: rtl;
+}
+
+/* RTL rating adjustments */
+.rtl .MuiRating-root {
+  direction: rtl;
+}
+
+/* RTL progress adjustments */
+.rtl .MuiLinearProgress-root {
+  direction: rtl;
+}
+
+/* RTL circular progress adjustments */
+.rtl .MuiCircularProgress-root {
+  direction: rtl;
+}
+
+/* RTL skeleton adjustments */
+.rtl .MuiSkeleton-root {
+  direction: rtl;
+}
+
+/* RTL badge adjustments */
+.rtl .MuiBadge-root .MuiBadge-badge {
+  direction: rtl;
+}
+
+/* RTL chip adjustments */
+.rtl .MuiChip-root {
+  direction: rtl;
+}
+
+/* RTL avatar adjustments */
+.rtl .MuiAvatar-root {
+  direction: rtl;
+}
+
+/* RTL divider adjustments */
+.rtl .MuiDivider-root {
+  direction: rtl;
+}
+
+/* RTL list adjustments */
+.rtl .MuiList-root .MuiListItem-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL accordion adjustments */
+.rtl .MuiAccordion-root .MuiAccordionSummary-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL tabs adjustments */
+.rtl .MuiTabs-root .MuiTabs-flexContainer {
+  flex-direction: row-reverse;
+}
+
+/* RTL stepper adjustments */
+.rtl .MuiStepper-root .MuiStep-root {
+  direction: rtl;
+}
+
+/* RTL breadcrumbs adjustments */
+.rtl .MuiBreadcrumbs-root .MuiBreadcrumbs-ol {
+  flex-direction: row-reverse;
+}
+
+/* RTL pagination adjustments */
+.rtl .MuiPagination-root .MuiPagination-ul {
+  flex-direction: row-reverse;
+}
+
+/* RTL speed dial adjustments */
+.rtl .MuiSpeedDial-root .MuiSpeedDial-fab {
+  direction: rtl;
+}
+
+/* RTL bottom navigation adjustments */
+.rtl .MuiBottomNavigation-root .MuiBottomNavigationAction-root {
+  direction: rtl;
+}
+
+/* RTL fab adjustments */
+.rtl .MuiFab-root {
+  direction: rtl;
+}
+
+/* RTL card media adjustments */
+.rtl .MuiCardMedia-root {
+  direction: rtl;
+}
+
+/* RTL card actions adjustments */
+.rtl .MuiCardActions-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL card header adjustments */
+.rtl .MuiCardHeader-root .MuiCardHeader-avatar {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* RTL card content adjustments */
+.rtl .MuiCardContent-root {
+  text-align: right;
+}
+
+/* RTL paper adjustments */
+.rtl .MuiPaper-root {
+  direction: rtl;
+}
+
+/* RTL container adjustments */
+.rtl .MuiContainer-root {
+  direction: rtl;
+}
+
+/* RTL grid adjustments */
+.rtl .MuiGrid-root {
+  direction: rtl;
+}
+
+/* RTL box adjustments */
+.rtl .MuiBox-root {
+  direction: rtl;
+}
+
+/* RTL stack adjustments */
+.rtl .MuiStack-root {
+  direction: rtl;
+}
+
+/* RTL divider text adjustments */
+.rtl .MuiDivider-root .MuiDivider-wrapper {
+  direction: rtl;
+}
+
+/* RTL list item text adjustments */
+.rtl .MuiListItemText-root .MuiListItemText-primary {
+  text-align: right;
+}
+
+.rtl .MuiListItemText-root .MuiListItemText-secondary {
+  text-align: right;
+}
+
+/* RTL list item icon adjustments */
+.rtl .MuiListItem-root .MuiListItemIcon-root {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* RTL list item button adjustments */
+.rtl .MuiListItemButton-root {
+  flex-direction: row-reverse;
+}
+
+/* RTL list subheader adjustments */
+.rtl .MuiListSubheader-root {
+  text-align: right;
+}
+
+/* RTL list item avatar adjustments */
+.rtl .MuiListItemAvatar-root {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* RTL list item secondary action adjustments */
+.rtl .MuiListItemSecondaryAction-root {
+  right: auto;
+  left: 16px;
+}
+
+/* RTL list item divider adjustments */
+.rtl .MuiListItemDivider-root {
+  direction: rtl;
+}
+
+/* RTL list item gutters adjustments */
+.rtl .MuiListItem-root.MuiListItem-gutters {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* RTL list item dense adjustments */
+.rtl .MuiListItem-root.MuiListItem-dense {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* RTL list item button gutters adjustments */
+.rtl .MuiListItemButton-root.MuiListItemButton-gutters {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* RTL list item button dense adjustments */
+.rtl .MuiListItemButton-root.MuiListItemButton-dense {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* RTL list item text gutters adjustments */
+.rtl .MuiListItemText-root.MuiListItemText-gutters {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* RTL list item text dense adjustments */
+.rtl .MuiListItemText-root.MuiListItemText-dense {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* RTL list item icon gutters adjustments */
+.rtl .MuiListItemIcon-root.MuiListItemIcon-gutters {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* RTL list item icon dense adjustments */
+.rtl .MuiListItemIcon-root.MuiListItemIcon-dense {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+/* RTL list item avatar gutters adjustments */
+.rtl .MuiListItemAvatar-root.MuiListItemAvatar-gutters {
+  margin-left: 0;
+  margin-right: 16px;
+}
+
+/* RTL list item avatar dense adjustments */
+.rtl .MuiListItemAvatar-root.MuiListItemAvatar-dense {
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+/* RTL list item secondary action gutters adjustments */
+.rtl .MuiListItemSecondaryAction-root.MuiListItemSecondaryAction-gutters {
+  right: auto;
+  left: 16px;
+}
+
+/* RTL list item secondary action dense adjustments */
+.rtl .MuiListItemSecondaryAction-root.MuiListItemSecondaryAction-dense {
+  right: auto;
+  left: 8px;
+} 

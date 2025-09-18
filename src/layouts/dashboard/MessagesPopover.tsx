@@ -1,0 +1,607 @@
+import { useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+// @mui
+import {
+  Box,
+  List,
+  Badge,
+  Button,
+  Avatar,
+  Tooltip,
+  Divider,
+  Typography,
+  IconButton,
+  ListItemText,
+  ListSubheader,
+  ListItemAvatar,
+  ListItemButton,
+  CircularProgress,
+  Chip
+} from '@mui/material';
+import { alpha } from '@mui/material/styles';
+// utils
+import { fToNow } from '../../utils/formatTime';
+// components
+import Iconify from '../../components/Iconify';
+import Scrollbar from '../../components/Scrollbar';
+import MenuPopover from '../../components/MenuPopover';
+import useMessageNotifications from '@/hooks/useMessageNotifications';
+import { NotificationService } from '@/api/notificationService';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+// ----------------------------------------------------------------------
+// ========================================
+// MESSAGES POPOVER - CHAT NOTIFICATIONS ONLY
+// ========================================
+// This popover handles ONLY message/chat related notifications:
+// - New messages (MESSAGE_RECEIVED)
+// - New chats created (CHAT_CREATED) 
+// - Conversation notifications (conversation)
+// General notifications are handled by NotificationsPopover component
+// ========================================
+
+export default function MessagesPopover() {
+  const anchorRef = useRef(null);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { isRTL } = useLanguage();
+  
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Use the new custom hook for message notifications
+  const { 
+    totalUnreadCount, 
+    uniqueChatMessages, 
+    fetchNotifications,
+    markAllSocketMessagesAsRead
+  } = useMessageNotifications();
+
+  // Final safeguard: additional deduplication in the component
+  const finalDedupedMessages = useMemo(() => {
+    const seenIds = new Set();
+    const seenContentKeys = new Set();
+    const dedupedMessages = [];
+    
+    // Sort messages to prioritize socket messages (newer) over database messages
+    const sortedMessages = [...uniqueChatMessages].sort((a, b) => {
+      // Prioritize socket messages
+      if (a.isSocket && !b.isSocket) return -1;
+      if (!a.isSocket && b.isSocket) return 1;
+      
+      // Then by creation date (newer first)
+      const dateA = new Date(a.createdAt || 0);
+      const dateB = new Date(b.createdAt || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    for (const message of sortedMessages) {
+      const messageId = message._id || message.id;
+      const chatId = message.chatId;
+      
+      // Primary deduplication: Check by actual message ID first
+      if (messageId && seenIds.has(messageId)) {
+        console.log('🚫 MessagesPopover: Blocked duplicate by ID:', { messageId, chatId, name: message.name, isSocket: message.isSocket });
+        continue;
+      }
+      
+      // Secondary deduplication: Content-based for messages without IDs or with different IDs but same content
+      const contentKey = `${chatId}-${message.name}-${message.message?.substring(0, 100)}`;
+      if (seenContentKeys.has(contentKey)) {
+        console.log('🚫 MessagesPopover: Blocked duplicate by content:', { messageId, chatId, name: message.name, contentKey });
+        continue;
+      }
+      
+      // Add to seen sets
+      if (messageId) {
+        seenIds.add(messageId);
+      }
+      seenContentKeys.add(contentKey);
+      
+      dedupedMessages.push(message);
+      console.log('✅ MessagesPopover: Added message:', { 
+        messageId, 
+        chatId, 
+        name: message.name, 
+        isSocket: message.isSocket,
+        source: message.isSocket ? 'socket' : 'database'
+      });
+    }
+    
+    console.log(`🛡️ MessagesPopover final dedup: ${uniqueChatMessages.length} → ${dedupedMessages.length}`);
+    console.log(`📊 Dedup stats - IDs seen: ${seenIds.size}, Content keys seen: ${seenContentKeys.size}`);
+    return dedupedMessages;
+  }, [uniqueChatMessages]);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      setLoading(true);
+      
+      // Mark all database notifications as read
+      await NotificationService.markAllAsRead();
+      
+      // Mark all socket messages as read
+      markAllSocketMessagesAsRead();
+      
+      // Refresh the notifications to get the latest data
+      await fetchNotifications();
+      
+      // Trigger sidebar badge update by dispatching custom event
+      window.dispatchEvent(new CustomEvent('messageNotificationsUpdated', {
+        detail: { count: 0 }
+      }));
+      
+      console.log("✅ All notifications (database + socket) marked as read and data refreshed");
+    } catch (error) {
+      console.error("❌ Error marking all notifications as read:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check if there are any unread notifications to determine button visibility
+  const hasUnreadNotifications = finalDedupedMessages.some(message => {
+    const isUnread = message.isUnRead || (!message.read && !message.isSocket);
+    return isUnread;
+  });
+
+  // Debug logging for button visibility
+  console.log('📘 Button visibility check:', {
+    hasUnreadNotifications,
+    totalMessages: finalDedupedMessages.length,
+    unreadMessages: finalDedupedMessages.filter(message => {
+      const isUnread = message.isUnRead || (!message.read && !message.isSocket);
+      return isUnread;
+    }).map(m => ({
+      id: m._id || m.id,
+      read: m.read,
+      isUnRead: m.isUnRead,
+      isSocket: m.isSocket,
+      name: m.name
+    }))
+  });
+
+  const handleMessageClick = async (message) => {
+    try {
+      console.log("📖 Handling message click:", {
+        messageId: message._id || message.id,
+        chatId: message.chatId,
+        type: message.type,
+        isConversation: message.type === 'conversation',
+        isSocket: message.isSocket,
+        source: message.source
+      });
+      
+      // Handle conversation-based notifications
+      if (message.type === 'conversation') {
+        console.log("📊 Conversation notification clicked - navigating to chat:", message.chatId);
+        
+        // For conversation notifications, we always have a chatId
+        if (message.chatId) {
+          navigate(`/dashboard/chat`);
+          handleClose();
+          return;
+        }
+      }
+      
+      // If this is a conversation notification with multiple unread messages, mark all as read for the chat
+      if (message.type === 'conversation' && message.chatId && message.unreadMessageCount > 1) {
+        await NotificationService.markAsRead(message._id);
+        console.log(`✅ Marked all notifications as read for chatId:`, message.chatId);
+        // Refresh notifications to update the badge immediately
+        await fetchNotifications();
+        
+        // Trigger sidebar badge update
+        window.dispatchEvent(new CustomEvent('messageNotificationsUpdated'));
+      } else if (message._id && !message.read) {
+        // Otherwise, mark the single notification as read
+        await NotificationService.markAsRead(message._id);
+        console.log(`✅ Marked notification as read for id:`, message._id);
+        // Refresh notifications to update the badge immediately
+        await fetchNotifications();
+        
+        // Trigger sidebar badge update
+        window.dispatchEvent(new CustomEvent('messageNotificationsUpdated'));
+      }
+      
+      // Enhanced navigation with comprehensive fallbacks
+      const targetChatId = message.chatId || message.data?.chatId;
+      
+      if (targetChatId) {
+        console.log("🚀 Navigating to specific chat:", targetChatId);
+        navigate(`/dashboard/chat/${targetChatId}`);
+      } else {
+        console.log("🚀 No specific chat ID, navigating to chat list");
+        navigate('/dashboard/chat');
+      }
+      
+      // Close the popover immediately for better UX
+      handleClose();
+      
+    } catch (error) {
+      console.error("❌ Error handling message click:", error);
+      
+      // Ensure navigation happens even if there's an error
+      const fallbackChatId = message.chatId || message.data?.chatId;
+      
+      if (fallbackChatId) {
+        console.log("🔄 Fallback navigation to chat:", fallbackChatId);
+        navigate(`/dashboard/chat/${fallbackChatId}`);
+      } else {
+        console.log("🔄 Fallback navigation to chat list");
+        navigate('/dashboard/chat');
+      }
+      
+      handleClose();
+    }
+  };
+
+  return (
+    <>
+      <Tooltip title={t('common.messages')}>
+        <IconButton
+          ref={anchorRef}
+          size="large"
+          color={open ? 'primary' : 'default'}
+          onClick={handleOpen}
+          sx={{
+            ...(open && {
+              bgcolor: (theme) => theme.palette.action.selected
+            })
+          }}
+        >
+          <Badge badgeContent={totalUnreadCount > 0 ? totalUnreadCount : null} color="error">
+            <Iconify icon="eva:message-circle-fill" width={20} height={20} />
+          </Badge>
+        </IconButton>
+      </Tooltip>
+
+      <MenuPopover 
+        open={open} 
+        onClose={handleClose} 
+        anchorEl={anchorRef.current} 
+        sx={{ 
+          width: 360,
+          ml: isRTL ? 0 : 0.75,
+          mr: isRTL ? 0.75 : 0
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', py: 2.5, px: 3 }}>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography variant="subtitle1" fontWeight={600}>
+              {t('common.messages')}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {totalUnreadCount > 0 
+                ? t('messages.unreadCount', { count: totalUnreadCount })
+                : t('messages.noUnread')}
+            </Typography>
+          </Box>
+
+          {hasUnreadNotifications && (
+            <Tooltip title={t('messages.markAllAsRead')}>
+              <IconButton 
+                size="small" 
+                onClick={handleMarkAllAsRead} 
+                disabled={loading}
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                  '&:disabled': {
+                    bgcolor: 'action.disabled',
+                    color: 'action.disabled',
+                  }
+                }}
+              >
+                {loading ? <CircularProgress size={16} color="inherit" /> : <Iconify icon="eva:done-all-fill" width={20} height={20} />}
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+
+        <Divider />
+
+        <Scrollbar sx={{ height: { xs: 340, sm: 'auto' } }}>
+          <List
+            disablePadding
+            subheader={
+              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                {t('messages.recentConversations')}
+              </ListSubheader>
+            }
+          >
+            {finalDedupedMessages.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  {t('messages.noMessages')}
+                </Typography>
+              </Box>
+            ) : (
+              (() => {
+                // Filter out read notifications - only show unread notifications
+                const unreadMessages = finalDedupedMessages.filter(message => {
+                  const isUnread = message.isUnRead || (!message.read && !message.isSocket);
+                  return isUnread;
+                });
+                
+                // Debug: Log all messages being rendered
+                console.log('🔍 MessagesPopover Debug - Rendering unread messages only:', unreadMessages.map(m => ({
+                  id: m.id || m._id,
+                  chatId: m.chatId,
+                  name: m.name,
+                  isSocket: m.isSocket,
+                  read: m.read,
+                  isUnRead: m.isUnRead,
+                  message: m.message?.substring(0, 50) + '...'
+                })));
+                
+                if (unreadMessages.length === 0) {
+                  return (
+                    <Box sx={{ p: 3, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('messages.noUnreadMessages')}
+                      </Typography>
+                    </Box>
+                  );
+                }
+                
+                return unreadMessages.map((message, index) => {
+                  const messageKey = message._id || message.id || `${message.chatId}-${index}`;
+                  console.log('🔍 Rendering unread message with key:', messageKey, 'Message:', message);
+                  
+                  return (
+                    <MessageItem 
+                      key={messageKey}
+                      message={message} 
+                      onClick={() => handleMessageClick(message)}
+                    />
+                  );
+                });
+              })()
+            )}
+          </List>
+        </Scrollbar>
+
+        <Divider />
+
+        <Box sx={{ p: 1.5 }}>
+          <Button 
+            fullWidth 
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              console.log("🚀 Navigating to chat page from 'View all conversations' button");
+              navigate('/dashboard/chat');
+              handleClose();
+            }}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+            }}
+          >
+            {t('messages.viewAllConversations')}
+          </Button>
+        </Box>
+      </MenuPopover>
+    </>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function MessageItem({ message, onClick }) {
+  const isUnread = message.isUnRead || (!message.read && !message.isSocket);
+  const isNew = message.isSocket || message.source === 'socket'; 
+  const isConversation = message.type === 'conversation';
+  const hasMultipleMessages = message.unreadMessageCount > 1;
+
+  // Enhanced display for conversation-based notifications
+  const isMessageReceived = message.type === 'MESSAGE_RECEIVED' || message.type === 'message';
+  const displayMessage = isConversation && hasMultipleMessages
+    ? message.message // Already formatted as "X nouveaux messages"
+    : isMessageReceived
+      ? `You have a new message: ${message.message}`
+      : message.message;
+
+  return (
+    <ListItemButton
+      sx={{
+        py: 1.5,
+        px: 2.5,
+        mt: '1px',
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 1.5,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        ...(isUnread && {
+          bgcolor: 'action.selected',
+          border: '1px solid',
+          borderColor: isNew ? 'primary.main' : 'primary.main',
+          borderLeftWidth: '4px',
+          borderLeftColor: isNew ? 'primary.main' : 'primary.main',
+          background: isNew ? 
+            (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)}, ${alpha(theme.palette.primary.main, 0.05)})` :
+            'action.selected',
+        }),
+        '&:hover': {
+          bgcolor: isUnread ? 'action.selected' : 'action.hover',
+          transform: 'translateX(4px)',
+          boxShadow: (theme) => `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+        },
+      }}
+      onClick={onClick}
+    >
+      <ListItemAvatar>
+        <Box position="relative">
+          <Avatar 
+            src={message.avatar} 
+            sx={{ 
+              bgcolor: (theme) => isNew ? theme.palette.primary.main : theme.palette.primary.main,
+              width: 44,
+              height: 44,
+              border: (theme) => isNew ? `2px solid ${theme.palette.primary.main}` : isUnread ? '2px solid' : 'none',
+              borderColor: (theme) => isUnread && !isNew ? theme.palette.primary.main : 'transparent',
+              boxShadow: (theme) => isNew ? `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}` : 'none',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+            }}
+          >
+            {message.name ? message.name.charAt(0).toUpperCase() : 'B'}
+          </Avatar>
+          
+          {/* Show message count badge for conversations with multiple messages */}
+          {isConversation && hasMultipleMessages && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                minWidth: 20,
+                height: 20,
+                borderRadius: '50%',
+                backgroundColor: 'error.main',
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                border: '2px solid white',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              }}
+            >
+              {message.unreadMessageCount > 99 ? '99+' : message.unreadMessageCount}
+            </Box>
+          )}
+          
+          {/* Pulse animation for new messages */}
+          {isNew && !hasMultipleMessages && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -2,
+                right: -2,
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                backgroundColor: 'primary.main',
+                border: '2px solid white',
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': {
+                    boxShadow: (theme) => `0 0 0 0 ${alpha(theme.palette.primary.main, 0.7)}`,
+                  },
+                  '70%': {
+                    boxShadow: (theme) => `0 0 0 4px ${alpha(theme.palette.primary.main, 0)}`,
+                  },
+                  '100%': {
+                    boxShadow: (theme) => `0 0 0 0 ${alpha(theme.palette.primary.main, 0)}`,
+                  },
+                },
+              }}
+            />
+          )}
+        </Box>
+      </ListItemAvatar>
+      <ListItemText
+        primary={
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography 
+              variant="subtitle2"
+              sx={{ 
+                fontWeight: isUnread ? 'fontWeightBold' : 'fontWeightRegular',
+                color: isNew ? 'primary.main' : isUnread ? 'primary.main' : 'inherit'
+              }}
+            >
+              {message.name || 'Acheteur'}
+            </Typography>
+            {isNew && !hasMultipleMessages && (
+              <Chip
+                label="NEW"
+                size="small"
+                sx={{
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  px: 0.5,
+                  py: 0.1,
+                  height: '18px',
+                  borderRadius: 1,
+                  textTransform: 'uppercase',
+                }}
+              />
+            )}
+            {hasMultipleMessages && (
+              <Chip
+                label={`${message.unreadMessageCount} messages`}
+                size="small"
+                sx={{
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  backgroundColor: 'warning.main',
+                  color: 'white',
+                  px: 0.5,
+                  py: 0.1,
+                  height: '18px',
+                  borderRadius: 1,
+                }}
+              />
+            )}
+          </Box>
+        }
+        secondary={displayMessage}
+        primaryTypographyProps={{
+          component: 'div'
+        }}
+        secondaryTypographyProps={{
+          typography: 'caption',
+          noWrap: true,
+          sx: { 
+            mt: 0.5,
+            fontWeight: isUnread ? 'fontWeightMedium' : 'fontWeightRegular',
+            color: isUnread ? 'text.primary' : 'text.secondary',
+          }
+        }}
+      />
+      <Box display="flex" flexDirection="column" alignItems="flex-end" gap={0.5}>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            flexShrink: 0, 
+            color: 'text.disabled',
+            fontWeight: isUnread ? 'fontWeightMedium' : 'fontWeightRegular'
+          }}
+        >
+          {message.createdAt ? fToNow(message.createdAt) : 'Maintenant'}
+        </Typography>
+        {isUnread && (
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: hasMultipleMessages ? 'warning.main' : 'primary.main',
+              flexShrink: 0,
+              boxShadow: (theme) => `0 0 6px ${alpha(hasMultipleMessages ? theme.palette.warning.main : theme.palette.primary.main, 0.6)}`,
+              animation: isNew ? 'pulse 2s infinite' : 'none',
+            }}
+          />
+        )}
+      </Box>
+    </ListItemButton>
+  );
+}
