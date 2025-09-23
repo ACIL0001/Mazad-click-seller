@@ -12,12 +12,12 @@ const app = {
   name: 'MazadClick',
   pole: 'NotEasy',
   timeout: 15000,
-  domain: 'www.mazadclick.com',
+  domain: 'mazad.click',
   
   // Dynamic URLs based on environment
-  socket: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/',
-  route: import.meta.env.VITE_STATIC_URL || "http://localhost:3000/static/",
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
+  socket: import.meta.env.VITE_SOCKET_URL || 'https://mazad-click-server.onrender.com/',
+  route: import.meta.env.VITE_STATIC_URL || "https://mazad-click-server.onrender.com/static/",
+  baseURL: import.meta.env.VITE_API_URL || "https://mazad-click-server.onrender.com/",
 
   apiKey: '8f2a61c94d7e3b5f9c0a8d2e6b4f1c7a',
   googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyAUCeSWuTshwbTAfmZzk7D3qLdhr-0wRZ4',

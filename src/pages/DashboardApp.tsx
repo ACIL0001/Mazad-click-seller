@@ -102,7 +102,7 @@ export default function DashboardApp() {
     const testApiConnection = async () => {
       try {
         console.log('🧪 Testing API connection...');
-        const response = await fetch('http://localhost:3000/seller-stats/quick-summary', {
+        const response = await fetch('https://mazad.click/seller-stats/quick-summary', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens?.accessToken || 'test-token'}`,
