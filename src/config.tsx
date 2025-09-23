@@ -19,7 +19,7 @@ const app = {
   route: import.meta.env.VITE_STATIC_URL || "https://mazad-click-server.onrender.com/static/",
   baseURL: import.meta.env.VITE_API_URL || "https://mazad-click-server.onrender.com/",
 
-  apiKey: '8f2a61c94d7e3b5f9c0a8d2e6b4f1c7a',
+  apiKey: '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
   googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyAUCeSWuTshwbTAfmZzk7D3qLdhr-0wRZ4',
   googleMapsApiUrl: 'https://maps.googleapis.com/maps/api/js',
   getGoogleMapsScriptUrl: (params = '') =>
