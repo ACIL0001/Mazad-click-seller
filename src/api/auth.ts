@@ -8,7 +8,14 @@ export const AuthAPI = {
   validateToken: (): Promise<any> => requests.get('auth/validate-token'),
   exists: (tel: string): Promise<any> => requests.get(`auth/exists/${tel}`),
   getSMS: (tel: string): Promise<any> => requests.get(`auth/2factor/send-sms/${tel}`),
-  login: (credentials: Credentials, returnFullResponse: boolean = true): Promise<any> => requests.post('auth/signin', credentials, returnFullResponse),
+  login: (credentials: Credentials, returnFullResponse: boolean = true): Promise<any> => {
+    // Transform email to login for server compatibility
+    const loginData = {
+      login: credentials.email,
+      password: credentials.password
+    };
+    return requests.post('auth/signin', loginData, returnFullResponse);
+  },
   signup: (user: User): Promise<any> => requests.post('auth/signup', user),
   refresh: (refreshToken: string): Promise<any> => requests.put('auth/refresh', { refreshToken }),
   isValid: (sms: Sms): Promise<any> => requests.post('auth/2factor/validate', sms),
