@@ -41,6 +41,7 @@ interface MultiFilePreviewProps {
 export default function MultiFilePreview({ file, onRemove, compact = false }: MultiFilePreviewProps) {
   const { name, size, type } = file;
   const isImage = type.startsWith('image/');
+  const isVideo = type.startsWith('video/');
   
   const ItemComponent = compact ? CompactListItemStyle : ListItemStyle;
 
@@ -64,6 +65,20 @@ export default function MultiFilePreview({ file, onRemove, compact = false }: Mu
               borderRadius: 1,
               mr: compact ? 1 : 2,
             }}
+          />
+        ) : isVideo ? (
+          <Box
+            component="video"
+            src={URL.createObjectURL(file)}
+            sx={{
+              width: compact ? 32 : 48,
+              height: compact ? 32 : 48,
+              objectFit: 'cover',
+              borderRadius: 1,
+              mr: compact ? 1 : 2,
+            }}
+            controls={false}
+            muted
           />
         ) : (
           <Box 

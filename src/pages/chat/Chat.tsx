@@ -18,7 +18,11 @@ import {
   Badge,
   Fab,
   Paper,
-  Slide
+  Slide,
+  useMediaQuery,
+  Fade,
+  Stack,
+  Divider
 } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { 
@@ -30,7 +34,10 @@ import {
   KeyboardArrowDownRounded,
   CheckCircleRounded,
   KeyboardBackspaceRounded,
-  CloseRounded
+  CloseRounded,
+  ChatRounded,
+  RefreshRounded,
+  InfoRounded
 } from '@mui/icons-material'
 import { motion, AnimatePresence } from 'framer-motion'
 import imageBuyer from '../../assets/logo/buyerImage.jpg'
@@ -49,45 +56,71 @@ type DateGroup = { type: 'date'; date: string }
 type MessageGroup = { type: 'messageGroup'; messages: Message[] }
 type GroupedItem = DateGroup | MessageGroup
 
-// Styled components with modern design
+// Modern responsive styled components
 const ChatContainer = styled(Box)(({ theme }) => ({
   maxWidth: 1200,
   margin: '0 auto',
-  height: '35%', // Further reduced height for more compact display
+  height: 'calc(100vh - 120px)',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius * 2,
   boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
   overflow: 'hidden',
+  position: 'relative',
+  [theme.breakpoints.down('md')]: {
+    height: 'calc(100vh - 80px)',
+    borderRadius: theme.shape.borderRadius,
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: 'calc(100vh - 60px)',
+    borderRadius: 0,
+    boxShadow: 'none',
+  },
 }))
 
 const ChatHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1, 2),
+  padding: theme.spacing(1.5, 2),
   borderBottom: `1px solid ${theme.palette.divider}`,
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
   backgroundColor: alpha(theme.palette.primary.main, 0.08),
   boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1.2, 1.5),
+    gap: theme.spacing(1),
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1, 1.5),
+  },
 }))
 
 const ChatContent = styled(Box)(({ theme }) => ({
   flexGrow: 1,
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(2),
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: alpha(theme.palette.primary.main, 0.02),
   '&::-webkit-scrollbar': {
-    width: '4px',
+    width: '6px',
   },
   '&::-webkit-scrollbar-track': {
     background: 'transparent',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: theme.palette.divider,
+    background: alpha(theme.palette.primary.main, 0.2),
     borderRadius: '10px',
+    '&:hover': {
+      background: alpha(theme.palette.primary.main, 0.3),
+    },
+  },
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1.5),
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1),
   },
 }))
 
@@ -100,53 +133,78 @@ const MessageBubbleContainer = styled(motion.div)<{ sender?: boolean }>(({ theme
   justifyContent: sender ? 'flex-end' : 'flex-start',
   marginBottom: theme.spacing(1),
   position: 'relative',
-  alignItems: 'center', 
-  width: 'auto'
+  alignItems: 'flex-end',
+  gap: theme.spacing(1),
+  [theme.breakpoints.down('sm')]: {
+    marginBottom: theme.spacing(0.8),
+  },
 }))
 
 const MessageBubble = styled(Box)<{ sender?: boolean }>(({ theme, sender }) => ({
   maxWidth: '75%',
   minWidth: 'min-content',
-  padding: theme.spacing(1, 1.5),
-  borderRadius: '2px',
+  padding: theme.spacing(1.2, 1.8),
+  borderRadius: sender ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
   backgroundColor: sender 
     ? theme.palette.primary.main 
     : theme.palette.background.paper,
   color: sender 
     ? theme.palette.primary.contrastText 
     : theme.palette.text.primary,
-  boxShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.05)}`,
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
   position: 'relative',
   wordBreak: 'normal',
   whiteSpace: 'normal',
   textAlign: 'left',
   width: 'fit-content',
   display: 'block',
-  boxSizing: 'border-box'
+  boxSizing: 'border-box',
+  border: sender ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+  [theme.breakpoints.down('sm')]: {
+    maxWidth: '85%',
+    padding: theme.spacing(1, 1.5),
+  },
 }))
 
 const MessageTime = styled(Typography)(({ theme }) => ({
-  fontSize: '0.65rem',
+  fontSize: '0.7rem',
   color: theme.palette.text.secondary,
   marginTop: theme.spacing(0.3),
   opacity: 0.7,
+  alignSelf: 'flex-end',
 }))
 
 const ChatInputContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1),
+  padding: theme.spacing(2),
   backgroundColor: theme.palette.background.paper,
   borderTop: `1px solid ${theme.palette.divider}`,
   position: 'relative',
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(1.5),
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(1),
+  },
 }))
 
 const ChatInputWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(0.8),
+  gap: theme.spacing(1),
   backgroundColor: theme.palette.background.default,
-  padding: theme.spacing(0.3, 1),
+  padding: theme.spacing(0.8, 1.5),
   borderRadius: theme.shape.borderRadius * 5,
-  boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.05)}`,
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+  transition: 'all 0.2s ease',
+  '&:focus-within': {
+    borderColor: theme.palette.primary.main,
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(0.6, 1.2),
+    gap: theme.spacing(0.8),
+  },
 }))
 
 const EmptyChatState = styled(Box)(({ theme }) => ({
@@ -205,6 +263,11 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const chatContentRef = useRef<HTMLDivElement | null>(null)
   const theme = useTheme()
+  
+  // Responsive breakpoints
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'))
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'))
   
   // Enhanced notification system with route awareness
   const { totalUnreadCount: allNewChatCount, uniqueChatMessages } = useMessageNotifications()
@@ -498,7 +561,12 @@ export default function Chat() {
   return (
     <ChatContainer>
       <ChatHeader>
-        <IconButton edge="start" color="inherit" sx={{ mr: 0.5 }} onClick={() => window.history.back()}>
+        <IconButton 
+          edge="start" 
+          color="inherit" 
+          sx={{ mr: 1 }} 
+          onClick={() => window.history.back()}
+        >
           <KeyboardBackspaceRounded fontSize="small" />
         </IconButton>
         
@@ -510,12 +578,12 @@ export default function Chat() {
         >
           <Avatar 
             src={imageBuyer} 
-            sx={{ width: 32, height: 32 }}
+            sx={{ width: 40, height: 40 }}
           />
         </Badge>
         
-        <Box flexGrow={1}>
-          <Typography variant="subtitle2" fontWeight={600}>
+        <Box flexGrow={1} sx={{ ml: 1 }}>
+          <Typography variant="h6" fontWeight={600}>
             Direct Message
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -523,9 +591,18 @@ export default function Chat() {
           </Typography>
         </Box>
         
-        <IconButton size="small">
-          <MoreVertRounded fontSize="small" />
-        </IconButton>
+        <Stack direction="row" spacing={0.5}>
+          <Tooltip title="Refresh">
+            <IconButton size="small" onClick={() => getAllMessage()}>
+              <RefreshRounded fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="More options">
+            <IconButton size="small">
+              <MoreVertRounded fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </ChatHeader>
      
       <ChatContent ref={chatContentRef}>
@@ -599,55 +676,37 @@ export default function Chat() {
                           animate="animate"
                           transition={{ delay: msgIndex * 0.05 }}
                         >
-                          {!isCurrentUser && msgIndex === 0 && ( 
-                            <Box sx={{ width: 36, visibility: 'hidden' }} /> // Placeholder for alignment
-                          )}
+                          <MessageBubble sender={isCurrentUser}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontSize: '0.9rem',
+                                lineHeight: 1.4,
+                                whiteSpace: 'normal',
+                                letterSpacing: 'normal',
+                                textAlign: 'left',
+                                display: 'block',
+                                width: 'fit-content',
+                                wordSpacing: 'normal'
+                              }}
+                            >
+                              {message.message}
+                            </Typography>
+                          </MessageBubble>
                           
-                          <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'row', 
-                            alignItems: 'center',
-                            width: 'auto',
-                            justifyContent: 'flex-start'
-                          }}>
-                            <MessageBubble sender={isCurrentUser}>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  fontSize: '0.875rem',
-                                  whiteSpace: 'normal',
-                                  letterSpacing: 'normal',
-                                  textAlign: 'left',
-                                  display: 'block',
-                                  width: 'fit-content',
-                                  wordSpacing: 'normal'
-                                }}
-                              >
-                                {message.message}
-                              </Typography>
-                            </MessageBubble>
-                            
-                            {/* Only show time for the last message in group */}
-                            {msgIndex === item.messages.length - 1 && (
-                              <MessageTime>
-                                {formatMessageDate(message.createdAt || new Date())}
-                                {isCurrentUser && (
-                                  <CheckCircleRounded sx={{ 
-                                    ml: 0.5, 
-                                    fontSize: 12,
-                                    verticalAlign: 'middle',
-                                    color: theme.palette.success.main
-                                  }} />
-                                )}
-                              </MessageTime>
-                            )}
-                          </Box>
-                          
-                          {isCurrentUser && msgIndex === 0 && (
-                            <UserAvatar
-                                src={imageBuyer}
-                                alt="You"
-                                />
+                          {/* Only show time for the last message in group */}
+                          {msgIndex === item.messages.length - 1 && (
+                            <MessageTime>
+                              {formatMessageDate(message.createdAt || new Date())}
+                              {isCurrentUser && (
+                                <CheckCircleRounded sx={{ 
+                                  ml: 0.5, 
+                                  fontSize: 12,
+                                  verticalAlign: 'middle',
+                                  color: theme.palette.success.main
+                                }} />
+                              )}
+                            </MessageTime>
                           )}
                         </MessageBubbleContainer>
                       ))}
@@ -768,7 +827,7 @@ export default function Chat() {
           <TextField
             fullWidth
             multiline
-            maxRows={2} 
+            maxRows={3} 
             placeholder="Type a message..."
             variant="standard"
             value={text}
@@ -776,7 +835,12 @@ export default function Chat() {
             onKeyDown={handleKeyPress}
             InputProps={{
               disableUnderline: true,
-              sx: { fontSize: '0.9rem' }
+              sx: { 
+                fontSize: '0.9rem',
+                '& fieldset': {
+                  border: 'none',
+                },
+              }
             }}
           />
           
@@ -807,7 +871,9 @@ export default function Chat() {
                 backgroundColor: text.trim() ? theme.palette.primary.dark : alpha(theme.palette.action.disabled, 0.1),
               },
               transition: 'all 0.2s ease',
-              padding: '4px'
+              padding: '8px',
+              minWidth: '40px',
+              height: '40px'
             }}
           >
             <SendRounded sx={{ fontSize: '1rem' }} />

@@ -1,3 +1,13 @@
+const getStorageKey = () => {
+  if (typeof window === 'undefined') return 'auth';
+  
+  const port = window.location.port;
+  // Use different storage keys for different ports
+  if (port === '3002') return 'auth_seller';
+  if (port === '3003') return 'auth_admin';
+  return 'auth'; // fallback
+};
+
 const app = {
   name: 'MazadClick',
   pole: 'NotEasy',
@@ -10,7 +20,7 @@ const app = {
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
 
   apiKey: '8f2a61c94d7e3b5f9c0a8d2e6b4f1c7a',
-  googleMapsApiKey: 'AIzaSyAUCeSWuTshwbTAfmZzk7D3qLdhr-0wRZ4',
+  googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyAUCeSWuTshwbTAfmZzk7D3qLdhr-0wRZ4',
   googleMapsApiUrl: 'https://maps.googleapis.com/maps/api/js',
   getGoogleMapsScriptUrl: (params = '') =>
     `https://maps.googleapis.com/maps/api/js?key=${app.googleMapsApiKey}${params}`,
@@ -25,8 +35,12 @@ const app = {
     returnUrl: `${window.location.origin}/payment-success`,
     cancelUrl: `${window.location.origin}/subscription-plans`,
   },
+  
+  // Export storage key function for auth isolation
+  getStorageKey,
 };
 
 export const API_BASE_URL = app.baseURL;
+export { getStorageKey };
 
 export default app;

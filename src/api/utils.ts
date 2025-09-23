@@ -107,7 +107,7 @@ const AxiosInterceptor = ({ children }: any) => {
             set({ ...auth, tokens });
 
             isRefreshing = false;
-            onRefreshed(tokens.acessToken); // Notify waiting requests
+            onRefreshed(tokens.accessToken); // Notify waiting requests
             originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
             return instance(originalRequest); // Retry the original request
           } catch (refreshError) {
@@ -142,11 +142,17 @@ const AxiosInterceptor = ({ children }: any) => {
       if (error.response?.status !== 401) {
         console.log('API Error:', error.response);
         
-        // Show user-friendly error message
-        const errorMessage = error.response?.data?.message || 
-                            error.message || 
-                            'un problème est survenu';
-        enqueueSnackbar(errorMessage, { variant: 'error' });
+        // Handle 500 Internal Server Error specifically
+        if (error.response?.status === 500) {
+          console.error('🚨 Internal Server Error (500):', error.response.data);
+          enqueueSnackbar('Erreur interne du serveur. Veuillez réessayer plus tard.', { variant: 'error' });
+        } else {
+          // Show user-friendly error message for other errors
+          const errorMessage = error.response?.data?.message || 
+                              error.message || 
+                              'un problème est survenu';
+          enqueueSnackbar(errorMessage, { variant: 'error' });
+        }
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('ERR_CONNECTION_REFUSED')) {
         // Network/connection errors
         console.log('Network Error:', error.message);

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Container, Typography, Box, Grid, Card, CardContent, CardHeader, Button, Divider, Alert, Stack, Link, Stepper, Step, StepLabel } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, keyframes } from '@mui/material/styles';
 import Page from '../components/Page';
 import { UploadMultiFile } from '../components/upload/UploadMultiFile';
 import Iconify from '../components/Iconify';
@@ -14,6 +14,105 @@ import { useSnackbar } from 'notistack';
 import Tooltip from '@mui/material/Tooltip';
 import LogoutIcon from '@mui/icons-material/Logout';
 import useAuth from '@/hooks/useAuth';
+
+// Animation keyframes for background icons
+const floatAnimation = keyframes`
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% { 
+    transform: translateY(-20px) rotate(5deg);
+  }
+  50% { 
+    transform: translateY(-10px) rotate(0deg);
+  }
+  75% { 
+    transform: translateY(-30px) rotate(-5deg);
+  }
+`;
+
+const pulseAnimation = keyframes`
+  0%, 100% { 
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+`;
+
+const rotateAnimation = keyframes`
+  0% { 
+    transform: rotate(0deg);
+  }
+  100% { 
+    transform: rotate(360deg);
+  }
+`;
+
+const slideAnimation = keyframes`
+  0% { 
+    transform: translateX(-100px) rotate(-10deg);
+    opacity: 0.3;
+  }
+  50% { 
+    transform: translateX(50px) rotate(5deg);
+    opacity: 0.6;
+  }
+  100% { 
+    transform: translateX(200px) rotate(-5deg);
+    opacity: 0.3;
+  }
+`;
+
+const bounceAnimation = keyframes`
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-30px) rotate(10deg);
+  }
+  60% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+`;
+
+// Background container for animated icons
+const AnimatedBackground = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  overflow: 'hidden',
+  zIndex: -1,
+  pointerEvents: 'none',
+}));
+
+// Animated icon styles
+const FloatingIcon = styled(Box, {
+  shouldForwardProp: (prop) => !['delay', 'duration', 'animationType'].includes(prop),
+})<{ delay?: string; duration?: string; animationType?: string }>(({ theme, delay = '0s', duration = '6s', animationType = 'float' }) => ({
+  position: 'absolute',
+  color: alpha(theme.palette.primary.main, 0.15),
+  fontSize: '3rem',
+  animation: `${
+    animationType === 'float' ? floatAnimation :
+    animationType === 'pulse' ? pulseAnimation :
+    animationType === 'rotate' ? rotateAnimation :
+    animationType === 'slide' ? slideAnimation :
+    bounceAnimation
+  } ${duration} ease-in-out infinite`,
+  animationDelay: delay,
+  zIndex: 0,
+}));
+
+const DocumentIcon = styled(Iconify)(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  filter: `drop-shadow(0 4px 8px ${alpha(theme.palette.primary.main, 0.1)})`,
+}));
 
 const GlassCard = styled(Card)(({ theme }) => ({
   height: '100%',
@@ -357,6 +456,89 @@ const ActionContainer = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
 }));
 
+// Background Icons Component
+const BackgroundIcons = () => {
+  return (
+    <AnimatedBackground>
+      {/* Document upload icons */}
+      <FloatingIcon style={{ top: '10%', left: '5%' }} delay="0s" duration="8s" animationType="float">
+        <DocumentIcon icon="mdi:file-upload" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '20%', right: '8%' }} delay="1s" duration="6s" animationType="pulse">
+        <DocumentIcon icon="mdi:file-document-multiple" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '40%', left: '3%' }} delay="2s" duration="10s" animationType="bounce">
+        <DocumentIcon icon="mdi:certificate" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '30%', right: '5%' }} delay="1.5s" duration="7s" animationType="float">
+        <DocumentIcon icon="mdi:file-check" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '15%', left: '10%' }} delay="3s" duration="9s" animationType="pulse">
+        <DocumentIcon icon="mdi:shield-check" />
+      </FloatingIcon>
+      
+      {/* Identity verification icons */}
+      <FloatingIcon style={{ top: '60%', left: '15%' }} delay="4s" duration="8s" animationType="rotate">
+        <DocumentIcon icon="mdi:account-check" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '30%', right: '20%' }} delay="2.5s" duration="6s" animationType="bounce">
+        <DocumentIcon icon="mdi:card-account-details" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '50%', right: '15%' }} delay="5s" duration="7s" animationType="float">
+        <DocumentIcon icon="mdi:file-certificate" />
+      </FloatingIcon>
+      
+      {/* Professional documents icons */}
+      <FloatingIcon style={{ top: '50%', left: '25%' }} delay="1.8s" duration="9s" animationType="pulse">
+        <DocumentIcon icon="mdi:briefcase-check" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '40%', left: '30%' }} delay="3.5s" duration="8s" animationType="slide">
+        <DocumentIcon icon="mdi:file-chart" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '35%', right: '30%' }} delay="4.2s" duration="6s" animationType="bounce">
+        <DocumentIcon icon="mdi:bank" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '20%', right: '25%' }} delay="6s" duration="7s" animationType="float">
+        <DocumentIcon icon="mdi:numeric" />
+      </FloatingIcon>
+      
+      {/* Additional scattered icons */}
+      <FloatingIcon style={{ top: '70%', right: '12%' }} delay="7s" duration="8s" animationType="pulse">
+        <DocumentIcon icon="mdi:file-lock" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '15%', left: '20%' }} delay="8s" duration="6s" animationType="rotate">
+        <DocumentIcon icon="mdi:cloud-upload" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '60%', left: '8%' }} delay="2.8s" duration="9s" animationType="bounce">
+        <DocumentIcon icon="mdi:file-pdf-box" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '80%', left: '40%' }} delay="5.5s" duration="7s" animationType="slide">
+        <DocumentIcon icon="mdi:check-circle" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ top: '25%', left: '35%' }} delay="9s" duration="8s" animationType="float">
+        <DocumentIcon icon="mdi:file-image" />
+      </FloatingIcon>
+      
+      <FloatingIcon style={{ bottom: '35%', right: '35%' }} delay="4.8s" duration="6s" animationType="pulse">
+        <DocumentIcon icon="mdi:folder-upload" />
+      </FloatingIcon>
+    </AnimatedBackground>
+  );
+};
+
 export default function IdentityVerification() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -407,7 +589,7 @@ export default function IdentityVerification() {
           
           // Navigate with a slight delay to ensure the message is seen
           setTimeout(() => {
-            navigate('/dashboard/app');
+            navigate('/subscription-plans');
           }, 200);
           return;
         }
@@ -552,13 +734,13 @@ export default function IdentityVerification() {
       
       setSubmitStatus({
         type: 'success',
-        message: 'Documents soumis avec succès! Redirection vers les plans d\'abonnement...',
+        message: 'Documents soumis avec succès! Redirection vers le tableau de bord...',
       });
       enqueueSnackbar('Documents soumis avec succès', { variant: 'success' });
       
       // Add a small delay to ensure state updates are processed
       setTimeout(() => {
-        // For professional users, navigate to subscription plans after document submission
+        // Navigate to dashboard to show the updated status (Documents Under Review page)
         navigate('/subscription-plans');
       }, 1000);
     } catch (error: any) {
@@ -580,7 +762,7 @@ export default function IdentityVerification() {
           message: 'Vous avez déjà soumis vos documents d\'identité. Redirection vers le tableau de bord...',
         });
         enqueueSnackbar('Documents déjà soumis', { variant: 'info' });
-        navigate('/dashboard/app');
+        navigate('/subscription-plans');
         return;
       }
       
@@ -600,7 +782,10 @@ export default function IdentityVerification() {
 
   return (
     <Page title="Vérification d'identité professionnelle">
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Animated Background Icons */}
+      <BackgroundIcons />
+      
+      <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
         <HeaderSection>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Logo sx={{ mr: 2, width: 120, height: 80 }} />

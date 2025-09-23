@@ -60,6 +60,28 @@ const useNavConfig = () => {
       ],
     },
     {
+      title: 'Appels d\'Offres',
+      path: '/dashboard/tenders',
+      icon: getIcon('mdi:file-document-multiple'),
+      children: [
+        {
+          title: 'Mes Appels d\'Offres',
+          path: '/dashboard/tenders',
+          icon: getIcon('mdi:file-document-multiple-outline'),
+        },
+        {
+          title: 'Nouvel Appel d\'Offres',
+          path: '/dashboard/tenders/create',
+          icon: getIcon('mdi:file-document-plus'),
+        },
+        {
+          title: 'Offres Reçues',
+          path: '/dashboard/tender-bids',
+          icon: getIcon('mdi:email-receive'),
+        },
+      ],
+    },
+    {
       title: t('navigation.deliveries'),
       path: '/dashboard/deliveries',
       icon: getIcon('mdi:bike-fast'),

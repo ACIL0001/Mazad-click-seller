@@ -36,6 +36,10 @@ import CreateAuction from './pages/Auctions/CreateAuction';
 import AuctionDetail from './pages/Auctions/AuctionDetail';
 import Offers from './pages/Offers';
 import Participants from './pages/Participants';
+import Tenders from './pages/Tenders';
+import CreateTender from './pages/Tenders/CreateTender';
+import TenderDetail from './pages/Tenders/TenderDetail';
+import TenderBids from './pages/TenderBids';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import IdentityVerification from './pages/IdentityVerification';
 import WaitingForVerification from './pages/WaitingForVerification';
@@ -164,6 +168,10 @@ export default function Router() {
                 { path: 'auctions/:id', element: <RequirePhoneVerification><AuctionDetail /></RequirePhoneVerification> },
                 { path: 'offers', element: <RequirePhoneVerification><Offers /></RequirePhoneVerification> },
                 { path: 'participants', element: <RequirePhoneVerification><Participants /></RequirePhoneVerification> },
+                { path: 'tenders', element: <RequirePhoneVerification><Tenders /></RequirePhoneVerification> },
+                { path: 'tenders/create', element: <RequirePhoneVerification><CreateTender /></RequirePhoneVerification> },
+                { path: 'tenders/:id', element: <RequirePhoneVerification><TenderDetail /></RequirePhoneVerification> },
+                { path: 'tender-bids', element: <RequirePhoneVerification><TenderBids /></RequirePhoneVerification> },
                 { path: 'notifications', element: <RequirePhoneVerification><NotificationsPage /></RequirePhoneVerification> },
                 { path: 'chat', element: <RequirePhoneVerification><Allchat/></RequirePhoneVerification> },
                 { path: 'chat/:id', element: <RequirePhoneVerification><Chat /></RequirePhoneVerification> },

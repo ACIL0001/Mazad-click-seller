@@ -36,6 +36,7 @@ import { Form, useFormik, FormikProvider } from 'formik';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
 import { UploadMultiFile } from '@/components/upload/UploadMultiFile';
+import { UploadVideoFile } from '@/components/upload/UploadVideoFile';
 import Page from '@/components/Page';
 import { AuctionsAPI } from '@/api/auctions';
 import { CategoryAPI } from '@/api/category';
@@ -883,6 +884,7 @@ export default function CreateAuction() {
 
   const [activeStep, setActiveStep] = useState(0);
   const [thumbs, setThumbs] = useState<File[]>([]);
+  const [videos, setVideos] = useState<File[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
@@ -975,6 +977,7 @@ export default function CreateAuction() {
       .required('La wilaya est requise'),
     place: Yup.string()
       .required('L\'emplacement est requis'),
+    hidden: Yup.boolean(),
   });
 
   const formik = useFormik({
@@ -992,6 +995,7 @@ export default function CreateAuction() {
       wilaya: '',
       quantity: '',
       isPro: false,
+      hidden: false,
       reservePrice: '',
     },
     validationSchema,
@@ -1107,11 +1111,20 @@ export default function CreateAuction() {
 
   // Google Maps integration
   useEffect(() => {
-    if (inputRef.current) {
-      loadGoogleMapsScript().then(() => {
+    if (!inputRef.current) return;
+
+    const initializeAutocomplete = async () => {
+      try {
+        await loadGoogleMapsScript();
+        
+        if (!window.google || !window.google.maps || !window.google.maps.places) {
+          throw new Error('Google Maps Places library not available');
+        }
+
         const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current!, {
           types: ['geocode'],
           componentRestrictions: { country: 'dz' },
+          fields: ['formatted_address', 'address_components', 'name']
         });
 
         autocomplete.addListener('place_changed', () => {
@@ -1121,165 +1134,101 @@ export default function CreateAuction() {
 
           console.log('=== GOOGLE MAPS PLACE SELECTED ===');
           console.log('Place:', place);
-          console.log('Place value:', placeValue);
           console.log('Address components:', place.address_components);
 
-          // Enhanced wilaya extraction for Algeria
-          if (place.address_components) {
-            let wilayaFound = false;
-
-            // Method 1: Look for administrative_area_level_1 (most common for states)
-            const wilayaComponent = place.address_components.find((component: any) =>
-              component.types.includes('administrative_area_level_1')
-            );
-
-            console.log('Method 1 - administrative_area_level_1:', wilayaComponent);
-
-            if (wilayaComponent) {
-              const wilayaName = wilayaComponent.long_name;
-              console.log('Found wilaya via Method 1:', wilayaName);
-
-              // Find exact match in WILAYAS array
-              const exactMatch = WILAYAS.find(wilaya =>
-                wilaya.name.toLowerCase() === wilayaName.toLowerCase() ||
-                wilayaName.toLowerCase().includes(wilaya.name.toLowerCase()) ||
-                wilaya.name.toLowerCase().includes(wilayaName.toLowerCase())
-              );
-
-              // Special case for "Wilaya d'Alger" format
-              if (!exactMatch && wilayaName.toLowerCase().includes('wilaya')) {
-                const cleanName = wilayaName.replace(/wilaya\s+d['']/i, '').trim();
-                console.log('Cleaned wilaya name:', cleanName);
-
-                const specialMatch = WILAYAS.find(wilaya =>
-                  wilaya.name.toLowerCase() === cleanName.toLowerCase()
-                );
-
-                if (specialMatch) {
-                  console.log('Special match found:', specialMatch.name);
-                  formik.setFieldValue('wilaya', specialMatch.name);
-                  setWilayaAutoDetected(true);
-                  setDetectedWilaya(specialMatch.name);
-                  setForceUpdate(prev => prev + 1); // Force re-render
-                  wilayaFound = true;
-                }
-              } else if (exactMatch) {
-                console.log('Exact match found:', exactMatch.name);
-                formik.setFieldValue('wilaya', exactMatch.name);
-                setWilayaAutoDetected(true);
-                setDetectedWilaya(exactMatch.name);
-                setForceUpdate(prev => prev + 1); // Force re-render
-                wilayaFound = true;
-              }
-            }
-
-            // Method 2: Look for locality (city level, might contain wilaya info)
-            if (!wilayaFound) {
-              const localityComponent = place.address_components.find((component: any) =>
-                component.types.includes('locality')
-              );
-
-              console.log('Method 2 - locality:', localityComponent);
-
-              if (localityComponent) {
-                // Check if the locality name matches any of our wilaya names
-                const matchingWilaya = WILAYAS.find(wilaya =>
-                  localityComponent.long_name.toLowerCase().includes(wilaya.name.toLowerCase()) ||
-                  wilaya.name.toLowerCase().includes(localityComponent.long_name.toLowerCase())
-                );
-                
-                console.log('Method 2 - matching wilaya:', matchingWilaya);
-
-                if (matchingWilaya) {
-                  const wilayaName = matchingWilaya.name;
-                  console.log('Found wilaya via Method 2:', wilayaName);
-                  formik.setFieldValue('wilaya', wilayaName);
-                  setWilayaAutoDetected(true);
-                  setDetectedWilaya(wilayaName);
-                  setForceUpdate(prev => prev + 1); // Force re-render
-                  wilayaFound = true;
-                }
-              }
-            }
-
-            // Method 3: Parse from formatted address
-            if (!wilayaFound && place.formatted_address) {
-              console.log('Method 3 - parsing from formatted address:', place.formatted_address);
-              const addressParts = place.formatted_address.split(',');
-              console.log('Address parts:', addressParts);
-
-              // Look for wilaya in address parts (usually second to last part in Algerian addresses)
-              for (let i = addressParts.length - 1; i >= 0; i--) {
-                const part = addressParts[i].trim();
-                console.log(`Checking address part ${i}:`, part);
-
-                // Check if this part matches any wilaya name
-                const matchingWilaya = WILAYAS.find(wilaya =>
-                  part.toLowerCase().includes(wilaya.name.toLowerCase()) ||
-                  wilaya.name.toLowerCase().includes(part.toLowerCase())
-                );
-
-                console.log(`Part "${part}" matches wilaya:`, matchingWilaya);
-
-                if (matchingWilaya) {
-                  const wilayaName = matchingWilaya.name;
-                  console.log('Found wilaya via Method 3:', wilayaName);
-                  formik.setFieldValue('wilaya', wilayaName);
-                  setWilayaAutoDetected(true);
-                  setDetectedWilaya(wilayaName);
-                  setForceUpdate(prev => prev + 1); // Force re-render
-                  wilayaFound = true;
-                  break;
-                }
-              }
-            }
-
-            // Method 4: Look for sublocality_level_1 (sometimes contains wilaya info)
-            if (!wilayaFound) {
-              const sublocalityComponent = place.address_components.find((component: any) =>
-                component.types.includes('sublocality_level_1')
-              );
-
-              console.log('Method 4 - sublocality_level_1:', sublocalityComponent);
-
-              if (sublocalityComponent) {
-                const matchingWilaya = WILAYAS.find(wilaya =>
-                  sublocalityComponent.long_name.toLowerCase().includes(wilaya.name.toLowerCase()) ||
-                  wilaya.name.toLowerCase().includes(sublocalityComponent.long_name.toLowerCase())
-                );
-
-                console.log('Method 4 - matching wilaya:', matchingWilaya);
-
-                if (matchingWilaya) {
-                  const wilayaName = matchingWilaya.name;
-                  console.log('Found wilaya via Method 4:', wilayaName);
-                  formik.setFieldValue('wilaya', wilayaName);
-                  setWilayaAutoDetected(true);
-                  setDetectedWilaya(wilayaName);
-                  setForceUpdate(prev => prev + 1); // Force re-render
-                  wilayaFound = true;
-                }
-              }
-            }
-
-            // If no wilaya found, show a helpful message
-            if (!wilayaFound) {
-              console.log('No wilaya found by any method');
-              setWilayaAutoDetected(false);
-              setDetectedWilaya('');
-              enqueueSnackbar('Wilaya non détectée. Veuillez sélectionner manuellement ou essayer une adresse plus précise.', { variant: 'warning' });
-            }
-
-            console.log('=== FINAL STATE ===');
-            console.log('wilayaFound:', wilayaFound);
-            console.log('detectedWilaya state:', detectedWilaya);
-            console.log('formik.values.wilaya:', formik.values.wilaya);
-            console.log('wilayaAutoDetected:', wilayaAutoDetected);
+          // Simplified wilaya detection
+          const detectedWilaya = detectWilayaFromPlace(place);
+          
+          if (detectedWilaya) {
+            formik.setFieldValue('wilaya', detectedWilaya);
+            setWilayaAutoDetected(true);
+            setDetectedWilaya(detectedWilaya);
+            setForceUpdate(prev => prev + 1);
+            enqueueSnackbar(`Wilaya détectée: ${detectedWilaya}`, { variant: 'success' });
+          } else {
+            setWilayaAutoDetected(false);
+            setDetectedWilaya('');
+            enqueueSnackbar('Wilaya non détectée. Veuillez sélectionner manuellement.', { variant: 'warning' });
           }
         });
-      }).catch(console.error);
+
+      } catch (error: any) {
+        console.error('Failed to initialize Google Maps autocomplete:', error);
+        enqueueSnackbar(
+          error.message.includes('API key') 
+            ? 'Google Maps API key not configured. Please contact support.'
+            : 'Erreur lors du chargement de Google Maps. Veuillez réessayer.',
+          { variant: 'error' }
+        );
+      }
+    };
+
+    initializeAutocomplete();
+  }, [formik, enqueueSnackbar]);
+
+  // Helper function to detect wilaya from place
+  const detectWilayaFromPlace = (place: any): string | null => {
+    if (!place.address_components) return null;
+
+    // Method 1: Look for administrative_area_level_1 (most reliable for states)
+    const wilayaComponent = place.address_components.find((component: any) =>
+      component.types.includes('administrative_area_level_1')
+    );
+
+    if (wilayaComponent) {
+      const wilayaName = wilayaComponent.long_name;
+      const cleanName = wilayaName.replace(/wilaya\s+d['']/i, '').trim();
+      
+      // Find exact match in WILAYAS array
+      const exactMatch = WILAYAS.find(wilaya =>
+        wilaya.name.toLowerCase() === cleanName.toLowerCase() ||
+        cleanName.toLowerCase().includes(wilaya.name.toLowerCase()) ||
+        wilaya.name.toLowerCase().includes(cleanName.toLowerCase())
+      );
+
+      if (exactMatch) {
+        console.log('Wilaya detected via administrative_area_level_1:', exactMatch.name);
+        return exactMatch.name;
+      }
     }
-  }, [formik]);
+
+    // Method 2: Look for locality (city level)
+    const localityComponent = place.address_components.find((component: any) =>
+      component.types.includes('locality')
+    );
+
+    if (localityComponent) {
+      const matchingWilaya = WILAYAS.find(wilaya =>
+        localityComponent.long_name.toLowerCase().includes(wilaya.name.toLowerCase()) ||
+        wilaya.name.toLowerCase().includes(localityComponent.long_name.toLowerCase())
+      );
+
+      if (matchingWilaya) {
+        console.log('Wilaya detected via locality:', matchingWilaya.name);
+        return matchingWilaya.name;
+      }
+    }
+
+    // Method 3: Parse from formatted address
+    if (place.formatted_address) {
+      const addressParts = place.formatted_address.split(',');
+      
+      for (const part of addressParts) {
+        const trimmedPart = part.trim();
+        const matchingWilaya = WILAYAS.find(wilaya =>
+          trimmedPart.toLowerCase().includes(wilaya.name.toLowerCase()) ||
+          wilaya.name.toLowerCase().includes(trimmedPart.toLowerCase())
+        );
+
+        if (matchingWilaya) {
+          console.log('Wilaya detected via formatted address:', matchingWilaya.name);
+          return matchingWilaya.name;
+        }
+      }
+    }
+
+    return null;
+  };
 
   // Debug useEffect to track detectedWilaya changes
   useEffect(() => {
@@ -1295,8 +1244,8 @@ export default function CreateAuction() {
   };
 
   const handleSubmit = async (values: any) => {
-    if (thumbs.length === 0) {
-      enqueueSnackbar('Veuillez télécharger au moins une image', { variant: 'error' });
+    if (thumbs.length === 0 && videos.length === 0) {
+      enqueueSnackbar('Veuillez télécharger au moins une image ou une vidéo', { variant: 'error' });
       return;
     }
 
@@ -1333,6 +1282,7 @@ export default function CreateAuction() {
         place: values.place,
         wilaya: values.wilaya,
         isPro: values.isPro,
+        hidden: values.hidden,
         quantity: values.quantity || '',
         reservePrice: parseFloat(values.reservePrice) || undefined,
       };
@@ -1342,6 +1292,10 @@ export default function CreateAuction() {
 
       thumbs.forEach((file) => {
         formData.append('thumbs[]', file);
+      });
+
+      videos.forEach((file) => {
+        formData.append('videos[]', file);
       });
 
       await AuctionsAPI.create(formData);
@@ -1372,6 +1326,18 @@ export default function CreateAuction() {
 
   const handleRemoveAllFiles = () => {
     setThumbs([]);
+  };
+
+  const handleVideoDrop = (acceptedFiles: File[]) => {
+    setVideos(acceptedFiles);
+  };
+
+  const handleRemoveVideo = (file: File) => {
+    setVideos(videos.filter(f => f !== file));
+  };
+
+  const handleRemoveAllVideos = () => {
+    setVideos([]);
   };
 
   const getStepContent = (step: number) => {
@@ -1495,7 +1461,24 @@ export default function CreateAuction() {
         // Recursive category hierarchy renderer
         const renderCategoryHierarchy = (categories: any[], level = 0, parentPath: any[] = []): JSX.Element[] => {
           return categories
-            .filter(category => level === 0 ? category.type === formik.values.bidType : true)
+            .filter(category => {
+              // Filter by type only for root level categories
+              if (level === 0) {
+                // Log for debugging
+                console.log('Auction Category filtering debug:', {
+                  categoryName: category.name,
+                  categoryType: category.type,
+                  selectedBidType: formik.values.bidType,
+                  match: category.type === formik.values.bidType
+                });
+                
+                // For now, show all categories regardless of type to debug the issue
+                // TODO: Fix category type mapping
+                return true; // Temporarily show all categories
+                // return category.type === formik.values.bidType;
+              }
+              return true;
+            })
             .map((category) => {
               const categoryId = category._id;
               const hasSubcategories = hasChildren(category);
@@ -1842,7 +1825,7 @@ export default function CreateAuction() {
                 <Alert severity="info" sx={{ mb: 3 }}>
                   <Typography variant="body2">
                     <strong>Conseil :</strong> Tapez votre adresse complète et la wilaya sera automatiquement détectée.
-                    La wilaya ne peut pas être modifiée manuellement.
+                    Si la détection automatique échoue, vous pouvez sélectionner manuellement.
                   </Typography>
                 </Alert>
               </Grid>
@@ -1857,7 +1840,7 @@ export default function CreateAuction() {
                     const newPlace = e.target.value;
                     formik.setFieldValue('place', newPlace);
 
-                    // Clear detected wilaya when place changes
+                    // Clear detected wilaya when place changes significantly
                     if (detectedWilaya && newPlace !== formik.values.place) {
                       setDetectedWilaya('');
                       setWilayaAutoDetected(false);
@@ -1865,7 +1848,10 @@ export default function CreateAuction() {
                     }
                   }}
                   error={formik.touched.place && Boolean(formik.errors.place)}
-                  helperText={formik.touched.place && formik.errors.place}
+                  helperText={
+                    formik.touched.place && formik.errors.place || 
+                    'Commencez à taper votre adresse pour voir les suggestions'
+                  }
                   placeholder="Ex: 123 Rue de la Liberté, Alger, Algérie"
                 />
               </Grid>
@@ -1878,26 +1864,29 @@ export default function CreateAuction() {
                   key={forceUpdate}
                   value={detectedWilaya || formik.values.wilaya || ''}
                   onChange={(e) => {
-                    if (!detectedWilaya) {
-                      const selectedValue = e.target.value;
-                      formik.setFieldValue('wilaya', selectedValue);
-                      setDetectedWilaya(selectedValue);
+                    const selectedValue = e.target.value;
+                    formik.setFieldValue('wilaya', selectedValue);
+                    
+                    // If manually selected, clear auto-detection
+                    if (selectedValue && !detectedWilaya) {
+                      setWilayaAutoDetected(false);
                     }
                   }}
                   InputProps={{
-                    readOnly: !!detectedWilaya,
+                    readOnly: wilayaAutoDetected && !!detectedWilaya,
                   }}
                   error={formik.touched.wilaya && Boolean(formik.errors.wilaya)}
                   helperText={
-                    detectedWilaya
-                      ? 'Wilaya détectée'
-                      : formik.touched.wilaya && formik.errors.wilaya || 'Sélectionnez manuellement si non détectée'
+                    wilayaAutoDetected && detectedWilaya
+                      ? `Wilaya détectée automatiquement: ${detectedWilaya}`
+                      : formik.touched.wilaya && formik.errors.wilaya || 
+                        'Sélectionnez manuellement si non détectée'
                   }
                 >
                   <MenuItem value="">
                     <em>
-                      {detectedWilaya
-                        ? 'Wilaya détectée'
+                      {wilayaAutoDetected && detectedWilaya
+                        ? `Wilaya détectée: ${detectedWilaya}`
                         : 'Sélectionnez une wilaya'
                       }
                     </em>
@@ -1912,9 +1901,17 @@ export default function CreateAuction() {
 
               {formik.values.place && formik.values.wilaya && (
                 <Grid item xs={12}>
-                  <Alert severity="success" sx={{ mt: 2 }}>
+                  <Alert 
+                    severity={wilayaAutoDetected ? "success" : "info"} 
+                    sx={{ mt: 2 }}
+                  >
                     <Typography variant="body2">
                       <strong>Localisation sélectionnée :</strong> {formik.values.place}, {formik.values.wilaya}
+                      {wilayaAutoDetected && (
+                        <Box component="span" sx={{ ml: 1, fontSize: '0.75rem', opacity: 0.8 }}>
+                          (détectée automatiquement)
+                        </Box>
+                      )}
                     </Typography>
                   </Alert>
                 </Grid>
@@ -1952,6 +1949,35 @@ export default function CreateAuction() {
                 </Grid>
               )}
 
+              {/* Name Visibility Option */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 3 }} />
+                <FormControl component="fieldset">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formik.values.hidden}
+                        onChange={(e) => formik.setFieldValue('hidden', e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {t('auctions.nameVisibility.title')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {formik.values.hidden 
+                            ? t('auctions.nameVisibility.descriptionHidden')
+                            : t('auctions.nameVisibility.descriptionVisible')
+                          }
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </FormControl>
+              </Grid>
+
               {/* Images */}
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
@@ -1972,6 +1998,27 @@ export default function CreateAuction() {
                   accept={{
                     'image/*': ['.jpeg', '.jpg', '.png', '.gif']
                   }}
+                />
+              </Grid>
+
+              {/* Videos */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 3 }} />
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                  Vidéos (Optionnel)
+                </Typography>
+
+                <Alert severity="info" sx={{ mb: 3 }}>
+                  Ajoutez des vidéos pour mieux présenter votre produit ou service
+                </Alert>
+
+                <UploadVideoFile
+                  showPreview
+                  files={videos}
+                  onDrop={handleVideoDrop}
+                  onRemove={handleRemoveVideo}
+                  onRemoveAll={handleRemoveAllVideos}
+                  maxSize={100 * 1024 * 1024} // 100MB
                 />
               </Grid>
             </Grid>

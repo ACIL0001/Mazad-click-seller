@@ -81,9 +81,22 @@ export default function DashboardApp() {
   const [recentActivity, setRecentActivity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     setMounted(true);
+    
+    // Check if user just submitted identity documents
+    const identityJustSubmitted = localStorage.getItem('identityJustSubmitted') === 'true';
+    if (identityJustSubmitted && user) {
+      console.log('🔄 Dashboard: User just submitted identity documents, refreshing user data...');
+      // Clear the flag
+      localStorage.removeItem('identityJustSubmitted');
+      // Force refresh user data
+      window.location.reload();
+      return;
+    }
     
     // Test API connection
     const testApiConnection = async () => {
@@ -127,14 +140,25 @@ export default function DashboardApp() {
     }
   }, [user]);
 
+  // Timer effect to update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
 useEffect(() => {
   console.log('🔍 Dashboard: Checking user role:', {
     user: user?._id,
     userType: user?.type,
-    isProfessional: user?.type === ACCOUNT_TYPE.PROFESSIONAL
+    isProfessional: user?.type === ACCOUNT_TYPE.PROFESSIONAL,
+    isHasIdentity: user?.isHasIdentity
   });
   
-  if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL) { 
+  if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) { 
+    console.log('✅ Dashboard: Professional user with identity - setting up dashboard');
     setIsProfessionalSubscriber(true);
     // Fetch seller stats for professional users with a delay to prevent rapid calls
     const timeoutId = setTimeout(() => {
@@ -143,16 +167,20 @@ useEffect(() => {
     }, 1500);
     return () => clearTimeout(timeoutId);
   } else {
-    // User is not professional - they will see the restriction component
-    console.log('🚫 Dashboard: User not professional, showing restriction component');
+    // All other cases (clients, professionals without identity, etc.)
+    console.log('🚫 Dashboard: User not eligible for full dashboard');
     setIsProfessionalSubscriber(false);
     setLoading(false);
   }
 }, [user]);
 
-  const fetchSellerStats = async () => {
+  const fetchSellerStats = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) {
+        setLoading(true);
+      }
+      setRefreshError(null);
+      
       console.log('🔄 Dashboard: Starting to fetch comprehensive seller data from backend...');
       console.log('🔐 Dashboard: User auth state:', { 
         isLogged: !!user, 
@@ -193,32 +221,32 @@ useEffect(() => {
           }),
           SellerStatsService.getMonthlyStats(12).catch(e => {
             console.error('❌ Monthly stats failed:', e);
-          return { labels: [], monthlyData: [] };
-        }),
+            return { labels: [], monthlyData: [] };
+          }),
           SellerStatsService.getTopCategories(5).catch(e => {
             console.error('❌ Top categories failed:', e);
-          return [];
-        }),
+            return [];
+          }),
           SellerStatsService.getPerformanceMetrics().catch(e => {
             console.error('❌ Performance metrics failed:', e);
-          return {
-            totalViews: 0,
-            conversionRate: 0,
-            offerAcceptanceRate: 0,
-            avgResponseTime: 0,
-            auctionsThisMonth: 0,
-            offersThisMonth: 0,
-          };
-        }),
+            return {
+              totalViews: 0,
+              conversionRate: 0,
+              offerAcceptanceRate: 0,
+              avgResponseTime: 0,
+              auctionsThisMonth: 0,
+              offersThisMonth: 0,
+            };
+          }),
           SellerStatsService.getRecentActivity(10).catch(e => {
             console.error('❌ Recent activity failed:', e);
-          return { auctions: [], offers: [] };
-        })
-      ]);
-      
+            return { auctions: [], offers: [] };
+          })
+        ]);
+        
         dashboardData = {
           quickSummary,
-        categoryDistribution,
+          categoryDistribution,
           monthlyStats,
           topCategories,
           performanceMetrics,
@@ -263,6 +291,7 @@ useEffect(() => {
       setRecentActivity(recentActivityData);
     } catch (error) {
       console.error('💥 Dashboard: Critical error fetching seller stats:', error);
+      setRefreshError(error?.message || 'Failed to fetch dashboard data');
       console.log('🔄 Dashboard: Using enhanced mock data to demonstrate dynamic structure...');
       setUsingMockData(true);
       
@@ -321,6 +350,7 @@ useEffect(() => {
     }
   };
 
+
   // Remove admin server stats - we only need seller-specific stats
   // const { dbStats, devices, fileTypeSize, lastWeekStats, online, reviews, rides, sms, users } = useServerStats();
 
@@ -345,6 +375,27 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
+      title: 'Total Tenders',
+      total: sellerStats.totalTenders || 0,
+      icon: 'mdi:file-document-multiple',
+      color: 'secondary',
+      trend: sellerStats.totalTenders > 0 ? 'up' : 'neutral',
+      trendValue: sellerStats.totalTenders > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
+      onClick: () => navigate('/dashboard/tenders'),
+    },
+    {
+      title: 'Active Tenders',
+      total: sellerStats.activeTenders || 0,
+      icon: 'mdi:file-document-edit',
+      color: 'info',
+      trend: sellerStats.activeTenders > 0 ? 'up' : 'neutral',
+      trendValue: sellerStats.activeTenders > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
+      onClick: () => navigate('/dashboard/tenders'),
+    },
+  ] : [];
+
+  const offersStatsData = sellerStats ? [
+    {
       title: t('dashboard.totalOffers') || 'Total Offers',
       total: sellerStats.totalOffers || 0,
       icon: 'mdi:hand-coin',
@@ -360,6 +411,23 @@ useEffect(() => {
       color: 'warning',
       trend: 'neutral',
       onClick: () => navigate('/dashboard/offers'),
+    },
+    {
+      title: 'Tender Bids',
+      total: sellerStats.tenderBids || 0,
+      icon: 'mdi:email-receive',
+      color: 'success',
+      trend: sellerStats.tenderBids > 0 ? 'up' : 'neutral',
+      trendValue: sellerStats.tenderBids > 0 ? '+' + Math.floor(Math.random() * 20 + 3) + '%' : '0%',
+      onClick: () => navigate('/dashboard/tender-bids'),
+    },
+    {
+      title: 'Pending Tender Bids',
+      total: sellerStats.pendingTenderBids || 0,
+      icon: 'mdi:email-clock',
+      color: 'warning',
+      trend: 'neutral',
+      onClick: () => navigate('/dashboard/tender-bids'),
     },
   ] : [];
 
@@ -402,8 +470,399 @@ useEffect(() => {
 
   console.log('💰 Dashboard: Financial stats data:', financialStatsData);
 
-  // Show professional restriction for non-professional users
-  if (!isProfessionalSubscriber) {
+  // Debug user state
+  console.log('🔍 Dashboard: User state debug:', {
+    userType: user?.type,
+    isHasIdentity: user?.isHasIdentity,
+    isClient: user?.type === ACCOUNT_TYPE.CLIENT,
+    isProfessional: user?.type === ACCOUNT_TYPE.PROFESSIONAL,
+    hasIdentity: user?.isHasIdentity === true,
+    isProfessionalSubscriber
+  });
+
+  // Handle different user states based on type and identity verification
+  // Priority 1: Client users
+  if (user?.type === ACCOUNT_TYPE.CLIENT) {
+    console.log('👤 Dashboard: Processing CLIENT user with isHasIdentity:', user.isHasIdentity);
+    
+    if (user.isHasIdentity === true) {
+      // Client with submitted identity documents - show pending status
+      console.log('📋 Dashboard: Showing Documents Under Review page for client');
+      return (
+        <Page>
+          <Container 
+            maxWidth="lg" 
+            sx={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '100vh',
+              px: 3,
+              py: 4
+            }}
+          >
+            {/* Animated Background */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+                zIndex: -1,
+              }}
+            />
+
+            {/* Floating Animation Container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, y: 50 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ 
+                duration: 0.8,
+                ease: "easeOut",
+                delay: 0.2
+              }}
+              style={{ width: '100%', maxWidth: 800 }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: 6,
+                  background: `linear-gradient(135deg, ${alpha('#ffffff', 0.95)} 0%, ${alpha('#f8fafc', 0.9)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.1)}`,
+                  backdropFilter: 'blur(20px)',
+                }}
+              >
+                {/* Animated Header */}
+                <Box
+                  sx={{
+                    p: 6,
+                    textAlign: 'center',
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 100%)`,
+                    borderBottom: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                    position: 'relative',
+                  }}
+                >
+                  {/* Floating Icons Animation */}
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 360],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 20,
+                      right: 20,
+                      opacity: 0.1
+                    }}
+                  >
+                    <Iconify icon="mdi:file-document-multiple" width={60} height={60} />
+                  </motion.div>
+
+                  <motion.div
+                    animate={{ 
+                      y: [0, -10, 0],
+                      rotate: [0, 5, 0]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: '50%',
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 4,
+                        border: `3px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+                        position: 'relative',
+                      }}
+                    >
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          opacity: [0.7, 1, 0.7]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        <Iconify 
+                          icon="mdi:clock-alert-outline" 
+                          width={60} 
+                          height={60} 
+                          sx={{ color: 'warning.main' }}
+                        />
+                      </motion.div>
+                      
+                      {/* Pulsing Ring */}
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.5, 1],
+                          opacity: [0.3, 0, 0.3]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        style={{
+                          position: 'absolute',
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '50%',
+                          border: `2px solid ${theme.palette.warning.main}`,
+                        }}
+                      />
+                    </Box>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                  >
+                    <Typography 
+                      variant="h3" 
+                      sx={{ 
+                        fontWeight: 800, 
+                        mb: 2, 
+                        background: `linear-gradient(135deg, ${theme.palette.warning.dark} 0%, ${theme.palette.warning.main} 100%)`,
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >
+                      {t('dashboard.identityPending.title') || 'Documents Under Review'}
+                    </Typography>
+                    
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 3, 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        opacity: 0.8
+                      }}
+                    >
+                      {t('dashboard.identityPending.subtitle') || 'Your professional account application is being reviewed by our admin team'}
+                    </Typography>
+                  </motion.div>
+                </Box>
+
+                {/* Content Section */}
+                <Box sx={{ p: 6 }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                  >
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        mb: 6, 
+                        color: 'text.secondary', 
+                        lineHeight: 1.8,
+                        fontSize: '1.1rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      {t('dashboard.identityPending.description') || 
+                        'We have received your identity documents and they are currently being verified. ' +
+                        'You will receive a notification once the review process is complete. ' +
+                        'This usually takes 1-3 business days.'
+                      }
+                    </Typography>
+
+                    {/* Progress Steps */}
+                    <Box sx={{ mb: 6 }}>
+                      <Typography variant="h6" sx={{ mb: 4, textAlign: 'center', fontWeight: 600, color: 'text.primary' }}>
+                        Review Process
+                      </Typography>
+                      
+                      <Stack spacing={3}>
+                        {[
+                          { icon: 'mdi:upload', text: 'Documents Uploaded', status: 'completed' },
+                          { icon: 'mdi:eye', text: 'Under Review', status: 'current' },
+                          { icon: 'mdi:check-circle', text: 'Verification Complete', status: 'pending' }
+                        ].map((step, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 0.8 + index * 0.2 }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                p: 2,
+                                borderRadius: 2,
+                                background: step.status === 'current' 
+                                  ? `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`
+                                  : step.status === 'completed'
+                                  ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`
+                                  : 'transparent',
+                                border: `1px solid ${step.status === 'current' ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.1)}`,
+                                transition: 'all 0.3s ease',
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  mr: 3,
+                                  background: step.status === 'completed' 
+                                    ? theme.palette.success.main
+                                    : step.status === 'current'
+                                    ? theme.palette.warning.main
+                                    : alpha(theme.palette.text.secondary, 0.2),
+                                  color: step.status === 'pending' ? 'text.secondary' : 'white',
+                                }}
+                              >
+                                <Iconify 
+                                  icon={step.icon} 
+                                  width={20} 
+                                  height={20}
+                                />
+                              </Box>
+                              
+                              <Typography 
+                                variant="body1" 
+                                sx={{ 
+                                  fontWeight: step.status === 'current' ? 600 : 500,
+                                  color: step.status === 'current' ? 'warning.dark' : 'text.secondary'
+                                }}
+                              >
+                                {step.text}
+                              </Typography>
+                              
+                              {step.status === 'current' && (
+                                <motion.div
+                                  animate={{ opacity: [0.5, 1, 0.5] }}
+                                  transition={{ duration: 1.5, repeat: Infinity }}
+                                  style={{ marginLeft: 'auto' }}
+                                >
+                                  <Iconify icon="mdi:loading" width={20} height={20} sx={{ color: 'warning.main' }} />
+                                </motion.div>
+                              )}
+                            </Box>
+                          </motion.div>
+                        ))}
+                      </Stack>
+                    </Box>
+
+                    {/* Action Buttons */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 1.2 }}
+                    >
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: 3, 
+                        justifyContent: 'center', 
+                        flexWrap: 'wrap',
+                        mt: 4
+                      }}>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            variant="outlined"
+                            color="warning"
+                            startIcon={<Iconify icon="mdi:refresh" />}
+                            onClick={() => window.location.reload()}
+                            sx={{ 
+                              minWidth: 160,
+                              height: 48,
+                              borderRadius: 3,
+                              fontWeight: 600,
+                              textTransform: 'none',
+                              fontSize: '1rem'
+                            }}
+                          >
+                            {t('dashboard.identityPending.refresh') || 'Refresh Status'}
+                          </Button>
+                        </motion.div>
+                        
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Iconify icon="mdi:help-circle" />}
+                            onClick={() => navigate('/dashboard/support')}
+                            sx={{ 
+                              minWidth: 160,
+                              height: 48,
+                              borderRadius: 3,
+                              fontWeight: 600,
+                              textTransform: 'none',
+                              fontSize: '1rem',
+                              background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                              boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
+                              '&:hover': {
+                                boxShadow: `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+                              }
+                            }}
+                          >
+                            {t('dashboard.identityPending.contactSupport') || 'Contact Support'}
+                          </Button>
+                        </motion.div>
+                      </Box>
+                    </motion.div>
+                  </motion.div>
+                </Box>
+              </Box>
+            </motion.div>
+          </Container>
+        </Page>
+      );
+    } else {
+      // Client without identity documents (isHasIdentity: false) - show professional account required
+      console.log('🚫 Dashboard: Showing Professional Account Required page for client');
+    return (
+      <ProfessionalRestriction 
+        userType={user?.type || 'CLIENT'} 
+        userName={user ? `${user.firstName} ${user.lastName}` : 'User'} 
+      />
+    );
+    }
+  }
+
+  // Priority 2: Professional users
+  if (user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) {
+    console.log('✅ Dashboard: Showing full dashboard for professional user');
+    // Continue to the main dashboard content below
+  } else {
+    // Priority 3: Fallback for any other cases
+    console.log('🚫 Dashboard: Showing Professional Account Required page (fallback)');
     return (
       <ProfessionalRestriction 
         userType={user?.type || 'CLIENT'} 
@@ -454,7 +913,7 @@ useEffect(() => {
                   opacity: 0.8,
                 }}
               >
-                {isProfessionalSubscriber 
+                {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true
                   ? t('dashboard.professionalWelcome') || 'Professional - Full Access'
                   : t('dashboard.basicWelcome') || 'Basic - Limited Access'
                 }
@@ -472,10 +931,10 @@ useEffect(() => {
                 px: 2,
                 py: 1,
                 borderRadius: 20,
-                background: isProfessionalSubscriber 
+                background: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true
                   ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`
                   : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
-                border: `1px solid ${alpha(isProfessionalSubscriber ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`,
+                border: `1px solid ${alpha(user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`,
               }}
             >
               <Box
@@ -483,17 +942,17 @@ useEffect(() => {
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  bgcolor: isProfessionalSubscriber ? 'success.main' : 'warning.main',
+                  bgcolor: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'success.main' : 'warning.main',
                 }}
               />
               <Typography 
                 variant="caption" 
                 sx={{ 
                   fontWeight: 600,
-                  color: isProfessionalSubscriber ? 'success.dark' : 'warning.dark',
+                  color: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'success.dark' : 'warning.dark',
                 }}
               >
-                {isProfessionalSubscriber ? 'PRO' : 'BASIC'}
+                {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'PRO' : 'BASIC'}
               </Typography>
             </Box>
 
@@ -530,13 +989,75 @@ useEffect(() => {
                   </Typography>
                 </Box>
               )}
+
+              {/* Live Timer */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  py: 1,
+                  borderRadius: 20,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                }}
+              >
+                <Iconify icon="mdi:clock-outline" width={16} height={16} sx={{ color: 'primary.main' }} />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: 'primary.dark',
+                    fontSize: '0.75rem',
+                    fontFamily: 'monospace'
+                  }}
+                >
+                  {currentTime.toLocaleTimeString()}
+                </Typography>
+              </Box>
             </Stack>
           </Stack>
         </Box>
 
-        {/* Main Content */}
+        {/* Error Display */}
+        {refreshError && (
+          <Box sx={{ mb: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.light, 0.05)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2
+                }}
+              >
+                <Iconify icon="mdi:alert-circle" width={20} height={20} sx={{ color: 'error.main' }} />
+                <Typography variant="body2" sx={{ color: 'error.dark', flex: 1 }}>
+                  {refreshError}
+                </Typography>
+                <Button
+                  size="small"
+                  onClick={() => setRefreshError(null)}
+                  sx={{ minWidth: 'auto', p: 0.5 }}
+                >
+                  <Iconify icon="mdi:close" width={16} height={16} />
+                </Button>
+              </Box>
+            </motion.div>
+          </Box>
+        )}
+
+        {/* Main Content - Only shown for Professional users with identity */}
         <Box sx={{ position: 'relative' }}>
-          {isProfessionalSubscriber ? (
+          {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? (
             loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                 <motion.div
@@ -553,7 +1074,7 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
                 >
-                  {/* Auction Statistics Section */}
+                  {/* Auction & Tender Statistics Section */}
                   <Box sx={{ mb: 4 }}>
                     <Typography 
                       variant="h6" 
@@ -567,7 +1088,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:gavel" width={24} height={24} />
-                      Auction Performance
+                      Auction & Tender Performance
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {auctionStatsData.map((stat, index) => (
@@ -581,6 +1102,40 @@ useEffect(() => {
                             trendValue={stat.trendValue}
                             onClick={stat.onClick}
                             delay={index * 100}
+              />
+            </Grid>
+                      ))}
+            </Grid>
+                  </Box>
+
+                  {/* Offers & Bids Statistics Section */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        mb: 3,
+                        fontWeight: 700,
+                        color: 'text.primary',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Iconify icon="mdi:email-multiple" width={24} height={24} />
+                      Offers & Bids Overview
+                    </Typography>
+          <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
+                      {offersStatsData.map((stat, index) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={index}>
+                          <ModernAppWidgetSummary
+                            title={stat.title}
+                            total={stat.total}
+                            icon={stat.icon}
+                            color={stat.color}
+                            trend={stat.trend}
+                            trendValue={stat.trendValue}
+                            onClick={stat.onClick}
+                            delay={400 + index * 100}
               />
             </Grid>
                       ))}
@@ -851,7 +1406,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      Quick Actions
+                      Quick Actions - Auctions & Tenders
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={12} sm={6} md={3}>
@@ -907,6 +1462,64 @@ useEffect(() => {
                             <Iconify icon="mdi:hand-coin" width={48} height={48} sx={{ color: 'info.main', mb: 2 }} />
                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                               View Offers
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/tenders/create')}
+              sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.success.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:file-document-plus" width={48} height={48} sx={{ color: 'success.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              Create Tender
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/tenders')}
+              sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.warning.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:file-document-multiple" width={48} height={48} sx={{ color: 'warning.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              My Tenders
                             </Typography>
                           </Box>
                         </motion.div>

@@ -548,6 +548,28 @@ export default function NavSection({ ...other }) {
       path: '/dashboard/offers',
       icon: getIcon('mdi:hand-coin'),
     },
+    {
+      title: 'Appels d\'Offres',
+      path: '/dashboard/tenders',
+      icon: getIcon('mdi:file-document-multiple'),
+      children: [
+        {
+          title: 'Mes Appels d\'Offres',
+          path: '/dashboard/tenders',
+          icon: getIcon('mdi:file-document-multiple-outline'),
+        },
+        {
+          title: 'Nouvel Appel d\'Offres',
+          path: '/dashboard/tenders/create',
+          icon: getIcon('mdi:file-document-plus'),
+        },
+        {
+          title: 'Offres Reçues',
+          path: '/dashboard/tender-bids',
+          icon: getIcon('mdi:email-receive'),
+        },
+      ],
+    },
     // {
     //   title: t('navigation.participants'),
     //   path: '/dashboard/participants',

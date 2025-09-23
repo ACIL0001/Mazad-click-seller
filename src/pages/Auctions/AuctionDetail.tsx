@@ -32,6 +32,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import Slide from '@mui/material/Slide';
 import { useCreateSocket } from '@/contexts/SocketContext';
 import { ChatAPI } from '@/api/Chat';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 // Update the Auction type definition to include user property if it's missing in the type definition
 interface AuctionWithUser extends Auction {
@@ -463,21 +464,46 @@ export default function AuctionDetail() {
                     <Paper
                       key={index}
                       variant="outlined"
-                      sx={{ p: 2, '&:hover': { bgcolor: 'background.neutral' } }}
+                      sx={{ 
+                        p: 2, 
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': { 
+                          bgcolor: 'background.neutral',
+                          transform: 'translateY(-2px)',
+                          boxShadow: 2
+                        }
+                      }}
+                      onClick={() => {
+                        if (participant.user?._id) {
+                          // Open user profile in a new tab
+                          window.open(`http://localhost:3001/users/${participant.user._id}`, '_blank');
+                        }
+                      }}
                     >
                       <Stack direction="row" alignItems="center" spacing={2}>
                         <Avatar src={participant.avatar} alt={participant.name}>
                           {participant.name.charAt(0)}
                         </Avatar>
                         <Box flex={1}>
-                          <Typography variant="subtitle2">{participant.name}</Typography>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                            {participant.name}
+                          </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Bid: {participant.bidAmount?.toFixed(2) || '0.00'} DA
                           </Typography>
                         </Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDate(participant.bidDate)}
-                        </Typography>
+                        <Box textAlign="right">
+                          <Typography variant="caption" color="text.secondary">
+                            {formatDate(participant.bidDate)}
+                          </Typography>
+                          <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5} sx={{ mt: 0.5 }}>
+                            <Typography variant="caption" color="primary.main" sx={{ fontSize: '0.75rem' }}>
+                              View profile
+                            </Typography>
+                            <OpenInNewIcon sx={{ fontSize: '0.875rem', color: 'primary.main' }} />
+                          </Box>
+                        </Box>
                       </Stack>
                     </Paper>
                   ))}

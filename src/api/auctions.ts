@@ -10,5 +10,7 @@ export const AuctionsAPI = {
     status: 'ACCEPTED', 
     winner,
     winnerSelectedAt: new Date() 
-  })
+  }),
+  getFinishedAuctions: () : Promise<any> => requests.get('bid/my-finished-bids'),
+  relaunchAuction: (data: any) : Promise<any> => requests.post('bid/relaunch', data)
 }

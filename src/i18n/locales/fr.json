@@ -260,6 +260,18 @@
       "loadingParticipants": "Erreur lors du chargement des participants",
       "noValidParticipant": "Aucun participant valide pour créer une conversation",
       "failedToCreateChat": "Erreur lors de la création de la conversation"
+    },
+    "nameVisibility": {
+      "title": "Masquer mon nom",
+      "descriptionVisible": "Votre nom sera visible dans cette enchère",
+      "descriptionHidden": "Votre nom ne sera pas visible dans cette enchère"
+    },
+    "identityPending": {
+      "title": "Documents en cours de vérification",
+      "subtitle": "Votre demande de compte professionnel est en cours d'examen par notre équipe d'administration",
+      "description": "Nous avons reçu vos documents d'identité et ils sont actuellement en cours de vérification. Vous recevrez une notification une fois le processus de révision terminé. Cela prend généralement 1-3 jours ouvrables.",
+      "refresh": "Actualiser le statut",
+      "contactSupport": "Contacter le support"
     }
   },
   "offers": {
