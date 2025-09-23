@@ -212,6 +212,30 @@ function TermsModal({ open, onClose, termsContent, isLoading }: {
 
 // ----------------------------------------------------------------------
 
+// Helper function to convert Algerian phone to international format
+function convertToInternationalPhone(phone: string): string {
+  // Remove all spaces and non-digit characters
+  const cleanPhone = phone.replace(/\s/g, '').replace(/[^0-9]/g, '');
+  
+  // If phone starts with 0, replace with +213
+  if (cleanPhone.startsWith('0')) {
+    return '+213' + cleanPhone.substring(1);
+  }
+  
+  // If phone already starts with 213, add +
+  if (cleanPhone.startsWith('213')) {
+    return '+' + cleanPhone;
+  }
+  
+  // If phone already has +213, return as is
+  if (cleanPhone.startsWith('+213')) {
+    return cleanPhone;
+  }
+  
+  // Default: assume it's local format without 0, add +213
+  return '+213' + cleanPhone;
+}
+
 interface RegisterFormProps {
   // Remove the termsAccepted prop as we'll manage it internally
 }
@@ -276,7 +300,7 @@ export default function RegisterForm(props: RegisterFormProps) {
           lastName: values.lastName,
           email: values.email,
           password: values.password,
-          phone: values.phone.replace(/\s/g, ''), // Remove spaces for storage
+          phone: convertToInternationalPhone(values.phone), // Convert to +213 format
           type: values.type === USER_TYPE.CLIENT ? 'CLIENT' : 'PROFESSIONAL',
         };
         console.log('userData', userData);
