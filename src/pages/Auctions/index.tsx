@@ -44,6 +44,17 @@ import { fr } from 'date-fns/locale';
 
 // ----------------------------------------------------------------------
 
+// Define the validation errors interface
+interface ValidationErrors {
+  title?: string;
+  description?: string;
+  place?: string;
+  quantity?: string;
+  startingPrice?: string;
+  startingAt?: string;
+  endingAt?: string;
+}
+
 export default function Auctions() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -86,7 +97,7 @@ export default function Auctions() {
     wilaya: '',
     attributes: [] as string[],
   });
-  const [validationErrors, setValidationErrors] = useState({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [timingConfig, setTimingConfig] = useState({
     duration: 7,
     unit: 'days' as 'hours' | 'days' | 'months',
@@ -281,6 +292,9 @@ export default function Auctions() {
     // Calculate dates based on timing configuration
     const { startingAt, endingAt } = calculateDates();
     
+    // Use type assertion to access optional properties safely
+    const auctionAny = auction as any;
+    
     setRelaunchData({
       title: auction.title,
       description: auction.description,
@@ -288,21 +302,20 @@ export default function Auctions() {
       startingAt,
       endingAt,
       auctionType: auction.auctionType,
-      isPro: auction.isPro || false,
-      place: auction.place || 'Alger', // Add default place
-      quantity: auction.quantity || '1',
-      wilaya: auction.wilaya || 'Alger',
-      attributes: auction.attributes || [],
+      isPro: auctionAny.isPro || false,
+      place: auctionAny.place || 'Alger', // Add default place
+      quantity: auctionAny.quantity || '1',
+      wilaya: auctionAny.wilaya || 'Alger',
+      attributes: auctionAny.attributes || [],
     });
     setRelaunchDialog(true);
   };
 
   const validateRelaunchData = () => {
-    const errors = {};
-    const now = new Date();
+    const errors: ValidationErrors = {};
 
     console.log('Validation data:', relaunchData);
-    console.log('Current time:', now);
+    console.log('Current time:', new Date());
 
     if (!relaunchData.title.trim()) {
       console.log('Title validation failed');
@@ -324,6 +337,7 @@ export default function Auctions() {
       errors.startingPrice = 'Le prix de départ doit être supérieur à 0';
     }
 
+    const now = new Date();
     if (relaunchData.startingAt < now) {
       console.log('Starting date validation failed:', {
         startingAt: relaunchData.startingAt,

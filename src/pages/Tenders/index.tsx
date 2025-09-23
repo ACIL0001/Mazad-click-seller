@@ -165,12 +165,12 @@ export default function Tenders() {
               </TableCell>
               <TableCell align="left">
                 <Label variant="ghost" color="default">
-                  {translateBackendData(t, 'tenderType', tenderType, tenderType === 'PRODUCT' ? 'Product' : 'Service')}
+                  {translateBackendData(t, 'tenderType' as any, tenderType, tenderType === 'PRODUCT' ? 'Product' : 'Service')}
                 </Label>
               </TableCell>
               <TableCell align="left">
                 <Label variant="ghost" color={getAuctionTypeColor(auctionType)}>
-                  {translateBackendData(t, 'tenderAuctionType', auctionType, getAuctionTypeLabel(auctionType))}
+                  {translateBackendData(t, 'tenderAuctionType' as any, auctionType, getAuctionTypeLabel(auctionType))}
                 </Label>
               </TableCell>
               <TableCell align="left">{maxBudget.toFixed(2)} DA</TableCell>
@@ -178,7 +178,7 @@ export default function Tenders() {
               <TableCell align="left">{formatDate(endingAt)}</TableCell>
               <TableCell align="left">
                 <Chip
-                  label={translateBackendData(t, 'tenderStatus', status, status === TENDER_STATUS.OPEN ? 'OPEN' : status)}
+                  label={translateBackendData(t, 'tenderStatus' as any, status, status === TENDER_STATUS.OPEN ? 'OPEN' : status)}
                   color={getStatusColor(status)}
                   variant="outlined"
                   size="small"

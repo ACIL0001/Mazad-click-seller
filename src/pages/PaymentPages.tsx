@@ -23,8 +23,13 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import SecurityIcon from '@mui/icons-material/Security';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
+interface PageProps {
+  children: React.ReactNode;
+  title: string;
+}
+
 // Page wrapper component
-const Page = ({ children, title }) => {
+const Page = ({ children, title }: PageProps) => {
   useEffect(() => {
     document.title = title || 'Payment Page';
   }, [title]);
@@ -68,7 +73,7 @@ const wave = keyframes`
 `;
 
 // Background animated components
-const BackgroundIcon = styled(Box)(({ theme, delay = 0, animation = 'float' }) => {
+const BackgroundIcon = styled(Box)<{ delay?: number; animation?: 'float' | 'pulse' | 'slideIn' | 'rotate' | 'bounce' | 'wave' }>(({ theme, delay = 0, animation = 'float' }) => {
   const animations = {
     float: `${float} 4s ease-in-out infinite`,
     pulse: `${pulse} 3s ease-in-out infinite`,
@@ -81,7 +86,7 @@ const BackgroundIcon = styled(Box)(({ theme, delay = 0, animation = 'float' }) =
   return {
     position: 'absolute',
     opacity: 0.1,
-    animation: animations[animation],
+    animation: animations[animation!],
     animationDelay: `${delay}s`,
     color: theme.palette.primary.main,
     fontSize: '3rem',
@@ -91,8 +96,8 @@ const BackgroundIcon = styled(Box)(({ theme, delay = 0, animation = 'float' }) =
   };
 });
 
-const PaymentShape = styled(Box)(({ theme, shape = 'circle', delay = 0 }) => {
-  const baseStyle = {
+const PaymentShape = styled(Box)<{ shape?: 'circle' | 'square' | 'diamond' | 'hexagon'; delay?: number }>(({ theme, shape = 'circle', delay = 0 }) => {
+  const baseStyle: React.CSSProperties = {
     position: 'absolute',
     opacity: 0.05,
     background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
@@ -102,28 +107,30 @@ const PaymentShape = styled(Box)(({ theme, shape = 'circle', delay = 0 }) => {
     pointerEvents: 'none',
   };
 
-  const shapes = {
-    circle: {
-      ...baseStyle,
-      borderRadius: '50%',
-    },
-    square: {
-      ...baseStyle,
-      borderRadius: '12px',
-      transform: 'rotate(45deg)',
-    },
-    diamond: {
-      ...baseStyle,
-      borderRadius: '20%',
-      transform: 'rotate(45deg)',
-    },
-    hexagon: {
-      ...baseStyle,
-      clipPath: 'polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)',
-    }
-  };
+  const shapeStyles: React.CSSProperties = {};
 
-  return shapes[shape];
+  switch (shape) {
+    case 'square':
+      shapeStyles.borderRadius = '12px';
+      shapeStyles.transform = 'rotate(45deg)';
+      break;
+    case 'diamond':
+      shapeStyles.borderRadius = '20%';
+      shapeStyles.transform = 'rotate(45deg)';
+      break;
+    case 'hexagon':
+      shapeStyles.clipPath = 'polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)';
+      break;
+    case 'circle':
+    default:
+      shapeStyles.borderRadius = '50%';
+      break;
+  }
+
+  return {
+    ...baseStyle,
+    ...shapeStyles,
+  };
 });
 
 const AnimatedBackground = styled(Box)({
@@ -205,24 +212,24 @@ const PreviewImage = styled('img')({
 // Background Icons Component
 const PaymentBackgroundIcons = () => {
   const icons = [
-    { Icon: CreditCardIcon, top: '10%', left: '5%', delay: 0, animation: 'float' },
-    { Icon: PaymentIcon, top: '20%', right: '8%', delay: 1, animation: 'bounce' },
-    { Icon: AttachMoneyIcon, top: '35%', left: '3%', delay: 2, animation: 'wave' },
-    { Icon: SecurityIcon, top: '50%', right: '5%', delay: 1.5, animation: 'pulse' },
-    { Icon: AccountBalanceIcon, top: '70%', left: '7%', delay: 2.5, animation: 'float' },
-    { Icon: PhoneAndroidIcon, top: '80%', right: '10%', delay: 0.5, animation: 'bounce' },
-    { Icon: ReceiptIcon, top: '15%', left: '50%', delay: 3, animation: 'wave' },
-    { Icon: TrendingUpIcon, top: '60%', right: '40%', delay: 1, animation: 'rotate' },
-    { Icon: CheckCircleOutlineIcon, top: '40%', left: '80%', delay: 2, animation: 'pulse' },
+    { Icon: CreditCardIcon, top: '10%', left: '5%', delay: 0, animation: 'float' as const },
+    { Icon: PaymentIcon, top: '20%', right: '8%', delay: 1, animation: 'bounce' as const },
+    { Icon: AttachMoneyIcon, top: '35%', left: '3%', delay: 2, animation: 'wave' as const },
+    { Icon: SecurityIcon, top: '50%', right: '5%', delay: 1.5, animation: 'pulse' as const },
+    { Icon: AccountBalanceIcon, top: '70%', left: '7%', delay: 2.5, animation: 'float' as const },
+    { Icon: PhoneAndroidIcon, top: '80%', right: '10%', delay: 0.5, animation: 'bounce' as const },
+    { Icon: ReceiptIcon, top: '15%', left: '50%', delay: 3, animation: 'wave' as const },
+    { Icon: TrendingUpIcon, top: '60%', right: '40%', delay: 1, animation: 'rotate' as const },
+    { Icon: CheckCircleOutlineIcon, top: '40%', left: '80%', delay: 2, animation: 'pulse' as const },
   ];
 
   const shapes = [
-    { shape: 'circle', size: 60, top: '5%', right: '20%', delay: 0 },
-    { shape: 'square', size: 80, top: '25%', left: '15%', delay: 1 },
-    { shape: 'diamond', size: 50, top: '45%', right: '25%', delay: 2 },
-    { shape: 'hexagon', size: 70, top: '65%', left: '20%', delay: 1.5 },
-    { shape: 'circle', size: 90, top: '85%', right: '15%', delay: 2.5 },
-    { shape: 'square', size: 40, top: '30%', right: '50%', delay: 3 },
+    { shape: 'circle' as const, size: 60, top: '5%', right: '20%', delay: 0 },
+    { shape: 'square' as const, size: 80, top: '25%', left: '15%', delay: 1 },
+    { shape: 'diamond' as const, size: 50, top: '45%', right: '25%', delay: 2 },
+    { shape: 'hexagon' as const, size: 70, top: '65%', left: '20%', delay: 1.5 },
+    { shape: 'circle' as const, size: 90, top: '85%', right: '15%', delay: 2.5 },
+    { shape: 'square' as const, size: 40, top: '30%', right: '50%', delay: 3 },
   ];
 
   return (
@@ -277,7 +284,7 @@ export const PaymentMethodSelection = () => {
     phoneNumber: '',
     transactionId: '',
   });
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -322,8 +329,8 @@ export const PaymentMethodSelection = () => {
     }
   ];
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       setUploadedFile(file);
       const url = URL.createObjectURL(file);
@@ -336,7 +343,7 @@ export const PaymentMethodSelection = () => {
     setPreviewUrl('');
   };
 
-  const handleInputChange = (field) => (event) => {
+  const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
       [field]: event.target.value
@@ -684,7 +691,7 @@ export const SuccessPage = () => {
   };
 
   const getMethodDetails = () => {
-    const methods = {
+    const methods: { [key: string]: { name: string; icon: string; time: string } } = {
       'cib': { name: 'Carte CIB', icon: '💳', time: 'immédiat' },
       'edahabia': { name: 'Carte EDAHABIA', icon: '🏦', time: 'immédiat' },
       'baridimob': { name: 'BaridiMob', icon: '📱', time: 'immédiat' },

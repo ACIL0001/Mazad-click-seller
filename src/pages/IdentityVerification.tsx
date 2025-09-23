@@ -92,7 +92,7 @@ const AnimatedBackground = styled(Box)(({ theme }) => ({
 
 // Animated icon styles
 const FloatingIcon = styled(Box, {
-  shouldForwardProp: (prop) => !['delay', 'duration', 'animationType'].includes(prop),
+  shouldForwardProp: (prop) => !['delay', 'duration', 'animationType'].includes(String(prop)),
 })<{ delay?: string; duration?: string; animationType?: string }>(({ theme, delay = '0s', duration = '6s', animationType = 'float' }) => ({
   position: 'absolute',
   color: alpha(theme.palette.primary.main, 0.15),

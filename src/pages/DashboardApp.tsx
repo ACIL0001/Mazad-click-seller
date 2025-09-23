@@ -376,20 +376,20 @@ useEffect(() => {
     },
     {
       title: 'Total Tenders',
-      total: sellerStats.totalTenders || 0,
+      total: (sellerStats as any).totalTenders || 0, // Use type assertion for missing properties
       icon: 'mdi:file-document-multiple',
       color: 'secondary',
-      trend: sellerStats.totalTenders > 0 ? 'up' : 'neutral',
-      trendValue: sellerStats.totalTenders > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
+      trend: (sellerStats as any).totalTenders > 0 ? 'up' : 'neutral',
+      trendValue: (sellerStats as any).totalTenders > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
       title: 'Active Tenders',
-      total: sellerStats.activeTenders || 0,
+      total: (sellerStats as any).activeTenders || 0, // Use type assertion for missing properties
       icon: 'mdi:file-document-edit',
       color: 'info',
-      trend: sellerStats.activeTenders > 0 ? 'up' : 'neutral',
-      trendValue: sellerStats.activeTenders > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
+      trend: (sellerStats as any).activeTenders > 0 ? 'up' : 'neutral',
+      trendValue: (sellerStats as any).activeTenders > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
     },
   ] : [];
@@ -414,22 +414,23 @@ useEffect(() => {
     },
     {
       title: 'Tender Bids',
-      total: sellerStats.tenderBids || 0,
+      total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
-      trend: sellerStats.tenderBids > 0 ? 'up' : 'neutral',
-      trendValue: sellerStats.tenderBids > 0 ? '+' + Math.floor(Math.random() * 20 + 3) + '%' : '0%',
+      trend: (sellerStats as any).tenderBids > 0 ? 'up' : 'neutral',
+      trendValue: (sellerStats as any).tenderBids > 0 ? '+' + Math.floor(Math.random() * 20 + 3) + '%' : '0%',
       onClick: () => navigate('/dashboard/tender-bids'),
     },
     {
       title: 'Pending Tender Bids',
-      total: sellerStats.pendingTenderBids || 0,
+      total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-clock',
       color: 'warning',
       trend: 'neutral',
       onClick: () => navigate('/dashboard/tender-bids'),
     },
   ] : [];
+
 
   console.log('📈 Dashboard: Auction stats data:', auctionStatsData);
 
