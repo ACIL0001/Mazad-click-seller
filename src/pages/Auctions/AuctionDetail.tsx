@@ -477,7 +477,7 @@ export default function AuctionDetail() {
                       onClick={() => {
                         if (participant.user?._id) {
                           // Open user profile in a new tab
-                          window.open(`https://mazad.click/users/${participant.user._id}`, '_blank');
+                          window.open(`${window.location.origin}/users/${participant.user._id}`, '_blank');
                         }
                       }}
                     >

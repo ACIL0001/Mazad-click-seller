@@ -209,7 +209,7 @@ export default function OtpVerification() {
           if (fromBuyer) {
             enqueueSnackbar('Numéro vérifié avec succès! Redirection vers l\'application acheteur...', { variant: 'success' });
             // Redirect back to buyer app login
-            window.location.href = `https://mazad.click/auth/login`;
+            window.location.href = `${window.location.origin}/auth/login`;
           } else {
             enqueueSnackbar('Numéro vérifié avec succès! Veuillez vous connecter à nouveau.', { variant: 'success' });
             navigate('/login', { replace: true });

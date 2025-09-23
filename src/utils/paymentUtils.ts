@@ -37,7 +37,7 @@ export const handleSatimForbiddenError = (paymentId: string): void => {
   // If we have alternative URLs, redirect to the forbidden handler
   if (alternativeUrls.length > 0) {
     console.log('Redirecting to forbidden handler with alternatives');
-    window.location.href = `https://mazad.click/subscription/payment/satim-forbidden/${paymentId}`;
+    window.location.href = `${window.location.origin}/subscription/payment/satim-forbidden/${paymentId}`;
     return;
   }
 
@@ -123,7 +123,7 @@ export const initializePaymentErrorHandling = (): void => {
  * Get alternative payment options for a payment
  */
 export const getAlternativePaymentOptions = (paymentId: string): Promise<AlternativePaymentOption[]> => {
-  return fetch(`https://mazad.click/subscription/payment/satim-forbidden/${paymentId}`)
+  return fetch(`${window.location.origin}/subscription/payment/satim-forbidden/${paymentId}`)
     .then(response => response.text())
     .then(html => {
       // Parse the HTML to extract alternative URLs
