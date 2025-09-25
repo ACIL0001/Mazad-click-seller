@@ -235,8 +235,15 @@ export default function OtpVerification() {
           const userType = verificationResult.user.type;
           console.log('OtpVerification - User type for navigation:', userType);
           
-          // Restore proper flow for professional users
-          if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
+          // Handle CLIENT type users - redirect to login with success message
+          if (userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT) {
+            console.log('OtpVerification - CLIENT user detected, redirecting to login with success message');
+            enqueueSnackbar('Inscription réussie! Vous pouvez maintenant vous connecter.', { 
+              variant: 'success',
+              preventDuplicate: true 
+            });
+            navigate('/login', { replace: true });
+          } else if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
             console.log('OtpVerification - Professional user detected, navigating to identity verification');
             navigate('/identity-verification', { state: { user: verificationResult.user } });
           } else {
@@ -248,7 +255,18 @@ export default function OtpVerification() {
         // Legacy response format or no tokens - redirect to login
         console.log('OtpVerification - Legacy response or no tokens, redirecting to login');
         setTimeout(() => {
-          enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
+          // Check if this is a CLIENT user from registration
+          const fromRegistration = location.state?.fromRegistration;
+          const userType = user?.type;
+          
+          if (fromRegistration && (userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT)) {
+            enqueueSnackbar('Inscription réussie! Vous pouvez maintenant vous connecter.', { 
+              variant: 'success',
+              preventDuplicate: true 
+            });
+          } else {
+            enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
+          }
           navigate('/login', { replace: true });
         }, 1500);
       }
