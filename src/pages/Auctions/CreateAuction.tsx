@@ -1613,13 +1613,14 @@ export default function CreateAuction() {
                             borderRadius: '50%',
                           }}
                           onError={(e) => {
-                            // Fallback to icon if image fails to load
-                            e.currentTarget.style.display = 'none';
-                            const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (nextElement) {
-                              nextElement.style.display = 'flex';
-                            }
-                          }}
+  // Fallback to icon if image fails to load
+  const target = e.currentTarget as HTMLImageElement;
+  target.style.display = 'none';
+  const nextElement = target.nextElementSibling as HTMLElement;
+  if (nextElement) {
+    nextElement.style.display = 'flex';
+  }
+}}
                         />
                       ) : null}
                       <Box

@@ -38,6 +38,7 @@ import { authStore } from '../contexts/authStore';
 import useAuth from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { ACCOUNT_TYPE } from '../types/User';
 
 // Helper function to create alpha color
 function alpha(color: string, value: number): string {
@@ -198,7 +199,7 @@ function LoginForm() {
         
         // Strict comparison with boolean true or handle undefined/null cases
         // Check verification status only for PROFESSIONAL users
-        if (user.type === 'PROFESSIONAL') {
+        if (user.type === ACCOUNT_TYPE.PROFESSIONAL) {
           // In some APIs, isVerified might be undefined if the user is verified by default
           const isVerified = user.isVerified === true || (user.isVerified !== false && user.isVerified !== 0);
           console.log('🔐 Login - Professional user isVerified check result:', isVerified);
@@ -440,20 +441,19 @@ export default function Login() {
   // Check if user is already logged in and verified
   if (isLogged && auth?.user) {
     // Only check verification for PROFESSIONAL users
-    if (auth.user.type === 'PROFESSIONAL') {
-      const isVerified = auth.user.isVerified === true || 
-                        (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-      
-      if (isVerified) {
-        return <Navigate to="/dashboard/app" replace />;
-      } else {
-        return <Navigate to="/waiting-for-verification" replace />;
-      }
-    } else {
-      // CLIENT and RESELLER users don't need verification - redirect to dashboard
-      return <Navigate to="/dashboard/app" replace />;
-    }
+    if (auth.user.type === ACCOUNT_TYPE.PROFESSIONAL) {
+  const isVerified = auth.user.isVerified === true || 
+                    (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+  
+  if (isVerified) {
+    return <Navigate to="/dashboard/app" replace />;
+  } else {
+    return <Navigate to="/waiting-for-verification" replace />;
   }
+} else {
+  // CLIENT and RESELLER users don't need verification - redirect to dashboard
+  return <Navigate to="/dashboard/app" replace />;
+}
 
   return (
     <Page title={t('pages.login.title')}>
