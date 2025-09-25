@@ -215,42 +215,51 @@ export default function OtpVerification() {
             navigate('/login', { replace: true });
           }
         }, 1500);
-      } else if (verificationResult && verificationResult.tokens && verificationResult.user) {
-        // New response format: OTP verification successful and tokens provided
-        console.log('OtpVerification - Verification successful, storing tokens and navigating');
-        
-        // Store authentication data
-        const authData = {
-          user: verificationResult.user,
-          tokens: {
-            accessToken: verificationResult.tokens.accessToken,
-            refreshToken: verificationResult.tokens.refreshToken
-          }
-        };
-        authStore.getState().set(authData);
-        console.log('OtpVerification - Stored auth data:', authData);
-        
-        // Navigate based on user type
-        setTimeout(() => {
-          const userType = verificationResult.user.type;
-          console.log('OtpVerification - User type for navigation:', userType);
+      } else if (verificationResult && verificationResult.user) {
+        // Check if this is a CLIENT user that should be redirected to login
+        if (verificationResult.redirectToLogin || verificationResult.user.type === 'CLIENT' || verificationResult.user.type === ACCOUNT_TYPE.CLIENT) {
+          console.log('OtpVerification - CLIENT user detected, redirecting to login with success message');
+          enqueueSnackbar('Inscription réussie! Vous pouvez maintenant vous connecter.', { 
+            variant: 'success',
+            preventDuplicate: true 
+          });
+          navigate('/login', { replace: true });
+        } else if (verificationResult.tokens) {
+          // New response format: OTP verification successful and tokens provided for PROFESSIONAL users
+          console.log('OtpVerification - Verification successful, storing tokens and navigating');
           
-          // Handle CLIENT type users - redirect to login with success message
-          if (userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT) {
-            console.log('OtpVerification - CLIENT user detected, redirecting to login with success message');
-            enqueueSnackbar('Inscription réussie! Vous pouvez maintenant vous connecter.', { 
-              variant: 'success',
-              preventDuplicate: true 
-            });
+          // Store authentication data
+          const authData = {
+            user: verificationResult.user,
+            tokens: {
+              accessToken: verificationResult.tokens.accessToken,
+              refreshToken: verificationResult.tokens.refreshToken
+            }
+          };
+          authStore.getState().set(authData);
+          console.log('OtpVerification - Stored auth data:', authData);
+          
+          // Navigate based on user type
+          setTimeout(() => {
+            const userType = verificationResult.user.type;
+            console.log('OtpVerification - User type for navigation:', userType);
+            
+            if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
+              console.log('OtpVerification - Professional user detected, navigating to identity verification');
+              navigate('/identity-verification', { state: { user: verificationResult.user } });
+            } else {
+              console.log('OtpVerification - Regular user, navigating to dashboard');
+              navigate('/dashboard/app');
+            }
+          }, 1500);
+        } else {
+          // No tokens provided - redirect to login
+          console.log('OtpVerification - No tokens provided, redirecting to login');
+          setTimeout(() => {
+            enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
             navigate('/login', { replace: true });
-          } else if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
-            console.log('OtpVerification - Professional user detected, navigating to identity verification');
-            navigate('/identity-verification', { state: { user: verificationResult.user } });
-          } else {
-            console.log('OtpVerification - Regular user, navigating to dashboard');
-            navigate('/dashboard/app');
-          }
-        }, 1500);
+          }, 1500);
+        }
       } else {
         // Legacy response format or no tokens - redirect to login
         console.log('OtpVerification - Legacy response or no tokens, redirecting to login');
