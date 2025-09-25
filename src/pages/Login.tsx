@@ -184,50 +184,50 @@ function LoginForm() {
         };
         
         // Store auth data
-        console.log('🔐 Login - Storing auth data:', { tokens: formattedTokens, user: user });
+        console.log('ðŸ" Login - Storing auth data:', { tokens: formattedTokens, user: user });
         authStore.getState().set({
           tokens: formattedTokens,
           user: user,
         });
-        console.log('🔐 Login - Auth data stored successfully');
+        console.log('ðŸ" Login - Auth data stored successfully');
         
         resetForm();
         
         // Check if user is verified
-        console.log('🔐 Login - User verification status:', user);
-        console.log('🔐 Login - isVerified raw value:', user.isVerified);
+        console.log('ðŸ" Login - User verification status:', user);
+        console.log('ðŸ" Login - isVerified raw value:', user.isVerified);
         
         // Strict comparison with boolean true or handle undefined/null cases
         // Check verification status only for PROFESSIONAL users
         if (user.type === ACCOUNT_TYPE.PROFESSIONAL) {
           // In some APIs, isVerified might be undefined if the user is verified by default
           const isVerified = user.isVerified === true || (user.isVerified !== false && user.isVerified !== 0);
-          console.log('🔐 Login - Professional user isVerified check result:', isVerified);
+          console.log('ðŸ" Login - Professional user isVerified check result:', isVerified);
           
           if (isVerified) {
             // Redirect to dashboard for verified professional users
-            console.log('🔐 Login - Professional user is verified, redirecting to dashboard');
+            console.log('ðŸ" Login - Professional user is verified, redirecting to dashboard');
             navigate('/dashboard/app');
-            enqueueSnackbar('Connexion réussie!', { variant: 'success' });
+            enqueueSnackbar('Connexion rÃ©ussie!', { variant: 'success' });
           } else {
             // For unverified professional users, redirect to waiting for verification page
-            console.log('🔐 Login - Professional user is not verified, redirecting to waiting page');
+            console.log('ðŸ" Login - Professional user is not verified, redirecting to waiting page');
             navigate('/waiting-for-verification');
-            enqueueSnackbar('Votre compte est en attente de vérification.', { 
+            enqueueSnackbar('Votre compte est en attente de vÃ©rification.', { 
               variant: 'warning',
               preventDuplicate: true 
             });
           }
         } else {
           // CLIENT and RESELLER users don't need verification - redirect directly to dashboard
-          console.log('🔐 Login - Client/Reseller user, redirecting to dashboard without verification check');
+          console.log('ðŸ" Login - Client/Reseller user, redirecting to dashboard without verification check');
           navigate('/dashboard/app');
-          enqueueSnackbar('Connexion réussie!', { variant: 'success' });
+          enqueueSnackbar('Connexion rÃ©ussie!', { variant: 'success' });
         }
       } catch (error) {
         console.error('Login error:', error);
         
-        let errorMessage = 'Une erreur est survenue lors de la connexion. Veuillez réessayer.';
+        let errorMessage = 'Une erreur est survenue lors de la connexion. Veuillez rÃ©essayer.';
         
         if (error?.response?.data?.message) {
           // Handle array of validation errors
@@ -239,7 +239,7 @@ function LoginForm() {
           }
           
           // Check if phone verification required
-          if (errorMessage.includes('vérification') || errorMessage.includes('verification') || 
+          if (errorMessage.includes('vÃ©rification') || errorMessage.includes('verification') || 
               error.response.data.requiresPhoneVerification) {
             navigate('/otp-verification', {
               state: {
@@ -442,18 +442,19 @@ export default function Login() {
   if (isLogged && auth?.user) {
     // Only check verification for PROFESSIONAL users
     if (auth.user.type === ACCOUNT_TYPE.PROFESSIONAL) {
-  const isVerified = auth.user.isVerified === true || 
-                    (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-  
-  if (isVerified) {
-    return <Navigate to="/dashboard/app" replace />;
-  } else {
-    return <Navigate to="/waiting-for-verification" replace />;
+      const isVerified = auth.user.isVerified === true || 
+                        (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+      
+      if (isVerified) {
+        return <Navigate to="/dashboard/app" replace />;
+      } else {
+        return <Navigate to="/waiting-for-verification" replace />;
+      }
+    } else {
+      // CLIENT and RESELLER users don't need verification - redirect to dashboard
+      return <Navigate to="/dashboard/app" replace />;
+    }
   }
-} else {
-  // CLIENT and RESELLER users don't need verification - redirect to dashboard
-  return <Navigate to="/dashboard/app" replace />;
-}
 
   return (
     <Page title={t('pages.login.title')}>
