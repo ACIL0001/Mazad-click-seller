@@ -9,12 +9,8 @@ export const AuthAPI = {
   exists: (tel: string): Promise<any> => requests.get(`auth/exists/${tel}`),
   getSMS: (tel: string): Promise<any> => requests.get(`auth/2factor/send-sms/${tel}`),
   login: (credentials: Credentials, returnFullResponse: boolean = true): Promise<any> => {
-    // Transform email to login for server compatibility
-    const loginData = {
-      login: credentials.email,
-      password: credentials.password
-    };
-    return requests.post('auth/signin', loginData, returnFullResponse);
+    // Credentials already has login property, no transformation needed
+    return requests.post('auth/signin', credentials, returnFullResponse);
   },
   signup: (user: User): Promise<any> => requests.post('auth/signup', user),
   refresh: (refreshToken: string): Promise<any> => requests.put('auth/refresh', { refreshToken }),
