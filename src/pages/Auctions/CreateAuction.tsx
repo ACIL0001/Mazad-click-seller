@@ -47,6 +47,7 @@ import useAuth from '@/hooks/useAuth';
 import { alpha } from '@mui/material/styles';
 import { ACCOUNT_TYPE } from '@/types/User';
 import { loadGoogleMapsScript } from '@/utils/loadGoogleMapsScript';
+import app from '@/config';
 
 // Modern styled components
 const MainContainer = styled(Container)(({ theme }) => ({
@@ -875,6 +876,41 @@ declare global {
   }
 }
 
+// Helper function to construct proper image URLs
+const getImageUrl = (attachment: any): string => {
+  if (!attachment) return "";
+  
+  // Handle string URLs
+  if (typeof attachment === "string") {
+    // If it's already a full URL, return as-is
+    if (attachment.startsWith('http://') || attachment.startsWith('https://')) {
+      return attachment;
+    }
+    // If it already starts with /static/, prepend base URL
+    if (attachment.startsWith('/static/')) {
+      return app.route + attachment;
+    }
+    // If it's just a filename, prepend /static/
+    return app.route + '/static/' + attachment;
+  }
+  
+  // Handle object with url property
+  if (typeof attachment === "object" && attachment.url) {
+    // If it's already a full URL, return as-is
+    if (attachment.url.startsWith('http://') || attachment.url.startsWith('https://')) {
+      return attachment.url;
+    }
+    // If it already starts with /static/, prepend base URL
+    if (attachment.url.startsWith('/static/')) {
+      return app.route + attachment.url;
+    }
+    // If it's just a filename, prepend /static/
+    return app.route + '/static/' + attachment.url;
+  }
+  
+  return "";
+};
+
 export default function CreateAuction() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -1548,7 +1584,7 @@ export default function CreateAuction() {
                       </IconButton>
                     )}
 
-                    {/* Category Icon */}
+                    {/* Category Icon/Thumbnail */}
                     <Box
                       sx={{
                         width: level === 0 ? 48 : 40,
@@ -1562,13 +1598,42 @@ export default function CreateAuction() {
                         justifyContent: 'center',
                         mr: 2,
                         transition: 'all 0.3s ease',
+                        overflow: 'hidden',
+                        position: 'relative',
                       }}
                     >
-                      <Iconify
-                        icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
-                        width={level === 0 ? 24 : 20}
-                        sx={{ color: isSelected ? 'white' : theme.palette.primary.main }}
-                      />
+                      {category.thumb && getImageUrl(category.thumb) ? (
+                        <img
+                          src={getImageUrl(category.thumb)}
+                          alt={category.name}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '50%',
+                          }}
+                          onError={(e) => {
+                            // Fallback to icon if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <Box
+                        sx={{
+                          display: category.thumb && getImageUrl(category.thumb) ? 'none' : 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '100%',
+                          height: '100%',
+                        }}
+                      >
+                        <Iconify
+                          icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
+                          width={level === 0 ? 24 : 20}
+                          sx={{ color: isSelected ? 'white' : theme.palette.primary.main }}
+                        />
+                      </Box>
                     </Box>
 
                     {/* Category Info */}

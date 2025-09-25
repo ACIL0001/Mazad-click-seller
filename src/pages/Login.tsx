@@ -197,23 +197,31 @@ function LoginForm() {
         console.log('🔐 Login - isVerified raw value:', user.isVerified);
         
         // Strict comparison with boolean true or handle undefined/null cases
-        // In some APIs, isVerified might be undefined if the user is verified by default
-        const isVerified = user.isVerified === true || (user.isVerified !== false && user.isVerified !== 0);
-        console.log('🔐 Login - isVerified check result:', isVerified);
-        
-        if (isVerified) {
-          // Redirect to dashboard for verified users
-          console.log('🔐 Login - User is verified, redirecting to dashboard');
+        // Check verification status only for PROFESSIONAL users
+        if (user.type === 'PROFESSIONAL' || user.type === 'PRO') {
+          // In some APIs, isVerified might be undefined if the user is verified by default
+          const isVerified = user.isVerified === true || (user.isVerified !== false && user.isVerified !== 0);
+          console.log('🔐 Login - Professional user isVerified check result:', isVerified);
+          
+          if (isVerified) {
+            // Redirect to dashboard for verified professional users
+            console.log('🔐 Login - Professional user is verified, redirecting to dashboard');
+            navigate('/dashboard/app');
+            enqueueSnackbar('Connexion réussie!', { variant: 'success' });
+          } else {
+            // For unverified professional users, redirect to waiting for verification page
+            console.log('🔐 Login - Professional user is not verified, redirecting to waiting page');
+            navigate('/waiting-for-verification');
+            enqueueSnackbar('Votre compte est en attente de vérification.', { 
+              variant: 'warning',
+              preventDuplicate: true 
+            });
+          }
+        } else {
+          // CLIENT and RESELLER users don't need verification - redirect directly to dashboard
+          console.log('🔐 Login - Client/Reseller user, redirecting to dashboard without verification check');
           navigate('/dashboard/app');
           enqueueSnackbar('Connexion réussie!', { variant: 'success' });
-        } else {
-          // For unverified users, redirect to waiting for verification page
-          console.log('🔐 Login - User is not verified, redirecting to waiting page');
-          navigate('/waiting-for-verification');
-          enqueueSnackbar('Votre compte est en attente de vérification.', { 
-            variant: 'warning',
-            preventDuplicate: true 
-          });
         }
       } catch (error) {
         console.error('Login error:', error);
@@ -431,13 +439,19 @@ export default function Login() {
 
   // Check if user is already logged in and verified
   if (isLogged && auth?.user) {
-    const isVerified = auth.user.isVerified === true || 
-                      (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-    
-    if (isVerified) {
-      return <Navigate to="/dashboard/app" replace />;
+    // Only check verification for PROFESSIONAL users
+    if (auth.user.type === 'PROFESSIONAL' || auth.user.type === 'PRO') {
+      const isVerified = auth.user.isVerified === true || 
+                        (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+      
+      if (isVerified) {
+        return <Navigate to="/dashboard/app" replace />;
+      } else {
+        return <Navigate to="/waiting-for-verification" replace />;
+      }
     } else {
-      return <Navigate to="/waiting-for-verification" replace />;
+      // CLIENT and RESELLER users don't need verification - redirect to dashboard
+      return <Navigate to="/dashboard/app" replace />;
     }
   }
 

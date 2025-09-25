@@ -16,7 +16,7 @@ const app = {
   
   // Dynamic URLs based on environment
   socket: import.meta.env.VITE_SOCKET_URL || 'wss://mazad-click-server.onrender.com/',
-  route: import.meta.env.VITE_STATIC_URL || "https://mazad-click-server.onrender.com/static/",
+  route: import.meta.env.VITE_STATIC_URL || "https://mazad-click-server.onrender.com",
   baseURL: import.meta.env.VITE_API_URL || "https://mazad-click-server.onrender.com/",
 
   apiKey: '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
