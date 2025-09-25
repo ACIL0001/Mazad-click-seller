@@ -333,15 +333,11 @@ export default function RegisterForm(props: RegisterFormProps) {
             };
           }
           
-          console.log('Legacy response format detected, checking user type for token storage');
-          
-          // Only store tokens for non-CLIENT users (PROFESSIONAL users)
-          if (tokens && userObj && userData.type !== 'CLIENT') {
+          console.log('Legacy response format detected, storing tokens but requiring OTP verification');
+          if (tokens && userObj) {
             authStore.getState().set({ tokens, user: userObj });
-            console.log('Stored tokens for PROFESSIONAL user:', tokens);
+            console.log('Stored tokens:', tokens);
             console.log('Stored user:', userObj);
-          } else if (userData.type === 'CLIENT') {
-            console.log('CLIENT user detected, not storing tokens - will redirect to login after OTP');
           }
           
           // Navigate to OTP verification
