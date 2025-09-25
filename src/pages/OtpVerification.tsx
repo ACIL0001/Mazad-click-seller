@@ -202,7 +202,18 @@ export default function OtpVerification() {
       const fromLogin = location.state?.fromLogin;
       const fromRegistration = location.state?.fromRegistration;
       
-      if (fromLogin || fromBuyer) {
+      // Check if user is CLIENT type first - they should always go to login
+      const userType = verificationResult.user?.type;
+      const isClient = userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT;
+      
+      if (isClient) {
+        // CLIENT users always redirect to login with success message
+        console.log('OtpVerification - Client user detected, redirecting to login');
+        setTimeout(() => {
+          enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
+          navigate('/login', { replace: true });
+        }, 1500);
+      } else if (fromLogin || fromBuyer) {
         // User came from login, redirect them back to login to complete the login process
         console.log('OtpVerification - User came from login/buyer, redirecting back to login');
         setTimeout(() => {
@@ -230,17 +241,12 @@ export default function OtpVerification() {
         authStore.getState().set(authData);
         console.log('OtpVerification - Stored auth data:', authData);
         
-        // Navigate based on user type
+        // Navigate based on user type (CLIENT users already handled above)
         setTimeout(() => {
           const userType = verificationResult.user.type;
           console.log('OtpVerification - User type for navigation:', userType);
           
-          // Check if user is CLIENT type - redirect to login
-          if (userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT) {
-            console.log('OtpVerification - Client user detected, redirecting to login');
-            enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
-            navigate('/login', { replace: true });
-          } else if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
+          if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
             console.log('OtpVerification - Professional user detected, navigating to identity verification');
             navigate('/identity-verification', { state: { user: verificationResult.user } });
           } else {
