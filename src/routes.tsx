@@ -83,20 +83,26 @@ function RootRedirect() {
                 return;
             }
 
-            // Check if user is verified
-            const isVerified = auth.user.isVerified === true || 
-                            (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-            
-            console.log('🔐 RootRedirect - User verification status:', { isVerified, user: auth.user });
-            
-            if (isVerified) {
-                // User is verified, redirect to dashboard
-                console.log('✅ RootRedirect - User is verified, redirecting to dashboard');
-                setRedirectPath('/dashboard/app');
+            // Check verification status only for PROFESSIONAL users
+            if (auth.user.type === 'PROFESSIONAL') {
+                const isVerified = auth.user.isVerified === true || 
+                                (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+                
+                console.log('🔐 RootRedirect - Professional user verification status:', { isVerified, user: auth.user });
+                
+                if (isVerified) {
+                    // Professional user is verified, redirect to dashboard
+                    console.log('✅ RootRedirect - Professional user is verified, redirecting to dashboard');
+                    setRedirectPath('/dashboard/app');
+                } else {
+                    // Professional user is not verified, redirect to waiting for verification page
+                    console.log('⏳ RootRedirect - Professional user is not verified, redirecting to waiting page');
+                    setRedirectPath('/waiting-for-verification');
+                }
             } else {
-                // User is not verified, redirect to waiting for verification page instead of login
-                console.log('⏳ RootRedirect - User is not verified, redirecting to waiting page');
-                setRedirectPath('/waiting-for-verification');
+                // CLIENT and RESELLER users don't need verification - redirect to dashboard
+                console.log('✅ RootRedirect - Client/Reseller user, redirecting to dashboard without verification check');
+                setRedirectPath('/dashboard/app');
             }
             
             setLoading(false);

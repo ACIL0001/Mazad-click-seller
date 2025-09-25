@@ -80,18 +80,23 @@ export default function DashboardLayout() {
 
         console.log('DashboardLayout: Checking user verification status', user);
         
-        // Check if user is verified using existing data
-        const isVerified = user.isVerified === true || 
-                         (user.isVerified !== false && user.isVerified !== 0);
-        
-        if (!isVerified) {
-          console.log('DashboardLayout: User is not verified, redirecting to waiting page');
-          // Don't clear auth - just redirect to waiting page
-          navigate("/waiting-for-verification");
-          return;
+        // Check verification status only for PROFESSIONAL users
+        if (user.type === 'PROFESSIONAL') {
+          const isVerified = user.isVerified === true || 
+                           (user.isVerified !== false && user.isVerified !== 0);
+          
+          if (!isVerified) {
+            console.log('DashboardLayout: Professional user is not verified, redirecting to waiting page');
+            // Don't clear auth - just redirect to waiting page
+            navigate("/waiting-for-verification");
+            return;
+          }
+          
+          console.log('DashboardLayout: Professional user is verified, allowing dashboard access');
+        } else {
+          // CLIENT and RESELLER users don't need verification - allow dashboard access
+          console.log('DashboardLayout: Client/Reseller user, allowing dashboard access without verification check');
         }
-        
-        console.log('DashboardLayout: User is verified, allowing dashboard access');
         setSubscriptionChecked(true);
         
         // Optional: Validate token in background (don't block access)
