@@ -235,8 +235,12 @@ export default function OtpVerification() {
           const userType = verificationResult.user.type;
           console.log('OtpVerification - User type for navigation:', userType);
           
-          // Restore proper flow for professional users
-          if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
+          // Check if user is CLIENT type - redirect to login
+          if (userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT) {
+            console.log('OtpVerification - Client user detected, redirecting to login');
+            enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
+            navigate('/login', { replace: true });
+          } else if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
             console.log('OtpVerification - Professional user detected, navigating to identity verification');
             navigate('/identity-verification', { state: { user: verificationResult.user } });
           } else {
