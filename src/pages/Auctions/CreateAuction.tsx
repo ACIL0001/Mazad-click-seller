@@ -1472,10 +1472,8 @@ export default function CreateAuction() {
                   match: category.type === formik.values.bidType
                 });
                 
-                // For now, show all categories regardless of type to debug the issue
-                // TODO: Fix category type mapping
-                return true; // Temporarily show all categories
-                // return category.type === formik.values.bidType;
+                // Filter categories by bid type (PRODUCT or SERVICE)
+                return category.type === formik.values.bidType;
               }
               return true;
             })
@@ -1644,9 +1642,19 @@ export default function CreateAuction() {
 
         return (
           <StepCard>
-            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 2, fontWeight: 600 }}>
               Sélectionnez la catégorie
             </Typography>
+            
+            {/* Type Indicator */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Chip
+                label={`Type: ${formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 'Service'}`}
+                color="primary"
+                variant="outlined"
+                sx={{ fontWeight: 600 }}
+              />
+            </Box>
 
             {/* Category Breadcrumb */}
             {selectedCategoryPath.length > 0 && (
@@ -1678,8 +1686,11 @@ export default function CreateAuction() {
                 renderCategoryHierarchy(categories)
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Typography variant="h6" color="text.secondary">
-                    Aucune catégorie disponible pour le type sélectionné
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    Aucune catégorie disponible pour le type "{formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 'Service'}"
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Veuillez revenir à l'étape précédente et sélectionner un autre type d'enchère.
                   </Typography>
                 </Box>
               )}
