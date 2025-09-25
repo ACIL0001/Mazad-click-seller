@@ -198,7 +198,7 @@ function LoginForm() {
         
         // Strict comparison with boolean true or handle undefined/null cases
         // Check verification status only for PROFESSIONAL users
-        if (user.type === 'PROFESSIONAL' || user.type === 'PRO') {
+        if (user.type === 'PROFESSIONAL') {
           // In some APIs, isVerified might be undefined if the user is verified by default
           const isVerified = user.isVerified === true || (user.isVerified !== false && user.isVerified !== 0);
           console.log('🔐 Login - Professional user isVerified check result:', isVerified);
@@ -440,7 +440,7 @@ export default function Login() {
   // Check if user is already logged in and verified
   if (isLogged && auth?.user) {
     // Only check verification for PROFESSIONAL users
-    if (auth.user.type === 'PROFESSIONAL' || auth.user.type === 'PRO') {
+    if (auth.user.type === 'PROFESSIONAL') {
       const isVerified = auth.user.isVerified === true || 
                         (auth.user.isVerified !== false && auth.user.isVerified !== 0);
       
