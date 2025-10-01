@@ -15,19 +15,18 @@ import {
   Alert,
   Box,
 } from '@mui/material';
+import { Refresh as RefreshIcon } from '@mui/icons-material';
 // components
 import Page from '../../components/Page';
 import { useSnackbar } from 'notistack';
 import MuiTable from '../../components/Tables/MuiTable';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import Breadcrumb from '@/components/Breadcrumbs';
 import { OffersAPI } from '@/api/offers';
 import { Offer } from '@/types/Offer';
 import useAuth from '@/hooks/useAuth';
 
-// ----------------------------------------------------------------------
-
-// Extended Offer interface with a more complete bid type definition
+// Extended Offer interface
 interface Bid {
   _id: string;
   title: string;
@@ -49,6 +48,7 @@ interface User {
 interface ExtendedOffer extends Offer {
   bid: Bid;
   user: User;
+  status?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
 }
 
 export default function Offers() {
@@ -56,17 +56,17 @@ export default function Offers() {
   const theme = useTheme();
   
   const COLUMNS = [
-    { id: 'user', label: t('common.user'), alignRight: false, searchable: true, sortable: true },
-    { id: 'tel', label: t('common.phone'), alignRight: false, searchable: true, sortable: true },
+    { id: 'user', label: t('user'), alignRight: false, searchable: true, sortable: true },
+    { id: 'tel', label: t('phone'), alignRight: false, searchable: true, sortable: true },
     { id: 'bidTitle', label: t('navigation.auctions'), alignRight: false, searchable: true, sortable: true },
-    { id: 'price', label: t('common.price'), alignRight: false, searchable: false, sortable: true },
-    { id: 'status', label: t('common.status'), alignRight: false, searchable: false, sortable: true },
-    { id: 'createdAt', label: t('common.date'), alignRight: false, searchable: false, sortable: true },
+    { id: 'price', label: t('price'), alignRight: false, searchable: false, sortable: true },
+    { id: 'status', label: t('status'), alignRight: false, searchable: false, sortable: true },
+    { id: 'createdAt', label: t('date'), alignRight: false, searchable: false, sortable: true },
     { id: 'actions', label: '', alignRight: true, searchable: false, sortable: false }
   ];
 
   const { enqueueSnackbar } = useSnackbar();
-  const { auth } = useAuth();
+  const { auth, isLogged } = useAuth();
   const [offers, setOffers] = useState<ExtendedOffer[]>([]);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
@@ -74,19 +74,30 @@ export default function Offers() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [loading, setLoading] = useState(false);
-
   const [selected, setSelected] = useState<string[]>([]);
-
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (auth?.user?._id) {
-      getOffers();
-    }
-  }, [auth?.user?._id]);
+    // Debug auth state
+    console.log('🔍 Offers: Auth state', {
+      isLogged,
+      hasUser: !!auth?.user,
+      hasToken: !!auth?.tokens?.accessToken,
+      userId: auth?.user?._id
+    });
 
-  const getOffers = async () => {
-    if (!auth?.user?._id) {
+    // Wait for auth to be ready and user to be logged in
+    if (isLogged && auth?.user?._id && auth?.tokens?.accessToken) {
+      console.log('Offers: Auth ready, fetching offers');
+      getOffers();
+    } else {
+      console.log('Offers: Waiting for auth', { isLogged, hasUser: !!auth?.user, hasToken: !!auth?.tokens?.accessToken });
+    }
+  }, [isLogged, auth?.user?._id, auth?.tokens?.accessToken]);
+
+  const getOffers = async (forceRefresh = false) => {
+    if (!isLogged || !auth?.user?._id || !auth?.tokens?.accessToken) {
+      console.warn('Offers: Cannot fetch - auth not ready');
       setError('User not authenticated');
       return;
     }
@@ -96,7 +107,7 @@ export default function Offers() {
     
     try {
       const data = { _id: auth.user._id };
-      console.log("Fetching offers for user:", data);
+      console.log("Fetching offers for user:", data, forceRefresh ? "(force refresh)" : "");
       
       const response = await OffersAPI.getOffers({ data });
       console.log("API Response:", response);
@@ -121,11 +132,82 @@ export default function Offers() {
         enqueueSnackbar('No offers found', { variant: 'info' });
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching offers:", error);
-      const errorMessage = error?.response?.data?.message || 'Error loading offers';
+      const errorMessage = error?.response?.data?.message || error?.message || 'Error loading offers';
       setError(errorMessage);
       enqueueSnackbar(errorMessage, { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    getOffers(true);
+  };
+
+  const handleAcceptOffer = async (offerId: string) => {
+    try {
+      setLoading(true);
+      console.log('Accepting offer:', offerId);
+      
+      const response = await OffersAPI.acceptOffer(offerId);
+      console.log('Offer accepted:', response);
+      
+      enqueueSnackbar('Offre acceptée avec succès!', { variant: 'success' });
+      getOffers(true);
+    } catch (error: any) {
+      console.error('Error accepting offer:', error);
+      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'acceptation de l\'offre.';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectOffer = async (offerId: string) => {
+    try {
+      setLoading(true);
+      console.log('Rejecting offer:', offerId);
+      
+      const response = await OffersAPI.rejectOffer(offerId);
+      console.log('Offer rejected:', response);
+      
+      enqueueSnackbar('Offre refusée.', { variant: 'info' });
+      getOffers(true);
+    } catch (error: any) {
+      console.error('Error rejecting offer:', error);
+      enqueueSnackbar('Erreur lors du refus de l\'offre.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
+    try {
+      setLoading(true);
+      await OffersAPI.deleteOffer(offerId);
+      enqueueSnackbar('Offre supprimée avec succès', { variant: 'success' });
+      getOffers(true);
+    } catch (error: any) {
+      console.error('Error deleting offer:', error);
+      enqueueSnackbar('Erreur lors de la suppression de l\'offre.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selected || selected.length === 0) return;
+    try {
+      setLoading(true);
+      await Promise.all(selected.map((id) => OffersAPI.deleteOffer(id)));
+      enqueueSnackbar(`${selected.length} offre(s) supprimée(s)`, { variant: 'success' });
+      setSelected([]);
+      getOffers(true);
+    } catch (error: any) {
+      console.error('Error bulk deleting offers:', error);
+      enqueueSnackbar('Erreur lors de la suppression multiple.', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -156,35 +238,12 @@ export default function Offers() {
     const isExpired = offer.bid?.endDate && new Date(offer.bid.endDate) < new Date();
     
     if (isExpired) {
-      return (
-        <Chip 
-          label={t('common.expired')} 
-          size="small" 
-          color="error" 
-          variant="outlined"
-        />
-      );
+      return <Chip label={t('expired')} size="small" color="error" variant="outlined" />;
     }
-    
     if (isActive) {
-      return (
-        <Chip 
-          label={t('common.active')} 
-          size="small" 
-          color="success" 
-          variant="outlined"
-        />
-      );
+      return <Chip label={t('active')} size="small" color="success" variant="outlined" />;
     }
-    
-    return (
-      <Chip 
-        label={t('common.pending')} 
-        size="small" 
-        color="warning" 
-        variant="outlined"
-      />
-    );
+    return <Chip label={t('pending')} size="small" color="warning" variant="outlined" />;
   };
 
   const TableBodyComponent = ({ data = [] }) => {
@@ -200,66 +259,55 @@ export default function Offers() {
               hover
               key={_id}
               tabIndex={-1}
-              sx={{ 
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: theme.palette.action.hover,
-                }
-              }}
+              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: theme.palette.action.hover } }}
             >
               <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
                 <Stack direction="column" spacing={0.5}>
                   <Typography variant="subtitle2" noWrap fontWeight={500}>
                     {user?.firstName && user?.lastName 
                       ? `${user.firstName} ${user.lastName}`
-                      : user?.username || 'N/A'
-                    }
+                      : user?.username || 'N/A'}
                   </Typography>
                   {user?.email && (
-                    <Typography variant="caption" color="text.secondary">
-                      {user.email}
-                    </Typography>
+                    <Typography variant="caption" color="text.secondary">{user.email}</Typography>
                   )}
                 </Stack>
               </TableCell>
               
               <TableCell align="left">
-                <Typography variant="body2">
-                  {user?.phone || 'N/A'}
-                </Typography>
+                <Typography variant="body2">{user?.phone || 'N/A'}</Typography>
               </TableCell>
               
               <TableCell align="left">
                 <Stack direction="column" spacing={0.5}>
-                  <Typography variant="subtitle2" noWrap>
-                    {bid?.title || 'N/A'}
-                  </Typography>
+                  <Typography variant="subtitle2" noWrap>{bid?.title || 'N/A'}</Typography>
                   {bid?.category && (
-                    <Typography variant="caption" color="text.secondary">
-                      {bid.category}
-                    </Typography>
+                    <Typography variant="caption" color="text.secondary">{bid.category}</Typography>
                   )}
                 </Stack>
               </TableCell>
               
               <TableCell align="left">
-                <Typography variant="subtitle2" fontWeight={600}>
-                  {formatPrice(price)}
-                </Typography>
+                <Typography variant="subtitle2" fontWeight={600}>{formatPrice(price)}</Typography>
               </TableCell>
               
-              <TableCell align="left">
-                {getOfferStatusChip(row)}
-              </TableCell>
+              <TableCell align="left">{getOfferStatusChip(row)}</TableCell>
               
               <TableCell align="left">
-                <Typography variant="body2" color="text.secondary">
-                  {formatDate(createdAt)}
-                </Typography>
+                <Typography variant="body2" color="text.secondary">{formatDate(createdAt)}</Typography>
               </TableCell>
               
               <TableCell align="right">
                 <Stack direction="row" spacing={1}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDeleteOffer(_id)}
+                    disabled={loading}
+                  >
+                    Supprimer
+                  </Button>
                   {bid?._id && (
                     <Button
                       component={RouterLink}
@@ -270,6 +318,27 @@ export default function Offers() {
                     >
                       {t('auctions.viewAuction')}
                     </Button>
+                  )}
+                  
+                  {(row.status || 'PENDING') === 'PENDING' && (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleAcceptOffer(_id)}
+                      disabled={loading}
+                    >
+                      Accepter
+                    </Button>
+                  )}
+                  
+                  {(row.status || 'PENDING') !== 'PENDING' && (
+                    <Chip
+                      label={(row.status || 'PENDING') === 'ACCEPTED' ? 'Acceptée' : 'Refusée'}
+                      color={(row.status || 'PENDING') === 'ACCEPTED' ? 'success' : 'error'}
+                      variant="outlined"
+                      size="small"
+                    />
                   )}
                 </Stack>
               </TableCell>
@@ -291,9 +360,7 @@ export default function Offers() {
       return (
         <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
           <CircularProgress size={40} />
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            {t('offers.loadingOffers')}
-          </Typography>
+          <Typography variant="body1" sx={{ mt: 2 }}>{t('offers.loadingOffers')}</Typography>
         </Stack>
       );
     }
@@ -304,13 +371,8 @@ export default function Offers() {
           severity="error" 
           sx={{ mb: 3 }}
           action={
-            <Button 
-              color="inherit" 
-              size="small" 
-              onClick={getOffers}
-              variant="outlined"
-            >
-              {t('common.retry')}
+            <Button color="inherit" size="small" onClick={handleRefresh} variant="outlined">
+              {t('retry')}
             </Button>
           }
         >
@@ -356,21 +418,62 @@ export default function Offers() {
 
   return (
     <Page title={t('navigation.offers')}>
-      <Container maxWidth="xl">
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-          <Typography variant="h4" gutterBottom>
-            {t('offers.myOffers')}
-          </Typography>
-          
-          <Button
-            variant="outlined"
-            onClick={getOffers}
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : undefined}
+      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+        <Box
+          sx={{
+            borderRadius: 3,
+            p: { xs: 2, sm: 3 },
+            mb: { xs: 3, sm: 4, md: 5 },
+            background: theme.palette.mode === 'light'
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            backdropFilter: 'blur(8px)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+          }}
+        >
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            alignItems={{ xs: 'stretch', sm: 'center' }} 
+            justifyContent="space-between" 
+            spacing={{ xs: 2, sm: 2 }}
           >
-            {loading ? t('common.refreshing') : t('common.refresh')}
-          </Button>
-        </Stack>
+            <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2}>
+              <Typography variant="h4" sx={{ m: 0 }}>{t('offers.myOffers')}</Typography>
+              {selected.length > 0 && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleBulkDelete}
+                  disabled={loading}
+                  sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+                >
+                  Supprimer la sélection ({selected.length})
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleRefresh}
+                disabled={loading}
+                startIcon={<RefreshIcon />}
+                sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+              >
+                Actualiser
+              </Button>
+            </Stack>
+            
+            <Button
+              variant="outlined"
+              onClick={handleRefresh}
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={16} /> : undefined}
+              sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
+            >
+              {loading ? t('refreshing') : t('refresh')}
+            </Button>
+          </Stack>
+        </Box>
 
         <Stack mb={3}>
           <Breadcrumb />

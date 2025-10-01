@@ -85,7 +85,7 @@ const ChatHeader = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
-  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  backgroundColor: alpha('#0063b1', 0.08),
   boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
   [theme.breakpoints.down('md')]: {
     padding: theme.spacing(1.2, 1.5),
@@ -102,7 +102,7 @@ const ChatContent = styled(Box)(({ theme }) => ({
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: alpha(theme.palette.primary.main, 0.02),
+  backgroundColor: alpha('#0063b1', 0.02),
   '&::-webkit-scrollbar': {
     width: '6px',
   },
@@ -110,10 +110,10 @@ const ChatContent = styled(Box)(({ theme }) => ({
     background: 'transparent',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: alpha(theme.palette.primary.main, 0.2),
+    background: alpha('#0063b1', 0.2),
     borderRadius: '10px',
     '&:hover': {
-      background: alpha(theme.palette.primary.main, 0.3),
+      background: alpha('#0063b1', 0.3),
     },
   },
   [theme.breakpoints.down('md')]: {
@@ -146,10 +146,10 @@ const MessageBubble = styled(Box)<{ sender?: boolean }>(({ theme, sender }) => (
   padding: theme.spacing(1.2, 1.8),
   borderRadius: sender ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
   backgroundColor: sender 
-    ? theme.palette.primary.main 
+    ? '#0063b1' 
     : theme.palette.background.paper,
   color: sender 
-    ? theme.palette.primary.contrastText 
+    ? '#fff' 
     : theme.palette.text.primary,
   boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
   position: 'relative',
@@ -198,8 +198,8 @@ const ChatInputWrapper = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
   transition: 'all 0.2s ease',
   '&:focus-within': {
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+    borderColor: '#0063b1',
+    boxShadow: `0 4px 12px ${alpha('#0063b1', 0.15)}`,
   },
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(0.6, 1.2),
@@ -254,11 +254,40 @@ export default function Chat() {
   
   console.log("socketMessages )))) ",socketMessages);
   
+  // Join chat room when component mounts and socket is ready
+  useEffect(() => {
+    if (!socketContext?.socket || !idChat) return;
+    
+    console.log('Joining chat room:', idChat);
+    socketContext.socket.emit('joinChat', { chatId: idChat, userId: auth.user._id });
+    
+    return () => {
+      console.log('Leaving chat room:', idChat);
+      socketContext.socket.emit('leaveChat', { chatId: idChat, userId: auth.user._id });
+    };
+  }, [socketContext?.socket, idChat, auth.user._id]);
+  
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [showScrollButton, setShowScrollButton] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showEmoji, setShowEmoji] = useState(false)
+  
+  // Combine and deduplicate messages
+  const combinedMessages = useMemo(() => {
+    const allMessages = [...messages, ...socketMessages];
+    const uniqueMessages = allMessages.filter((message, index, self) => 
+      index === self.findIndex(m => 
+        m._id === message._id || 
+        (m.message === message.message && 
+         m.sender === message.sender && 
+         Math.abs(new Date(m.createdAt || 0).getTime() - new Date(message.createdAt || 0).getTime()) < 1000)
+      )
+    );
+    return uniqueMessages.sort((a, b) => 
+      new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+    );
+  }, [messages, socketMessages]);
   
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const chatContentRef = useRef<HTMLDivElement | null>(null)
@@ -360,7 +389,7 @@ export default function Chat() {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages, socketMessages])
+  }, [combinedMessages])
   
   // Detect scroll position to show/hide scroll to bottom button
   useEffect(() => {
@@ -404,12 +433,20 @@ export default function Chat() {
     setIsTyping(true)
     
     try {
-      await MessageAPI.send({
+      const messageData = {
         idChat,
         message: text,
         sender: auth.user._id,
         reciver: idReciver
-      })
+      };
+      
+      // Emit socket message for real-time delivery
+      if (socketContext?.socket) {
+        socketContext.socket.emit('sendMessage', messageData);
+      }
+      
+      // Send to API for database storage
+      await MessageAPI.send(messageData)
       
       setText('')
       setReget(prev => !prev)
@@ -494,31 +531,14 @@ export default function Chat() {
   
   // Group messages by date and then by sender for better UI organization
   const groupMessages = (messages: Message[]): GroupedItem[] => {
-    // Get all _id's from messages (ignore undefined)
-    const messageIds = new Set(messages.map(m => m._id).filter(Boolean))
-
-    // Debug logs
-    console.log('messages:', messages.map(m => m._id))
-    console.log('socketMessages:', socketMessages.map(m => m._id))
-
-    // Filter socketMessages to only include those whose _id is not in messages
-    const filteredSocketMessages = socketMessages.filter(
-      (sm) => sm._id && !messageIds.has(sm._id)
-    )
-    console.log('filteredSocketMessages:', filteredSocketMessages.map(m => m._id))
-
-    // Combine messages and filtered socketMessages
-    const allMessages = [...messages, ...filteredSocketMessages].sort((a, b) => 
-      new Date(a.createdAt || Date.now()).getTime() - new Date(b.createdAt || Date.now()).getTime()
-    )
-    console.log('allMessages:', allMessages.map(m => m._id))
+    console.log('groupMessages called with:', messages.map(m => m._id))
     
-    if (allMessages.length === 0) return []
+    if (messages.length === 0) return []
     
     // First group by date
     const messagesByDate: Record<string, Message[]> = {}
     
-    allMessages.forEach(message => {
+    messages.forEach(message => {
       const dateString = getDateString(message.createdAt || Date.now())
       
       if (!messagesByDate[dateString]) {
@@ -610,9 +630,9 @@ export default function Chat() {
           <Box display="flex" justifyContent="center" alignItems="center" height="100%">
             <CircularProgress size={30} />
           </Box>
-        ) : groupMessages(messages).length > 0 ? (
+        ) : groupMessages(combinedMessages).length > 0 ? (
           <>
-            {groupMessages(messages).map((item, index) => {
+            {groupMessages(combinedMessages).map((item, index) => {
               if (item.type === 'date') {
                 return (
                   <DateDivider key={`date-${index}`}>
@@ -620,8 +640,8 @@ export default function Chat() {
                       label={item.date} 
                       size="small" 
                       sx={{ 
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main,
+                        bgcolor: alpha('#0063b1', 0.1),
+                        color: '#0063b1',
                         fontWeight: 500
                       }} 
                     />
@@ -865,10 +885,10 @@ export default function Chat() {
             disabled={!text.trim()}
             onClick={createMessage}
             sx={{ 
-              backgroundColor: text.trim() ? theme.palette.primary.main : alpha(theme.palette.action.disabled, 0.1),
-              color: text.trim() ? theme.palette.primary.contrastText : theme.palette.action.disabled,
+              backgroundColor: text.trim() ? '#0063b1' : alpha(theme.palette.action.disabled, 0.1),
+              color: text.trim() ? '#fff' : theme.palette.action.disabled,
               '&:hover': {
-                backgroundColor: text.trim() ? theme.palette.primary.dark : alpha(theme.palette.action.disabled, 0.1),
+                backgroundColor: text.trim() ? '#103996' : alpha(theme.palette.action.disabled, 0.1),
               },
               transition: 'all 0.2s ease',
               padding: '8px',

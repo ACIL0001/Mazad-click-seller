@@ -98,10 +98,17 @@ const MobileCard = ({ row, columns, onRowClick }) => {
       sx={{
         mb: 2,
         cursor: onRowClick ? 'pointer' : 'default',
-        transition: 'all 0.3s ease',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease',
+        background: theme.palette.mode === 'light' 
+          ? 'linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35))'
+          : 'linear-gradient(135deg, rgba(30,30,30,0.6), rgba(30,30,30,0.35))',
+        backdropFilter: 'saturate(140%) blur(10px)',
+        WebkitBackdropFilter: 'saturate(140%) blur(10px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
         '&:hover': {
-          boxShadow: theme.shadows[4],
-          transform: 'translateY(-2px)',
+          boxShadow: '0 16px 40px rgba(0,0,0,0.12)',
+          transform: 'translateY(-3px)',
         },
       }}
       onClick={handleClick}
@@ -236,22 +243,25 @@ export default function ResponsiveTable({
     return (
       <Card
         sx={{
-          boxShadow: '0 4px 24px 0 rgba(34,41,47,.1)',
           borderRadius: 3,
           overflow: 'hidden',
-          transition: 'box-shadow 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: '0 6px 30px 0 rgba(34,41,47,.2)',
-          }
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease',
+          background: theme.palette.mode === 'light' 
+            ? 'linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35))'
+            : 'linear-gradient(135deg, rgba(25,25,25,0.65), rgba(25,25,25,0.35))',
+          backdropFilter: 'saturate(150%) blur(12px)',
+          WebkitBackdropFilter: 'saturate(150%) blur(12px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
         }}
       >
         {/* Search Section */}
         <Box
           sx={{
             p: 2,
-            backgroundColor: theme.palette.mode === 'light' 
-              ? alpha(theme.palette.primary.main, 0.04)
-              : alpha(theme.palette.primary.main, 0.15),
+            background: theme.palette.mode === 'light'
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
           }}
         >
@@ -271,8 +281,16 @@ export default function ResponsiveTable({
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: theme.palette.background.paper,
-                  transition: theme.transitions.create(['box-shadow', 'width']),
+                  background: theme.palette.mode === 'light' 
+                    ? 'rgba(255,255,255,0.6)'
+                    : 'rgba(0,0,0,0.25)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  transition: theme.transitions.create(['box-shadow', 'width', 'transform']),
+                  '&:hover': {
+                    transform: 'translateZ(0)',
+                    boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.12)}`,
+                  },
                   '&.Mui-focused': {
                     boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
                   }
@@ -291,7 +309,11 @@ export default function ResponsiveTable({
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
+                    background: theme.palette.mode === 'light' 
+                      ? 'rgba(255,255,255,0.6)'
+                      : 'rgba(0,0,0,0.25)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)'
                   }
                 }}
               >
@@ -340,7 +362,10 @@ export default function ResponsiveTable({
           sx={{
             borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             '& .MuiTablePagination-select': {
-              backgroundColor: theme.palette.background.paper,
+              background: theme.palette.mode === 'light' 
+                ? 'rgba(255,255,255,0.6)'
+                : 'rgba(0,0,0,0.25)',
+              backdropFilter: 'blur(8px)'
             },
             '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
               color: theme.palette.text.secondary,
@@ -355,13 +380,16 @@ export default function ResponsiveTable({
   return (
     <Card
       sx={{
-        boxShadow: '0 4px 24px 0 rgba(34,41,47,.1)',
         borderRadius: 3,
         overflow: 'hidden',
-        transition: 'box-shadow 0.3s ease-in-out',
-        '&:hover': {
-          boxShadow: '0 6px 30px 0 rgba(34,41,47,.2)',
-        }
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease',
+        background: theme.palette.mode === 'light' 
+          ? 'linear-gradient(135deg, rgba(255,255,255,0.65), rgba(255,255,255,0.35))'
+          : 'linear-gradient(135deg, rgba(25,25,25,0.65), rgba(25,25,25,0.35))',
+        backdropFilter: 'saturate(150%) blur(12px)',
+        WebkitBackdropFilter: 'saturate(150%) blur(12px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
       }}
     >
       <Box
@@ -372,9 +400,9 @@ export default function ResponsiveTable({
           flexDirection: { xs: 'column', sm: 'row' },
           alignItems: { xs: 'stretch', sm: 'center' },
           justifyContent: 'space-between',
-          backgroundColor: theme.palette.mode === 'light' 
-            ? alpha(theme.palette.primary.main, 0.04)
-            : alpha(theme.palette.primary.main, 0.15),
+          background: theme.palette.mode === 'light'
+            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
         }}
       >
@@ -401,8 +429,16 @@ export default function ResponsiveTable({
               maxWidth: { sm: 280, md: 320 },
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                backgroundColor: theme.palette.background.paper,
-                transition: theme.transitions.create(['box-shadow', 'width']),
+                background: theme.palette.mode === 'light' 
+                  ? 'rgba(255,255,255,0.6)'
+                  : 'rgba(0,0,0,0.25)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                transition: theme.transitions.create(['box-shadow', 'width', 'transform']),
+                '&:hover': {
+                  transform: 'translateZ(0)',
+                  boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.12)}`,
+                },
                 '&.Mui-focused': {
                   boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
                 }
@@ -449,25 +485,26 @@ export default function ResponsiveTable({
         <TableContainer sx={{ 
           minWidth: { xs: 600, sm: 800 },
           '& .MuiTableCell-head': {
-            bgcolor: theme.palette.mode === 'light' 
-              ? alpha(theme.palette.primary.main, 0.02)
-              : alpha(theme.palette.primary.main, 0.1),
+            bgcolor: 'transparent',
             color: theme.palette.text.primary,
-            fontWeight: 600,
+            fontWeight: 700,
             fontSize: { xs: '0.75rem', sm: '0.875rem' },
             lineHeight: '1.5rem',
-            padding: { xs: '8px 4px', sm: '12px 8px', md: '16px' },
-            borderBottom: `1px solid ${theme.palette.divider}`,
+            padding: { xs: '12px 6px', sm: '14px 10px', md: '18px 12px' },
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+            backdropFilter: 'blur(6px)'
           },
           '& .MuiTableCell-body': {
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-            padding: { xs: '8px 4px', sm: '12px 8px', md: '16px' },
+            fontSize: { xs: '0.8rem', sm: '0.9rem' },
+            padding: { xs: '12px 6px', sm: '14px 10px', md: '18px 12px' },
             color: theme.palette.text.secondary,
-            borderBottom: `1px solid ${theme.palette.divider}`,
+            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           },
           '& .MuiTableRow-root': {
+            transition: 'background-color 0.2s ease, transform 0.15s ease',
             '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.02),
+              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+              transform: 'translateY(-1px)'
             },
             '&:last-child td, &:last-child th': {
               borderBottom: 0,
@@ -514,7 +551,10 @@ export default function ResponsiveTable({
         sx={{
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           '& .MuiTablePagination-select': {
-            backgroundColor: theme.palette.background.paper,
+            background: theme.palette.mode === 'light' 
+              ? 'rgba(255,255,255,0.6)'
+              : 'rgba(0,0,0,0.25)',
+            backdropFilter: 'blur(8px)'
           },
           '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
             color: theme.palette.text.secondary,

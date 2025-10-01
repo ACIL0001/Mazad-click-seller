@@ -28,13 +28,10 @@ export interface Tender {
   endingAt: Date;
   tenderType: TENDER_TYPE;
   auctionType: TENDER_AUCTION_TYPE;
-  maxBudget: number;
-  currentLowestBid: number;
   quantity?: string;
   wilaya: string;
   location: string;
   isPro: boolean;
-  minimumPrice?: number;
   awardedTo?: string;
   status: TENDER_STATUS;
   comments: string[];

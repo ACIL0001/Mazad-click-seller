@@ -30,7 +30,7 @@ import Label from '../../components/Label';
 import Iconify from '../../components/Iconify';
 import { useSnackbar } from 'notistack';
 import ResponsiveTable from '../../components/Tables/ResponsiveTable';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 // types
 import { Auction, AUCTION_TYPE, BID_STATUS } from '../../types/Auction';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -82,6 +82,7 @@ export default function Auctions() {
   const [selected, setSelected] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [finishedAuctions, setFinishedAuctions] = useState<Auction[]>([]);
+  const [activeAuctions, setActiveAuctions] = useState<Auction[]>([]);
   const [relaunchDialog, setRelaunchDialog] = useState(false);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
   const [relaunchData, setRelaunchData] = useState({
@@ -107,10 +108,8 @@ export default function Auctions() {
 
   useEffect(() => {
     get();
-    getFinishedAuctions();
     let y = setInterval(() => {
       get();
-      getFinishedAuctions();
     }, 5000);
     return () => {
       clearInterval(y);
@@ -128,16 +127,55 @@ export default function Auctions() {
     setLoading(true);
     AuctionsAPI.getAuctions()
         .then((response) => {
+            let auctionData = [];
             if (response && Array.isArray(response)) {
-                setAuctions(response);
-                console.log("auctions", response);
+                auctionData = response;
             } else if (response && response.data && Array.isArray(response.data)) {
-                setAuctions(response.data);
-                console.log("auctions", response.data);
+                auctionData = response.data;
             } else {
                 console.error("Unexpected response format:", response);
                 enqueueSnackbar('Format de réponse inattendu.', { variant: 'error' });
+                return;
             }
+
+            // Separate active and finished auctions
+            const now = new Date();
+            const active = auctionData.filter(auction => {
+                const endTime = new Date(auction.endingAt);
+                const isActive = endTime > now && auction.status !== BID_STATUS.CLOSED;
+                console.log('Active filter check:', {
+                    auctionId: auction._id,
+                    title: auction.title,
+                    endingAt: auction.endingAt,
+                    endTime: endTime.toISOString(),
+                    now: now.toISOString(),
+                    status: auction.status,
+                    isActive
+                });
+                return isActive;
+            });
+            const finished = auctionData.filter(auction => {
+                const endTime = new Date(auction.endingAt);
+                const isFinished = endTime <= now || auction.status === BID_STATUS.CLOSED;
+                console.log('Finished filter check:', {
+                    auctionId: auction._id,
+                    title: auction.title,
+                    endingAt: auction.endingAt,
+                    endTime: endTime.toISOString(),
+                    now: now.toISOString(),
+                    status: auction.status,
+                    isFinished
+                });
+                return isFinished;
+            });
+
+            setAuctions(auctionData); // Keep all auctions for "ALL" filter
+            setActiveAuctions(active);
+            setFinishedAuctions(finished);
+            
+            console.log("All auctions:", auctionData);
+            console.log("Active auctions:", active);
+            console.log("Finished auctions:", finished);
         })
         .catch((e) => {
             console.error("Error fetching auctions:", e);
@@ -146,22 +184,6 @@ export default function Auctions() {
         .finally(() => setLoading(false));
 };
 
-  const getFinishedAuctions = () => {
-    AuctionsAPI.getFinishedAuctions()
-        .then((response) => {
-            console.log('Finished auctions response:', response);
-            if (response && Array.isArray(response)) {
-                setFinishedAuctions(response);
-                console.log('Set finished auctions:', response);
-            } else if (response && response.data && Array.isArray(response.data)) {
-                setFinishedAuctions(response.data);
-                console.log('Set finished auctions from data:', response.data);
-            }
-        })
-        .catch((e) => {
-            console.error("Error fetching finished auctions:", e);
-        });
-};
 
   const getStatusColor = (status: BID_STATUS) => {
     switch (status) {
@@ -220,6 +242,9 @@ export default function Auctions() {
     const isTimeFinished = endTime < now;
     const isStatusClosed = auction.status === BID_STATUS.CLOSED;
     
+    // Allow relaunch if auction is either time-finished OR status-closed
+    const canRelaunch = isTimeFinished || isStatusClosed;
+    
     console.log('isAuctionFinished check:', {
       auctionId: auction._id,
       endingAt: auction.endingAt,
@@ -228,10 +253,10 @@ export default function Auctions() {
       isTimeFinished,
       status: auction.status,
       isStatusClosed,
-      result: isTimeFinished && isStatusClosed
+      result: canRelaunch
     });
     
-    return isTimeFinished && isStatusClosed;
+    return canRelaunch;
   };
 
   const calculateDates = () => {
@@ -287,6 +312,20 @@ export default function Auctions() {
     console.log('Current time:', new Date());
     console.log('Is auction finished:', isAuctionFinished(auction));
     
+    // Additional debugging
+    const now = new Date();
+    const endTime = new Date(auction.endingAt);
+    const isTimeFinished = endTime < now;
+    const isStatusClosed = auction.status === BID_STATUS.CLOSED;
+    console.log('Detailed check:', {
+      now: now.toISOString(),
+      endTime: endTime.toISOString(),
+      isTimeFinished,
+      isStatusClosed,
+      timeDiff: endTime.getTime() - now.getTime(),
+      hoursDiff: (endTime.getTime() - now.getTime()) / (1000 * 60 * 60)
+    });
+    
     setSelectedAuction(auction);
     
     // Calculate dates based on timing configuration
@@ -296,17 +335,17 @@ export default function Auctions() {
     const auctionAny = auction as any;
     
     setRelaunchData({
-      title: auction.title,
-      description: auction.description,
-      startingPrice: auction.startingPrice,
+      title: auction.title || '',
+      description: auction.description || '',
+      startingPrice: auction.startingPrice || 0,
       startingAt,
       endingAt,
-      auctionType: auction.auctionType,
-      isPro: auctionAny.isPro || false,
-      place: auctionAny.place || 'Alger', // Add default place
+      auctionType: (auction.auctionType as AUCTION_TYPE) || AUCTION_TYPE.CLASSIC,
+      isPro: Boolean(auctionAny.isPro) || false,
+      place: auctionAny.place || 'Alger',
       quantity: auctionAny.quantity || '1',
       wilaya: auctionAny.wilaya || 'Alger',
-      attributes: auctionAny.attributes || [],
+      attributes: Array.isArray(auctionAny.attributes) ? auctionAny.attributes : [],
     });
     setRelaunchDialog(true);
   };
@@ -392,9 +431,22 @@ export default function Auctions() {
     const relaunchPayload = {
       originalBidId: selectedAuction._id,
       ...relaunchData,
+      startingAt: relaunchData.startingAt.toISOString(),
+      endingAt: relaunchData.endingAt.toISOString(),
     };
 
-    console.log('Sending relaunch payload:', relaunchPayload);
+    console.log('Sending relaunch payload:', JSON.stringify(relaunchPayload, null, 2));
+    console.log('Payload types:', {
+      originalBidId: typeof relaunchPayload.originalBidId,
+      title: typeof relaunchPayload.title,
+      description: typeof relaunchPayload.description,
+      place: typeof relaunchPayload.place,
+      startingPrice: typeof relaunchPayload.startingPrice,
+      startingAt: typeof relaunchPayload.startingAt,
+      endingAt: typeof relaunchPayload.endingAt,
+      isPro: typeof relaunchPayload.isPro,
+      auctionType: typeof relaunchPayload.auctionType,
+    });
 
     AuctionsAPI.relaunchAuction(relaunchPayload)
       .then((response) => {
@@ -404,16 +456,8 @@ export default function Auctions() {
         setSelectedAuction(null);
         setValidationErrors({});
         
-        // Remove the relaunched auction from finished auctions table
-        console.log('Removing auction from finished auctions table:', selectedAuction._id);
-        setFinishedAuctions(prev => {
-          const filtered = prev.filter(auction => auction._id !== selectedAuction._id);
-          console.log('Finished auctions after removal:', filtered.length);
-          return filtered;
-        });
-        
-        get(); // Refresh active auctions
-        getFinishedAuctions(); // Refresh finished auctions to get updated list
+        // Refresh all auction data
+        get();
       })
       .catch((error) => {
         console.error('Error relaunching auction:', error);
@@ -437,10 +481,15 @@ export default function Auctions() {
 
 
   const getFilteredAuctions = () => {
-    if (statusFilter === 'FINISHED') {
-      return finishedAuctions;
+    switch (statusFilter) {
+      case 'ACTIVE':
+        return activeAuctions;
+      case 'FINISHED':
+        return finishedAuctions;
+      case 'ALL':
+      default:
+        return auctions;
     }
-    return auctions;
   };
 
   const TableBodyComponent = ({ data = [] }) => {
@@ -496,7 +545,7 @@ export default function Auctions() {
                 >
                   {t('view')}
                 </Button>
-                  {statusFilter === 'FINISHED' && isAuctionFinished(row) && (
+                  {(statusFilter === 'FINISHED' || (statusFilter === 'ALL' && isAuctionFinished(row))) && (
                     <Button
                       size="small"
                       variant="contained"
@@ -528,49 +577,71 @@ export default function Auctions() {
   return (
     <Page title={t('navigation.auctions')}>
       <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          mb={{ xs: 3, sm: 4, md: 5 }}
-          spacing={{ xs: 2, sm: 0 }}
+        <Box
+          sx={{
+            borderRadius: 3,
+            p: { xs: 2, sm: 3 },
+            mb: { xs: 3, sm: 4, md: 5 },
+            background: theme.palette.mode === 'light'
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+          }}
         >
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            alignItems={{ xs: 'stretch', sm: 'center' }} 
+            justifyContent="space-between" 
+            spacing={{ xs: 2, sm: 2 }}
           >
-            {t('navigation.auctions')}
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Filtrer par statut</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label="Filtrer par statut"
+            <Typography 
+              variant="h4" 
+              gutterBottom
+              sx={{ 
+                m: 0,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
+              {t('navigation.auctions')}
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel>Filtrer par statut</InputLabel>
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  label="Filtrer par statut"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: theme.palette.mode === 'light' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.25)',
+                      backdropFilter: 'blur(8px)'
+                    }
+                  }}
+                >
+                  <MenuItem value="ALL">Toutes les enchères</MenuItem>
+                  <MenuItem value="ACTIVE">Enchères en cours</MenuItem>
+                  <MenuItem value="FINISHED">Enchères terminées</MenuItem>
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                component={RouterLink}
+                to="/dashboard/auctions/create"
+                startIcon={<Iconify icon="eva:plus-fill" />}
+                sx={{
+                  minWidth: { xs: '100%', sm: 'auto' },
+                  py: { xs: 1.5, sm: 1 }
+                }}
               >
-                <MenuItem value="ALL">Toutes les enchères</MenuItem>
-                <MenuItem value="FINISHED">Enchères terminées</MenuItem>
-              </Select>
-            </FormControl>
-          <Button
-            variant="contained"
-            component={RouterLink}
-            to="/dashboard/auctions/create"
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            sx={{
-              minWidth: { xs: '100%', sm: 'auto' },
-              py: { xs: 1.5, sm: 1 }
-            }}
-          >
-            {t('newAuction')}
-          </Button>
+                {t('newAuction')}
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
+        </Box>
 
         <Stack mb={3}>
           <Breadcrumb />
@@ -596,14 +667,23 @@ export default function Auctions() {
             setSelected={setSelected}
             onRowClick={(row) => navigate(`/dashboard/auctions/${row._id}`)}
           />
-        ) : statusFilter === 'FINISHED' ? (
+        ) : (
           <Box textAlign="center" py={4}>
-            <Iconify icon="eva:archive-fill" width={64} height={64} sx={{ color: 'text.disabled', mb: 2 }} />
+            <Iconify 
+              icon={statusFilter === 'ACTIVE' ? "eva:clock-fill" : statusFilter === 'FINISHED' ? "eva:archive-fill" : "eva:grid-fill"} 
+              width={64} 
+              height={64} 
+              sx={{ color: 'text.disabled', mb: 2 }} 
+            />
             <Typography variant="h6" gutterBottom>
-              Aucune enchère terminée
+              {statusFilter === 'ACTIVE' && 'Aucune enchère en cours'}
+              {statusFilter === 'FINISHED' && 'Aucune enchère terminée'}
+              {statusFilter === 'ALL' && 'Aucune enchère trouvée'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Vous n'avez pas encore d'enchères terminées et fermées à relancer.
+              {statusFilter === 'ACTIVE' && 'Vous n\'avez pas d\'enchères actuellement en cours.'}
+              {statusFilter === 'FINISHED' && 'Vous n\'avez pas encore d\'enchères terminées et fermées à relancer.'}
+              {statusFilter === 'ALL' && 'Commencez par créer votre première enchère.'}
             </Typography>
             <Button
               variant="contained"
@@ -614,7 +694,7 @@ export default function Auctions() {
               Créer une nouvelle enchère
             </Button>
           </Box>
-        ) : null}
+        )}
 
         {/* Relaunch Dialog */}
         <Dialog open={relaunchDialog} onClose={() => setRelaunchDialog(false)} maxWidth="md" fullWidth>

@@ -17,6 +17,10 @@ export enum NotificationAction {
 
 export const NotificationAPI = {
   getAll: (): Promise<any> => requests.get(`notifications`),
+  markAsRead: (notificationId: string): Promise<any> => requests.put(`notification/${notificationId}/read`, {}),
+  markAllAsRead: (): Promise<any> => requests.put('notification/read-all', {}),
+  markChatAsRead: (chatId: string): Promise<any> => requests.put(`notification/chat/${chatId}/read`, {}),
+  getUnreadCount: (): Promise<any> => requests.get('notification/unread-count'),
   SubmitPushNotification: async (notificationData: {
     title: string;
     description: string;

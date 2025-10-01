@@ -68,6 +68,14 @@ function RootRedirect() {
     useEffect(() => {
         const checkVerificationStatus = () => {
             console.log('🔄 RootRedirect - Checking verification status:', { isReady, isLogged, auth });
+            console.log('🔄 RootRedirect - Current pathname:', window.location.pathname);
+            
+            // Only redirect if we're actually on the root path
+            if (window.location.pathname !== '/') {
+                console.log('🔄 RootRedirect - Not on root path, skipping redirect');
+                setLoading(false);
+                return;
+            }
             
             // Wait for auth to be ready
             if (!isReady) {
@@ -83,26 +91,29 @@ function RootRedirect() {
                 return;
             }
 
-            // Check verification status only for PROFESSIONAL users
-            if (auth.user.type === 'PROFESSIONAL') {
-                const isVerified = auth.user.isVerified === true || 
-                                (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-                
-                console.log('🔐 RootRedirect - Professional user verification status:', { isVerified, user: auth.user });
-                
-                if (isVerified) {
-                    // Professional user is verified, redirect to dashboard
-                    console.log('✅ RootRedirect - Professional user is verified, redirecting to dashboard');
-                    setRedirectPath('/dashboard/app');
-                } else {
-                    // Professional user is not verified, redirect to waiting for verification page
-                    console.log('⏳ RootRedirect - Professional user is not verified, redirecting to waiting page');
-                    setRedirectPath('/waiting-for-verification');
-                }
-            } else {
-                // CLIENT and RESELLER users don't need verification - redirect to dashboard
-                console.log('✅ RootRedirect - Client/Reseller user, redirecting to dashboard without verification check');
+            // Check if user has completed identity verification
+            const hasIdentity = auth.user.isHasIdentity === true;
+            const isVerified = auth.user.isVerified === true || 
+                            (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+            
+            console.log('🔐 RootRedirect - User verification status:', { 
+                isVerified, 
+                hasIdentity, 
+                user: auth.user 
+            });
+            
+            if (isVerified && hasIdentity) {
+                // User is fully verified and has identity, redirect to dashboard
+                console.log('✅ RootRedirect - User is fully verified with identity, redirecting to dashboard');
                 setRedirectPath('/dashboard/app');
+            } else if (isVerified && !hasIdentity) {
+                // User is OTP verified but hasn't completed identity verification
+                console.log('📋 RootRedirect - User OTP verified but needs identity verification, redirecting to identity page');
+                setRedirectPath('/identity-verification');
+            } else {
+                // User is not verified, redirect to waiting for verification page
+                console.log('⏳ RootRedirect - User is not verified, redirecting to waiting page');
+                setRedirectPath('/waiting-for-verification');
             }
             
             setLoading(false);
@@ -176,6 +187,7 @@ export default function Router() {
                 { path: 'participants', element: <RequirePhoneVerification><Participants /></RequirePhoneVerification> },
                 { path: 'tenders', element: <RequirePhoneVerification><Tenders /></RequirePhoneVerification> },
                 { path: 'tenders/create', element: <RequirePhoneVerification><CreateTender /></RequirePhoneVerification> },
+                { path: 'tenders/update/:id', element: <RequirePhoneVerification><CreateTender /></RequirePhoneVerification> },
                 { path: 'tenders/:id', element: <RequirePhoneVerification><TenderDetail /></RequirePhoneVerification> },
                 { path: 'tender-bids', element: <RequirePhoneVerification><TenderBids /></RequirePhoneVerification> },
                 { path: 'notifications', element: <RequirePhoneVerification><NotificationsPage /></RequirePhoneVerification> },

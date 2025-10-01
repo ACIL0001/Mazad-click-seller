@@ -5,28 +5,92 @@ import app from '@/config';
 import useAuth from '@/hooks/useAuth';
 import useRequest from '@/hooks/useRequest';
 import { AuthAPI } from './auth';
+import { authStore } from '@/contexts/authStore';
 
 const instance = axios.create({
   baseURL: app.baseURL,
   timeout: app.timeout,
-  headers: { 'x-access-key': app.apiKey },
+  headers: {},
   withCredentials: true,
 });
 
+// CRITICAL: Global request interceptor that ALWAYS runs before any request
+instance.interceptors.request.use(
+  (config) => {
+    // Get the LATEST auth state directly from the store
+    const state = authStore.getState();
+    const { auth, isLogged } = state;
+    
+    console.log('🔍 Request Interceptor:', {
+      url: config.url,
+      isLogged,
+      hasToken: !!auth?.tokens?.accessToken,
+      tokenPreview: auth?.tokens?.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none'
+    });
+    
+    // Public endpoints that don't need auth
+    const publicEndpoints = [
+      '/auth/signin',
+      '/auth/signup',
+      '/auth/refresh',
+      '/auth/exists',
+      '/auth/2factor',
+      '/auth/reset-password',
+      '/otp/confirm-phone',
+      '/otp/resend/confirm-phone',
+      '/tender', // public tenders listing
+    ];
+    
+    const isPublicEndpoint = publicEndpoints.some((endpoint) => 
+      config.url?.includes(endpoint)
+    );
+    
+    // Add API key for ALL requests (required by SellerGuard)
+    if (app.apiKey) {
+      config.headers['x-access-key'] = app.apiKey;
+      console.log('✅ API Key attached to:', config.url);
+    }
+    
+    // Add token for ALL requests except public endpoints
+    if (!isPublicEndpoint) {
+      if (isLogged && auth?.tokens?.accessToken) {
+        config.headers.Authorization = `Bearer ${auth.tokens.accessToken}`;
+        console.log('✅ Token attached to:', config.url);
+      } else {
+        console.warn('⚠️ No token available for:', config.url, {
+          isLogged,
+          hasToken: !!auth?.tokens?.accessToken
+        });
+      }
+    }
+    
+    // Set language header
+    if (auth?.user?.preference?.language) {
+      config.headers['accept-language'] = auth.user.preference.language;
+    }
+    
+    return config;
+  },
+  (error) => {
+    console.error('❌ Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
 const response = (res: AxiosResponse) => res.data;
 
+// Updated requests utility to support headers and config
 export const requests = {
-  get: (url: string) => instance.get(url).then(response),
-  post: (url: string, body: {}, returnFullResponse = false) =>
-    returnFullResponse ? instance.post(url, body) : instance.post(url, body).then(response),
-  put: (url: string, body: {}) => instance.put(url, body).then(response),
-  delete: (url: string) => instance.delete(url).then(response),
+  get: (url: string, config?: any) => instance.get(url, config).then(response),
+  post: (url: string, body: {}, returnFullResponse = false, config?: any) =>
+    returnFullResponse ? instance.post(url, body, config) : instance.post(url, body, config).then(response),
+  put: (url: string, body: {}, config?: any) => instance.put(url, body, config).then(response),
+  delete: (url: string, config?: any) => instance.delete(url, config).then(response),
 };
 
 let isRefreshing = false;
 let refreshSubscribers: ((token: string | null) => void)[] = [];
 
-// add a subscriber to the queue
 const subscribeTokenRefresh = (callback: (token: string | null) => void) => {
   refreshSubscribers.push(callback);
 };
@@ -42,81 +106,65 @@ const AxiosInterceptor = ({ children }: any) => {
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    // @request interceptor
     const onRequest = (req: any) => {
-      console.log(req.url);
+      console.log('📤', req.url);
       setLoading(true);
-
-      // client preferred language
-      req.headers['accept-language'] = auth.user?.preference?.language || 'FR';
-
-      // Do NOT add Authorization header for public endpoints
-      const publicEndpoints = [
-        '/otp/confirm-phone',
-        '/otp/resend/confirm-phone',
-        // add other public endpoints here if needed
-      ];
-      if (
-        isLogged &&
-        auth.tokens &&
-        !publicEndpoints.some((endpoint) => req.url.includes(endpoint))
-      ) {
-        if (!req.headers.Authorization) {
-          req.headers.Authorization = 'Bearer ' + auth.tokens.accessToken;
-          console.log('🔐 AxiosInterceptor - Added Authorization header for:', req.url);
-          console.log('🔐 AxiosInterceptor - Token preview:', auth.tokens.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none');
-        }
-      } else {
-        console.log('🔐 AxiosInterceptor - No auth token available for:', req.url);
-      }
-
       return req;
     };
 
-    // @response interceptor
-    const onReponse = (res: any) => {
+    const onResponse = (res: any) => {
       setLoading(false);
       return res;
     };
 
-    // @error interceptor
     const onError = async (error: any) => {
       setLoading(false);
       const originalRequest = error.config;
 
-      // If access token expired and it's not already being refreshed
+      console.error('❌ Response error:', {
+        url: originalRequest?.url,
+        status: error.response?.status,
+        message: error.message
+      });
 
+      // Handle 401 Unauthorized - token refresh
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
-
 
         if (!isRefreshing) {
           isRefreshing = true;
 
           try {
-            if (!isLogged) {
+            // Get fresh state from store
+            const currentState = authStore.getState();
+            const { auth: currentAuth, isLogged: currentIsLogged } = currentState;
+            
+            if (!currentIsLogged || !currentAuth.tokens?.refreshToken) {
+              console.log('❌ No refresh token available');
               isRefreshing = false;
               throw error;
             }
 
+            console.log('🔄 Attempting token refresh...');
+            const refreshToken = currentAuth.tokens.refreshToken;
+            const newTokens = await AuthAPI.refresh(refreshToken);
 
-            const refreshToken = auth.tokens.refreshToken;
-
-            const { data: tokens } = await AuthAPI.refresh(refreshToken);
-
-            set({ ...auth, tokens });
+            // Update auth store with new tokens
+            set({ ...currentAuth, tokens: newTokens });
 
             isRefreshing = false;
-            onRefreshed(tokens.accessToken); // Notify waiting requests
-            originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`;
-            return instance(originalRequest); // Retry the original request
+            onRefreshed(newTokens.accessToken);
+            
+            // Retry original request with new token
+            originalRequest.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+            console.log('✅ Token refreshed, retrying request');
+            return instance(originalRequest);
           } catch (refreshError) {
-            console.error('Token refresh failed:', refreshError);
-
+            console.error('❌ Token refresh failed:', refreshError);
             isRefreshing = false;
-            onRefreshed(null); // Notify waiting requests of failure
+            onRefreshed(null);
 
-            // Don't clear auth if we're on auth pages or waiting for verification to prevent disrupting login flow
+            // Check if we're on auth pages
             const isOnAuthPage = typeof window !== 'undefined' && (
               window.location.pathname.includes('/login') ||
               window.location.pathname.includes('/register') ||
@@ -128,38 +176,49 @@ const AxiosInterceptor = ({ children }: any) => {
             );
             
             if (!isOnAuthPage) {
-              clear(); // Log out the user only if not on auth pages
-            } else {
-              console.log('Token refresh failed during auth flow, not clearing auth to prevent disrupting login');
+              clear();
+              enqueueSnackbar('Session expired. Please login again.', { variant: 'warning' });
             }
             
-            throw refreshError; // Reject the original request with the error
+            throw refreshError;
           }
+        } else {
+          // Wait for ongoing refresh
+          return new Promise((resolve, reject) => {
+            subscribeTokenRefresh((token: string | null) => {
+              if (token) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(instance(originalRequest));
+              } else {
+                reject(error);
+              }
+            });
+          });
         }
       }
 
-      // Handle different types of errors
-      if (error.response?.status !== 401) {
-        console.log('API Error:', error.response);
-        
-        // Handle 500 Internal Server Error specifically
-        if (error.response?.status === 500) {
-          console.error('🚨 Internal Server Error (500):', error.response.data);
-          enqueueSnackbar('Erreur interne du serveur. Veuillez réessayer plus tard.', { variant: 'error' });
-        } else {
-          // Show user-friendly error message for other errors
-          const errorMessage = error.response?.data?.message || 
-                              error.message || 
-                              'un problème est survenu';
-          enqueueSnackbar(errorMessage, { variant: 'error' });
-        }
-      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('ERR_CONNECTION_REFUSED')) {
-        // Network/connection errors
-        console.log('Network Error:', error.message);
+      // Handle timeout errors - only log to console, no snackbar
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        console.error('⏰ Request timeout (15000ms):', error.message);
+        console.error('Request URL:', error.config?.url);
+        console.error('Request method:', error.config?.method);
+        // No snackbar for timeout errors - only console logging
+        return Promise.reject(error);
+      }
+
+      // Handle other errors
+      if (error.response?.status === 500) {
+        console.error('🚨 Internal Server Error:', error.response.data);
+        enqueueSnackbar('Erreur interne du serveur. Veuillez réessayer plus tard.', { variant: 'error' });
+      } else if (error.response?.status !== 401) {
+        const errorMessage = error.response?.data?.message || 
+                            error.message || 
+                            'un problème est survenu';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
+      } else if (error.code === 'ERR_NETWORK') {
         enqueueSnackbar('Impossible de se connecter au serveur. Vérifiez votre connexion.', { variant: 'error' });
       }
 
-      // Log error details safely
       if (error.response) {
         console.log('\nStatus : ' + error.response.status + '\n Body : ');
         console.log(error.response.data);
@@ -168,10 +227,9 @@ const AxiosInterceptor = ({ children }: any) => {
       }
       
       return Promise.reject(error);
-
     };
 
-    const responseInterceptor = instance.interceptors.response.use(onReponse, onError);
+    const responseInterceptor = instance.interceptors.response.use(onResponse, onError);
     const requestInterceptor = instance.interceptors.request.use(onRequest, onError);
 
     return () => {
@@ -179,9 +237,9 @@ const AxiosInterceptor = ({ children }: any) => {
       instance.interceptors.request.eject(requestInterceptor);
     };
 
-  }, [auth, isLogged]);
+  }, [auth, isLogged, set, clear, enqueueSnackbar, setLoading]);
 
   return children;
 };
 
-export { AxiosInterceptor };
+export { AxiosInterceptor, instance };

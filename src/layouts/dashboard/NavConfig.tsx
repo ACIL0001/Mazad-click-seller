@@ -1,13 +1,32 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Badge } from '@mui/material';
 import Iconify from '../../components/Iconify';
+import useMessageNotifications from '../../hooks/useMessageNotifications';
 
 // ----------------------------------------------------------------------
 
-const getIcon = (name: string) => <Iconify icon={name} width={22} height={22} />;
+const getIcon = (name: string, badgeContent?: number | null) => {
+  const icon = <Iconify icon={name} width={22} height={22} />;
+  
+  if (badgeContent !== null && badgeContent !== undefined && badgeContent > 0) {
+    return (
+      <Badge
+        badgeContent={badgeContent}
+        color="error"
+        max={99}
+        sx={{ marginRight: 1 }}
+      >
+        {icon}
+      </Badge>
+    );
+  }
+  return icon;
+};
 
 const useNavConfig = () => {
   const { t } = useTranslation();
+  const { totalUnreadCount: messageNotificationCount } = useMessageNotifications();
 
   return [
     {
@@ -129,6 +148,16 @@ const useNavConfig = () => {
           icon: getIcon('mdi:email'),
         },
       ],
+    },
+    {
+      title: t('navigation.chat'),
+      path: '/dashboard/chat',
+      icon: getIcon('material-symbols:chat', messageNotificationCount > 0 ? messageNotificationCount : null),
+    },
+    {
+      title: t('navigation.notifications'),
+      path: '/dashboard/notifications',
+      icon: getIcon('mdi:bell'),
     },
     {
       title: t('navigation.reports'),

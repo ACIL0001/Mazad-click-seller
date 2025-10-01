@@ -77,7 +77,7 @@ export default function AccountPopover() {
     } else {
       setSwitchToBuyer(true);
       window.localStorage.setItem('switch', '1');
-      windowRef.current = window.open(import.meta.env.VITE_BUYER_URL || 'http://localhost:3001');
+      windowRef.current = window.open(import.meta.env.VITE_BUYER_URL || 'https://mazadclick-server.onrender.com');
     }
   };
 

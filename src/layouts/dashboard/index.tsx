@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link as RouterLink, useNavigate } from 'react-router-dom';
 // material
 import { styled } from '@mui/material/styles';
@@ -9,7 +9,6 @@ import OnlineSidebar from './OnlineSidebar';
 import useAuth from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { authStore } from '@/contexts/authStore';
-import { AuthAPI } from '@/api/auth';
 // ----------------------------------------------------------------------
 
 const APP_BAR_MOBILE = 64;
@@ -60,75 +59,78 @@ export default function DashboardLayout() {
   const { isLogged, auth, validateToken } = useAuth();
   const { isRTL } = useLanguage();
   const [subscriptionChecked, setSubscriptionChecked] = useState(false);
+  const checkInProgress = useRef(false);
 
   useEffect(() => {
+    // Quick check: redirect to login if not logged in
     if (!isLogged) {
+      console.log('DashboardLayout: Not logged in, redirecting to login');
       navigate("/login");
       return;
     }
 
-    // Check if user is verified and token is valid
+    // Prevent multiple simultaneous checks
+    if (checkInProgress.current) {
+      console.log('DashboardLayout: Check already in progress, skipping');
+      return;
+    }
+
     const checkUserAccess = async () => {
+      checkInProgress.current = true;
+
       try {
-        // Use existing user data first to avoid unnecessary API calls
         const user = auth?.user;
+        const hasToken = !!auth?.tokens?.accessToken;
+
+        console.log('DashboardLayout: User access check', {
+          hasUser: !!user,
+          hasToken,
+          isVerified: user?.isVerified
+        });
+
+        // If no user data, redirect to login
         if (!user) {
-          console.log('DashboardLayout: No user data available, redirecting to login');
+          console.log('DashboardLayout: No user data, redirecting to login');
           navigate("/login");
           return;
         }
 
-        console.log('DashboardLayout: Checking user verification status', user);
+        // Check verification status
+        const isVerified = user.isVerified === true || 
+                          (user.isVerified !== false && user.isVerified !== 0);
         
-        // Check verification status only for PROFESSIONAL users
-        if (user.type === 'PROFESSIONAL') {
-          const isVerified = user.isVerified === true || 
-                           (user.isVerified !== false && user.isVerified !== 0);
-          
-          if (!isVerified) {
-            console.log('DashboardLayout: Professional user is not verified, redirecting to waiting page');
-            // Don't clear auth - just redirect to waiting page
-            navigate("/waiting-for-verification");
-            return;
-          }
-          
-          console.log('DashboardLayout: Professional user is verified, allowing dashboard access');
-        } else {
-          // CLIENT and RESELLER users don't need verification - allow dashboard access
-          console.log('DashboardLayout: Client/Reseller user, allowing dashboard access without verification check');
+        if (!isVerified) {
+          console.log('DashboardLayout: User not verified, redirecting to waiting page');
+          navigate("/waiting-for-verification");
+          return;
         }
+        
+        console.log('DashboardLayout: User verified, allowing access');
         setSubscriptionChecked(true);
         
-        // Optional: Validate token in background (don't block access)
-        try {
-          console.log('DashboardLayout: Validating token in background');
-          const { valid, user: serverUser } = await validateToken();
-          
-          if (valid && serverUser) {
-            console.log('DashboardLayout: Token validation successful, updating user data');
-            // Update auth store with fresh user data if validation succeeds
-            authStore.getState().set({
-              user: serverUser,
-              tokens: auth.tokens
-            });
-          } else {
-            console.log('DashboardLayout: Token validation failed, but allowing access with existing data');
-          }
-        } catch (tokenError) {
-          console.warn('DashboardLayout: Token validation failed in background:', tokenError);
-          // Don't clear auth or redirect - just log the warning
-          // The user can continue using the app with existing data
+        // Optional background token validation (don't block UI)
+        if (hasToken) {
+          validateToken().catch(err => {
+            console.warn('DashboardLayout: Background token validation failed:', err);
+            // Don't redirect or clear auth - just log the warning
+          });
         }
         
       } catch (error) {
         console.error('DashboardLayout: Access check failed', error);
-        // Don't clear auth immediately - just redirect to login
         navigate("/login");
+      } finally {
+        checkInProgress.current = false;
       }
     };
 
-    checkUserAccess();
-  }, [isLogged, auth?.user, navigate, validateToken])
+    // Delay the check slightly to allow auth store to initialize
+    const timeoutId = setTimeout(() => {
+      checkUserAccess();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [isLogged, navigate]);
 
   return (
     <RootStyle isRTL={isRTL}>

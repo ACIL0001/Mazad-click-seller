@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 // material
 import {
@@ -34,7 +34,6 @@ import { useCreateSocket } from '@/contexts/SocketContext';
 import { ChatAPI } from '@/api/Chat';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-// Update the Auction type definition to include user property if it's missing in the type definition
 interface AuctionWithUser extends Auction {
   user?: User;
   winner?: User;
@@ -57,23 +56,26 @@ export default function AuctionDetail() {
   const [loading, setLoading] = useState(true);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [participantsLoading, setParticipantsLoading] = useState(true);
-  const [acceptLoading, setAcceptLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
   const navigate = useNavigate();
   const { notificationSocket } = useCreateSocket();
-  const { auth } = useAuth();
-
-  console.log('Auth data:', auth);
+  const { auth, isLogged } = useAuth();
+  const fetchInProgress = useRef(false);
 
   const getAuctionDetails = useCallback(async (auctionId: string) => {
+    if (fetchInProgress.current) {
+      console.log('AuctionDetail: Fetch already in progress, skipping');
+      return;
+    }
+
     try {
+      fetchInProgress.current = true;
       setLoading(true);
       console.log('Fetching auction details for ID:', auctionId);
       const response = await AuctionsAPI.getAuctionById(auctionId);
       console.log("Auction details response:", response);
       
       if (response) {
-        console.log("response auction details:", response);
         setAuction(response);
       } else {
         console.warn('No auction data received');
@@ -85,10 +87,18 @@ export default function AuctionDetail() {
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setLoading(false);
+      fetchInProgress.current = false;
     }
   }, [enqueueSnackbar]);
 
   const getAuctionParticipants = useCallback(async (auctionId: string) => {
+    // Wait for authentication to be ready
+    if (!isLogged || !auth?.tokens?.accessToken) {
+      console.log('AuctionDetail: Waiting for auth before fetching participants');
+      setParticipantsLoading(false);
+      return;
+    }
+
     setParticipantsLoading(true);
     try {
       console.log('Fetching participants for auction ID:', auctionId);
@@ -123,22 +133,30 @@ export default function AuctionDetail() {
     } finally {
       setParticipantsLoading(false);
     }
-  }, [enqueueSnackbar, t]);
+  }, [enqueueSnackbar, t, isLogged, auth?.tokens?.accessToken]);
 
   useEffect(() => {
     if (id) {
+      // Always fetch auction details immediately
       getAuctionDetails(id);
-      getAuctionParticipants(id);
+      
+      // Wait for auth before fetching participants
+      if (isLogged && auth?.tokens?.accessToken) {
+        const timeoutId = setTimeout(() => {
+          getAuctionParticipants(id);
+        }, 500);
+        return () => clearTimeout(timeoutId);
+      } else {
+        console.log('AuctionDetail: Auth not ready, skipping participants fetch');
+        setParticipantsLoading(false);
+      }
     }
-  }, [id, getAuctionDetails, getAuctionParticipants]);
+  }, [id, isLogged, auth?.tokens?.accessToken, getAuctionDetails]);
 
   const formatDate = (date: Date | string) => {
     if (!date) return 'N/A';
     
-    // Get current language from i18n and provide a safe fallback
     const currentLanguage = i18n.language || 'en';
-    
-    // Map language codes to valid locales
     const localeMap: { [key: string]: string } = {
       'en': 'en-US',
       'fr': 'fr-FR',
@@ -159,8 +177,6 @@ export default function AuctionDetail() {
       });
     } catch (error) {
       console.error('Error formatting date:', error);
-      // Fallback if there's still an issue with the locale
-      console.warn(`Date formatting error with locale ${locale}, using default format`);
       return new Date(date).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -224,7 +240,6 @@ export default function AuctionDetail() {
     }
   };
 
-  // WinnerBanner component
   const WinnerBanner = ({ winner }: { winner: User }) => (
     <Slide in direction="down" timeout={600}>
       <Paper
@@ -296,15 +311,10 @@ export default function AuctionDetail() {
     );
   }
 
-  console.log('Notification socket data:', notificationSocket);
-
   return (
     <Page title={`${t('details') || 'Auction Details'} - ${auction.title}`}>
       <Container>
-        {/* Winner Banner */}
-        {auction.winner && (
-          <WinnerBanner winner={auction.winner} />
-        )}
+        {auction.winner && <WinnerBanner winner={auction.winner} />}
         
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
@@ -365,33 +375,13 @@ export default function AuctionDetail() {
                       return `0 0 8px ${theme.palette[color]?.[theme.palette.mode === 'dark' ? 400 : 500] || theme.palette.primary[500]}`;
                     },
                     animation: 'pulse 2s infinite',
-                    '@keyframes pulse': {
-                      '0%': {
-                        transform: 'scale(0.95)',
-                        opacity: 0.8,
-                      },
-                      '70%': {
-                        transform: 'scale(1)',
-                        opacity: 1,
-                      },
-                      '100%': {
-                        transform: 'scale(0.95)',
-                        opacity: 0.8,
-                      },
-                    },
                   }}
                 />
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    color: 'text.primary',
-                    fontWeight: 600,
-                  }}
-                >
+                <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>
                   {t('statusLabel') || 'Status'}
                 </Typography>
               </Box>
-                              <Chip
+              <Chip
                 label={auction.status === BID_STATUS.OPEN 
                   ? 'Open' 
                   : auction.status === BID_STATUS.ON_AUCTION ? 'On Auction' 
@@ -401,59 +391,36 @@ export default function AuctionDetail() {
                 color={getStatusColor(auction.status)}
                 variant="filled"
                 size="small"
-                sx={{
-                  fontWeight: 600,
-                  borderRadius: 1.5,
-                  minWidth: 80,
-                  textAlign: 'center'
-                }}
+                sx={{ fontWeight: 600, borderRadius: 1.5, minWidth: 80 }}
               />
             </Paper>
           </Box>
         </Stack>
 
         <Grid container spacing={3}>
-          {/* Main Auction Info */}
           <Grid item xs={12} md={8}>
             <Card sx={{ p: 2, mb: 3, minHeight: '200px', maxHeight: '250px', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                {auction.title}
-              </Typography>
+              <Typography variant="h6" sx={{ mb: 1 }}>{auction.title}</Typography>
               <Stack spacing={1} sx={{ flex: 1 }}>
                 <Box sx={{ flex: 1, overflow: 'auto' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('description') || 'Description'}
-                  </Typography>
-                  <Typography variant="body1" sx={{ maxHeight: '80px', overflow: 'auto' }}>
-                    {auction.description}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{t('description') || 'Description'}</Typography>
+                  <Typography variant="body1" sx={{ maxHeight: '80px', overflow: 'auto' }}>{auction.description}</Typography>
                 </Box>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('initialPrice') || 'Initial Price'}
-                    </Typography>
-                    <Typography variant="h6">
-                      {(auction.startingPrice || 0).toFixed(2)} DA
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">{t('initialPrice') || 'Initial Price'}</Typography>
+                    <Typography variant="h6">{(auction.startingPrice || 0).toFixed(2)} DA</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      {t('currentPrice') || 'Current Price'}
-                    </Typography>
-                    <Typography variant="h6" color="primary.main">
-                      {(auction.currentPrice || auction.startingPrice || 0).toFixed(2)} DA
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">{t('currentPrice') || 'Current Price'}</Typography>
+                    <Typography variant="h6" color="primary.main">{(auction.currentPrice || auction.startingPrice || 0).toFixed(2)} DA</Typography>
                   </Grid>
                 </Grid>
               </Stack>
             </Card>
 
-            {/* Participants Section */}
             <Card sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                {t('participants') || 'Participants'}
-              </Typography>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('participants') || 'Participants'}</Typography>
               {participantsLoading ? (
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight="60px">
                   <CircularProgress size={24} />
@@ -476,31 +443,22 @@ export default function AuctionDetail() {
                       }}
                       onClick={() => {
                         if (participant.user?._id) {
-                          // Open user profile in a new tab
-                          window.open(`${window.location.origin}/users/${participant.user._id}`, '_blank');
+                          window.open(`https://mazadclick-server.onrender.com/users/${participant.user._id}`, '_blank');
                         }
                       }}
                     >
                       <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar src={participant.avatar} alt={participant.name}>
-                          {participant.name.charAt(0)}
-                        </Avatar>
+                        <Avatar src={participant.avatar} alt={participant.name}>{participant.name.charAt(0)}</Avatar>
                         <Box flex={1}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                            {participant.name}
-                          </Typography>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{participant.name}</Typography>
                           <Typography variant="body2" color="text.secondary">
                             Bid: {participant.bidAmount?.toFixed(2) || '0.00'} DA
                           </Typography>
                         </Box>
                         <Box textAlign="right">
-                          <Typography variant="caption" color="text.secondary">
-                            {formatDate(participant.bidDate)}
-                          </Typography>
+                          <Typography variant="caption" color="text.secondary">{formatDate(participant.bidDate)}</Typography>
                           <Box display="flex" alignItems="center" justifyContent="flex-end" gap={0.5} sx={{ mt: 0.5 }}>
-                            <Typography variant="caption" color="primary.main" sx={{ fontSize: '0.75rem' }}>
-                              View profile
-                            </Typography>
+                            <Typography variant="caption" color="primary.main" sx={{ fontSize: '0.75rem' }}>View profile</Typography>
                             <OpenInNewIcon sx={{ fontSize: '0.875rem', color: 'primary.main' }} />
                           </Box>
                         </Box>
@@ -516,31 +474,19 @@ export default function AuctionDetail() {
             </Card>
           </Grid>
 
-          {/* Sidebar Info */}
           <Grid item xs={12} md={4}>
             <Card sx={{ p: 2, mb: 3, minHeight: '200px', maxHeight: '250px', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" sx={{ mb: 1 }}>
-                {t('information') || 'Information'}
-              </Typography>
+              <Typography variant="h6" sx={{ mb: 1 }}>{t('information') || 'Information'}</Typography>
               <Stack spacing={2} sx={{ flex: 1, justifyContent: 'space-around' }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('type') || 'Type'}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{t('type') || 'Type'}</Typography>
                   <Label variant="ghost" color="default">
-                    {auction.bidType === 'PRODUCT' 
-                      ? t('typeProduct') || 'Product' 
-                      : t('typeService') || 'Service'}
+                    {auction.bidType === 'PRODUCT' ? t('typeProduct') || 'Product' : t('typeService') || 'Service'}
                   </Label>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('mode') || 'Mode'}
-                  </Typography>
-                  <Label
-                    variant="ghost"
-                    color={auction.auctionType === AUCTION_TYPE.EXPRESS ? 'warning' : 'default'}
-                  >
+                  <Typography variant="body2" color="text.secondary">{t('mode') || 'Mode'}</Typography>
+                  <Label variant="ghost" color={auction.auctionType === AUCTION_TYPE.EXPRESS ? 'warning' : 'default'}>
                     {auction.auctionType === AUCTION_TYPE.EXPRESS
                       ? `${t('modeExpress') || 'Express'} (MEZROUB)`
                       : auction.auctionType === AUCTION_TYPE.AUTO_SUB_BID
@@ -551,22 +497,15 @@ export default function AuctionDetail() {
               </Stack>
             </Card>
 
-            {/* Auction Timeline */}
             <Card sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                {t('timeline') || 'Timeline'}
-              </Typography>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('timeline') || 'Timeline'}</Typography>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('startDate') || 'Start Date'}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{t('startDate') || 'Start Date'}</Typography>
                   <Typography variant="body1">{formatDate(auction.startingAt)}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('endDate') || 'End Date'}
-                  </Typography>
+                  <Typography variant="body2" color="text.secondary">{t('endDate') || 'End Date'}</Typography>
                   <Typography variant="body1">{formatDate(auction.endingAt)}</Typography>
                 </Box>
               </Stack>

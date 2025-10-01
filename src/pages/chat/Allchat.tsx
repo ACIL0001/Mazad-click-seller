@@ -1,38 +1,52 @@
-import { ChatAPI } from "@/api/Chat"
-import useAuth from "@/hooks/useAuth"
-import { useTranslation } from 'react-i18next'
-import { useEffect, useRef, useState } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { MessageAPI } from "@/api/message"
-import { useCreateSocket } from "@/contexts/SocketContext"
-import useMessageNotifications from "@/hooks/useMessageNotifications"
-import { 
-  Box, 
-  Typography, 
-  TextField, 
-  Paper, 
-  Avatar, 
-  List, 
-  ListItem, 
-  IconButton, 
-  InputAdornment, 
-  Badge, 
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { NotificationAPI } from "@/api/notification"; 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Box,
+  Typography,
+  TextField,
+  Avatar,
+  IconButton,
+  Badge,
   Tooltip,
   CircularProgress,
   useTheme,
   alpha,
   Chip,
-  Drawer,
   useMediaQuery,
   Fade,
   Slide,
+  Stack,
+  Card,
+  CardContent,
+  Button,
+  Fab,
+  Zoom,
+  Collapse,
+  ListItemText,
+  ListItemAvatar,
+  Switch,
+  FormControlLabel,
+  Paper,
   Divider,
-  Stack
+  List,
+  ListItem,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { 
-  SearchRounded, 
-  SendRounded, 
+import {
+  SearchRounded,
+  SendRounded,
   MoreVertRounded,
   InsertEmoticonRounded,
   AttachFileRounded,
@@ -44,41 +58,128 @@ import {
   ChatRounded,
   FilterListRounded,
   RefreshRounded,
-  KeyboardBackspaceRounded
+  KeyboardBackspaceRounded,
+  StarRounded,
+  StarBorderRounded,
+  ArchiveRounded,
+  DeleteRounded,
+  BlockRounded,
+  PersonAddRounded,
+  VideoCallRounded,
+  PhoneRounded,
+  MoreHorizRounded,
+  NotificationsRounded,
+  NotificationsOffRounded,
+  DarkModeRounded,
+  LightModeRounded,
+  SettingsRounded,
+  GroupRounded,
+  AddRounded,
+  EditRounded,
+  ReplyRounded,
+  ForwardRounded,
+  DownloadRounded,
+  ShareRounded,
+  ReportRounded,
+  InfoRounded,
+  EmojiEmotionsRounded,
+  GifRounded,
+  ImageRounded,
+  FilePresentRounded,
+  LocationOnRounded,
+  ScheduleRounded,
+  CheckRounded,
+  CheckCircleOutlineRounded,
+  AccessTimeRounded,
+  OnlinePredictionRounded,
+  RadioButtonUncheckedRounded,
+  RadioButtonCheckedRounded,
+  VisibilityRounded,
+  VisibilityOffRounded,
+  LockRounded,
+  PublicRounded,
+  SecurityRounded,
+  VerifiedUserRounded,
+  WarningRounded,
+  ErrorRounded,
+  HelpRounded,
+  FeedbackRounded,
+  BugReportRounded,
+  CodeRounded,
+  BuildRounded,
+  ExtensionRounded,
+  AppsRounded,
+  DashboardRounded,
+  AnalyticsRounded,
+  TimelineRounded,
+  TrendingUpRounded,
+  TrendingDownRounded,
+  AssessmentRounded,
+  BarChartRounded,
+  PieChartRounded,
+  ShowChartRounded,
+  TableChartRounded,
+  ViewListRounded,
+  ViewModuleRounded,
+  ViewQuiltRounded,
+  ViewStreamRounded,
+  ViewWeekRounded,
+  ViewDayRounded,
+  ViewAgendaRounded,
+  ViewCarouselRounded,
+  ViewColumnRounded,
+  ViewComfyRounded,
+  ViewCompactRounded,
+  ViewHeadlineRounded,
+  ViewInArRounded,
+  ViewKanbanRounded,
+  ViewSidebarRounded,
+  ViewTimelineRounded,
+  ViewArrayRounded,
+  ViewCozyRounded,
+  ViewComfyAltRounded,
+  ViewCompactAltRounded
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
-import imageBuyer from '../../assets/logo/buyerImage.jpg';
-import { NotificationService } from "@/api/notificationService"
 
-// Modern responsive styled components
-const ChatLayout = styled(Box)(({ theme }) => ({
+// API imports
+import { ChatAPI } from "@/api/Chat";
+import { MessageAPI } from "@/api/message";
+import useAuth from "@/hooks/useAuth";
+import { useCreateSocket } from "@/contexts/SocketContext";
+import useMessageNotifications from "@/hooks/useMessageNotifications";
+import { NotificationService } from "@/api/notificationService";
+import imageBuyer from '../../assets/logo/buyerImage.jpg';
+
+// ===== MODERN STYLED COMPONENTS =====
+
+const ModernChatContainer = styled(Box)(({ theme }) => ({
+  height: 'calc(100vh - 64px)',
   display: 'flex',
-  height: 'calc(100vh - 120px)',
-  backgroundColor: theme.palette.background.default,
-  borderRadius: theme.shape.borderRadius * 2,
+  background: 'linear-gradient(135deg, #0063b1 0%, #3366FF 100%)',
+  borderRadius: '24px',
   overflow: 'hidden',
-  boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
   position: 'relative',
   [theme.breakpoints.down('md')]: {
-    height: 'calc(100vh - 80px)',
-    borderRadius: theme.shape.borderRadius,
+    height: 'calc(100vh - 56px)',
+    borderRadius: '16px',
   },
   [theme.breakpoints.down('sm')]: {
-    height: 'calc(100vh - 60px)',
-    borderRadius: 0,
-    boxShadow: 'none',
+    height: 'calc(100vh - 48px)',
+    borderRadius: '12px',
   },
 }));
 
-const Sidebar = styled(Box)(({ theme }) => ({
-  width: '360px',
-  borderRight: `1px solid ${theme.palette.divider}`,
+const SidebarContainer = styled(Box)(({ theme }) => ({
+  width: '400px',
+  background: 'rgba(255,255,255,0.1)',
+  backdropFilter: 'blur(20px)',
+  borderRight: '1px solid rgba(255,255,255,0.2)',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: theme.palette.background.paper,
   position: 'relative',
   [theme.breakpoints.down('lg')]: {
-    width: '320px',
+    width: '350px',
   },
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -88,7 +189,7 @@ const Sidebar = styled(Box)(({ theme }) => ({
     height: '100%',
     zIndex: 1200,
     transform: 'translateX(-100%)',
-    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     '&.open': {
       transform: 'translateX(0)',
     },
@@ -96,74 +197,61 @@ const Sidebar = styled(Box)(({ theme }) => ({
 }));
 
 const SidebarHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2.5, 2),
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  backgroundColor: alpha(theme.palette.primary.main, 0.02),
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(2, 1.5),
-  },
+  padding: theme.spacing(3, 2.5),
+  borderBottom: '1px solid rgba(255,255,255,0.2)',
+  background: 'rgba(255,255,255,0.05)',
+  backdropFilter: 'blur(10px)',
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 2, 1),
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1.5, 1.5, 1),
-  },
+  padding: theme.spacing(2.5, 2.5, 2),
 }));
 
-const ContactsContainer = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
+const ContactsList = styled(Box)(({ theme }) => ({
+  flex: 1,
   overflowY: 'auto',
+  padding: theme.spacing(1),
   '&::-webkit-scrollbar': {
     width: '6px',
   },
   '&::-webkit-scrollbar-track': {
-    background: 'transparent',
+    background: 'rgba(255,255,255,0.1)',
+    borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: alpha(theme.palette.primary.main, 0.2),
+    background: 'rgba(255,255,255,0.3)',
     borderRadius: '10px',
     '&:hover': {
-      background: alpha(theme.palette.primary.main, 0.3),
+      background: 'rgba(255,255,255,0.5)',
     },
   },
 }));
 
-const ContactItem = styled(motion.div)<{ active?: boolean }>(({ theme, active }) => ({
-  padding: theme.spacing(1.5, 2),
+const ContactCard = styled(motion.div)<{ active?: boolean }>(({ theme, active }) => ({
+  padding: theme.spacing(2.5, 2),
+  margin: theme.spacing(1, 1.5),
+  borderRadius: '16px',
+  background: active 
+    ? 'rgba(255,255,255,0.2)' 
+    : 'rgba(255,255,255,0.05)',
+  backdropFilter: 'blur(10px)',
+  border: active 
+    ? '1px solid rgba(255,255,255,0.3)' 
+    : '1px solid rgba(255,255,255,0.1)',
   cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5),
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  margin: theme.spacing(0.5, 1),
-  backgroundColor: active ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: active ? alpha(theme.palette.primary.main, 0.12) : alpha(theme.palette.action.hover, 0.5),
-    transform: 'translateX(4px)',
-  },
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1.2, 1.5),
-    margin: theme.spacing(0.3, 0.5),
+    background: 'rgba(255,255,255,0.15)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
   },
 }));
 
-const ContactInfo = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
-  overflow: 'hidden',
-  minWidth: 0,
-}));
-
-const ChatMain = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
+const ChatArea = styled(Box)(({ theme }) => ({
+  flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: alpha(theme.palette.primary.main, 0.02),
+  background: 'white',
   position: 'relative',
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -171,152 +259,98 @@ const ChatMain = styled(Box)(({ theme }) => ({
 }));
 
 const ChatHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1.5, 3),
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  padding: theme.spacing(2, 3),
+  borderBottom: '1px solid #e0e0e0',
+  background: 'white',
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1.5),
-  backgroundColor: theme.palette.background.paper,
-  boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1.2, 2),
-    gap: theme.spacing(1),
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1, 1.5),
-  },
+  gap: theme.spacing(2),
 }));
 
-const ChatContent = styled(Box)(({ theme }) => ({
-  flexGrow: 1,
+const MessagesContainer = styled(Box)(({ theme }) => ({
+  flex: 1,
   padding: theme.spacing(3),
   overflowY: 'auto',
-  display: 'flex',
-  flexDirection: 'column',
+  background: 'white',
   '&::-webkit-scrollbar': {
     width: '6px',
   },
   '&::-webkit-scrollbar-track': {
-    background: 'transparent',
+    background: '#f5f5f5',
+    borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: alpha(theme.palette.primary.main, 0.2),
+    background: '#ccc',
     borderRadius: '10px',
     '&:hover': {
-      background: alpha(theme.palette.primary.main, 0.3),
+      background: '#999',
     },
   },
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(2),
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1.5),
-  },
 }));
 
-const MessageGroup = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-}));
-
-const MessageBubbleContainer = styled(motion.div)<{ sender?: boolean }>(({ theme, sender }) => ({
-  display: 'flex',
-  justifyContent: sender ? 'flex-end' : 'flex-start',
+const MessageBubble = styled(motion.div)<{ sender?: boolean }>(({ theme, sender }) => ({
+  maxWidth: '70%',
+  padding: theme.spacing(1.5, 2),
+  borderRadius: sender ? '20px 20px 6px 20px' : '20px 20px 20px 6px',
+  background: sender 
+    ? 'linear-gradient(135deg, #0063b1 0%, #3366FF 100%)' 
+    : '#f8f9fa',
+  color: sender ? 'white' : '#333',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
   marginBottom: theme.spacing(1),
+  alignSelf: sender ? 'flex-end' : 'flex-start',
   position: 'relative',
-  alignItems: 'flex-end',
-  gap: theme.spacing(1),
-}));
-
-const MessageBubble = styled(Box)<{ sender?: boolean }>(({ theme, sender }) => ({
-  maxWidth: '75%',
-  minWidth: 'min-content',
-  padding: theme.spacing(1.2, 1.8),
-  borderRadius: sender ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-  backgroundColor: sender 
-    ? theme.palette.primary.main 
-    : theme.palette.background.paper,
-  color: sender 
-    ? theme.palette.primary.contrastText 
-    : theme.palette.text.primary,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
-  position: 'relative',
-  display: 'block',
-  textAlign: 'left',
-  width: 'fit-content',
-  wordBreak: 'normal',
-  whiteSpace: 'normal',
-  boxSizing: 'border-box',
-  border: sender ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: '85%',
-    padding: theme.spacing(1, 1.5),
-  },
 }));
 
 const MessageTime = styled(Typography)(({ theme }) => ({
-  fontSize: '0.7rem',
-  color: theme.palette.text.secondary,
-  marginTop: theme.spacing(0.3),
-  opacity: 0.7,
-  alignSelf: 'flex-end',
+  fontSize: '0.75rem',
+  color: '#666',
+  marginTop: theme.spacing(0.5),
+  opacity: 0.8,
 }));
 
-const ChatInputContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-  borderTop: `1px solid ${theme.palette.divider}`,
-  position: 'relative',
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1.5),
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1),
-  },
+const InputContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  background: 'white',
+  borderTop: '1px solid #e0e0e0',
 }));
 
-const ChatInputWrapper = styled(Box)(({ theme }) => ({
+const InputWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  backgroundColor: theme.palette.background.default,
-  padding: theme.spacing(0.8, 1.5),
-  borderRadius: theme.shape.borderRadius * 5,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
-  border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-  transition: 'all 0.2s ease',
+  gap: theme.spacing(1.5),
+  background: '#f8f9fa',
+  padding: theme.spacing(1, 2),
+  borderRadius: '25px',
+  border: '1px solid #e0e0e0',
+  transition: 'all 0.3s ease',
   '&:focus-within': {
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.6, 1.2),
-    gap: theme.spacing(0.8),
+    borderColor: '#0063b1',
+    boxShadow: '0 0 0 3px rgba(0, 99, 177, 0.1)',
   },
 }));
 
-const EmptyChatState = styled(Box)(({ theme }) => ({
+const EmptyState = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   height: '100%',
-  padding: theme.spacing(3),
+  padding: theme.spacing(4),
   textAlign: 'center',
+  background: 'white',
 }));
 
-// New modern components
 const MobileHeader = styled(Box)(({ theme }) => ({
   display: 'none',
   [theme.breakpoints.down('md')]: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing(1.5, 2),
-    backgroundColor: theme.palette.background.paper,
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
+    padding: theme.spacing(2),
+    background: 'rgba(255,255,255,0.1)',
+    backdropFilter: 'blur(20px)',
+    borderBottom: '1px solid rgba(255,255,255,0.2)',
   },
 }));
 
@@ -329,7 +363,7 @@ const SidebarOverlay = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: alpha(theme.palette.common.black, 0.5),
+    background: 'rgba(0,0,0,0.5)',
     zIndex: 1100,
     opacity: 0,
     visibility: 'hidden',
@@ -341,1143 +375,823 @@ const SidebarOverlay = styled(Box)(({ theme }) => ({
   },
 }));
 
-const FloatingActionButton = styled(Box)(({ theme }) => ({
+const FloatingButton = styled(Fab)(({ theme }) => ({
   position: 'fixed',
   bottom: theme.spacing(2),
   right: theme.spacing(2),
   zIndex: 1000,
-  display: 'none',
-  [theme.breakpoints.down('md')]: {
-    display: 'block',
-  },
-}));
-
-const scrollToBottomVariants = {
-  initial: { opacity: 0, scale: 0.8 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.8 }
-};
-
-const MessageBubbleVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 500, damping: 30 } },
-};
-
-const contactItemVariants = {
-  initial: { x: -10, opacity: 0 },
-  animate: { x: 0, opacity: 1, transition: { type: 'spring', stiffness: 500, damping: 30 } }
-};
-
-// Add new styled components for modern new chat indicators
-const NewChatIndicator = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  top: 4,
-  right: 4,
-  width: 12,
-  height: 12,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main, // Use project's primary blue
-  border: `2px solid ${theme.palette.background.paper}`,
-  boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.6)}`,
-  animation: 'pulse 2s infinite',
-  '@keyframes pulse': {
-    '0%': {
-      boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.7)}`,
-    },
-    '70%': {
-      boxShadow: `0 0 0 6px ${alpha(theme.palette.primary.main, 0)}`,
-    },
-    '100%': {
-      boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0)}`,
-    },
-  },
-}));
-
-const UnreadBadge = styled(Badge)(({ theme }) => ({
-  '& .MuiBadge-badge': {
-    backgroundColor: theme.palette.error.main,
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: '0.75rem',
-    minWidth: '20px',
-    height: '20px',
-    borderRadius: '10px',
-    border: `2px solid ${theme.palette.background.paper}`,
-    boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.3)}`,
-    animation: 'bounce 1s ease-in-out',
-    '@keyframes bounce': {
-      '0%, 20%, 50%, 80%, 100%': {
-        transform: 'translateY(0)',
-      },
-      '40%': {
-        transform: 'translateY(-4px)',
-      },
-      '60%': {
-        transform: 'translateY(-2px)',
-      },
-    },
-  },
-}));
-
-const ModernContactItem = styled(ContactItem)<{ isNew?: boolean; hasUnread?: boolean }>(({ theme, isNew, hasUnread }) => ({
-  position: 'relative',
-  overflow: 'hidden',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  borderRadius: theme.shape.borderRadius,
-  margin: theme.spacing(0.5, 1),
-  ...(isNew && {
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)}, ${alpha(theme.palette.primary.main, 0.05)})`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '4px',
-      height: '100%',
-      background: `linear-gradient(180deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-      borderRadius: '0 2px 2px 0',
-    },
-  }),
-  ...(hasUnread && !isNew && {
-    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '3px',
-      height: '100%',
-      backgroundColor: theme.palette.primary.main,
-      borderRadius: '0 2px 2px 0',
-    },
-  }),
-  '&:hover': {
-    transform: 'translateX(4px)',
-    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.2)}`,
-    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-  },
-}));
-
-const NewChatChip = styled(Chip)(({ theme }) => ({
-  position: 'absolute',
-  top: 8,
-  right: 8,
-  fontSize: '0.7rem',
-  height: '20px',
-  backgroundColor: theme.palette.primary.main,
+  background: 'linear-gradient(45deg, #FF6B6B, #FF8E8E)',
   color: 'white',
-  fontWeight: 'bold',
-  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.4)}`,
+  boxShadow: '0 8px 32px rgba(255,107,107,0.4)',
   '&:hover': {
-    backgroundColor: theme.palette.primary.dark,
+    background: 'linear-gradient(45deg, #FF5252, #FF7A7A)',
+    transform: 'scale(1.1)',
+  },
+  [theme.breakpoints.up('md')]: {
+    display: 'none',
   },
 }));
 
-// Utility to deduplicate messages by _id or composite key
-const getUniqueMessages = (messagesArr1, messagesArr2) => {
-  const map = new Map();
-  [...messagesArr1, ...messagesArr2].forEach(msg => {
-    if (!msg) return;
-    // Use _id if present, otherwise use a composite key
-    const key = msg._id || `${msg.sender}_${msg.message}_${msg.createdAt}`;
-    map.set(key, msg);
-  });
-  return Array.from(map.values());
-};
+// ===== MAIN COMPONENT =====
 
-// Utility to deduplicate messages by _id (keep the first occurrence)
-const deduplicateMessagesById = (messagesArr: any[]) => {
-  const seen = new Set();
-  return messagesArr.filter(msg => {
-    if (!msg || !msg._id) return true;
-    if (seen.has(msg._id)) return false;
-    seen.add(msg._id);
-    return true;
-  });
-};
+export default function ModernChat() {
+  const { t } = useTranslation();
+  const { auth } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-// Utility to filter only messages with unique _id in MessagesSocket
-const filterUniqueMessagesInSocket = (messagesArr: any[]) => {
-  const idCount = messagesArr.reduce((acc, msg) => {
-    if (msg && msg._id) {
-      acc[msg._id] = (acc[msg._id] || 0) + 1;
+  // State management
+  const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Socket and notifications
+  const { messages: socketMessages, setMessages: setSocketMessages, socket } = useCreateSocket();
+  const { totalUnreadCount, uniqueChatMessages, markAllSocketMessagesAsRead } = useMessageNotifications();
+  
+  // Combine and deduplicate messages
+  const combinedMessages = useMemo(() => {
+    // Combine messages from both sources and deduplicate properly
+    const allMessages = [...messages, ...socketMessages];
+    const uniqueMessages = allMessages.filter((message, index, self) => 
+      index === self.findIndex(m => 
+        m._id === message._id || 
+        (m.message === message.message && 
+         m.sender === message.sender && 
+         m.idChat === message.idChat &&
+         Math.abs(new Date(m.createdAt || 0).getTime() - new Date(message.createdAt || 0).getTime()) < 1000)
+      )
+    );
+    return uniqueMessages.sort((a, b) => 
+      new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+    );
+  }, [messages, socketMessages]);
+  
+  // Join chat room when selected chat changes
+  useEffect(() => {
+    if (!socket || !selectedChat?._id) return;
+    
+    console.log('Joining chat room:', selectedChat._id);
+    socket.emit('joinChat', { chatId: selectedChat._id, userId: auth.user._id });
+    
+    return () => {
+      console.log('Leaving chat room:', selectedChat._id);
+      socket.emit('leaveChat', { chatId: selectedChat._id, userId: auth.user._id });
+    };
+  }, [socket, selectedChat?._id, auth.user._id]);
+
+  // Refs
+  const messagesEndRef = useRef(null);
+  const chatContentRef = useRef(null);
+
+  // ===== API FUNCTIONS =====
+
+  const fetchChats = async () => {
+    if (!auth?.user?._id) return;
+    
+    setLoading(true);
+    try {
+      const response = await ChatAPI.getChats({ 
+        id: auth.user._id, 
+        from: 'seller' 
+      });
+      setChats(response);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+      setError('Failed to load chats');
+    } finally {
+      setLoading(false);
     }
-    return acc;
-  }, {} as Record<string, number>);
-  return messagesArr.filter(msg => !msg._id || idCount[msg._id] === 1);
-};
+  };
 
-
-export default function Allchat() {
-    const { t } = useTranslation();
-    const { auth } = useAuth();
-    const [chats, setChats] = useState([]);
-    const [search, setSearch] = useState('');
-    const nav = useNavigate();
-    const [idChat, setIdChat] = useState("");
-    const [text, setText] = useState('');
-    const [reget, setReget] = useState(false);
-    const { messages: MessagesSocket, setMessages: SetSocketMessages } = useCreateSocket();
-    const [userChat, setUserChat] = useState<any>({});
-    const [messages, setMessages] = useState([]);
-    const [filteredChats, setFilteredChats] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [showScrollButton, setShowScrollButton] = useState(false);
-    const [isTyping, setIsTyping] = useState(false);
-    const [showEmoji, setShowEmoji] = useState(false);
+  const fetchMessages = async (chatId) => {
+    if (!chatId) return;
     
-    // New responsive state
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [showChat, setShowChat] = useState(false);
+    setLoading(true);
+    try {
+      const response = await MessageAPI.getByConversation(chatId);
+      setMessages(response);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      setError('Failed to load messages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat) return;
+
+    const messageText = newMessage.trim();
+    setNewMessage(''); // Clear input immediately for better UX
+
+    // Add message to UI immediately for instant feedback
+    const tempMessage = {
+      _id: `temp_${Date.now()}`,
+      idChat: selectedChat._id,
+      message: messageText,
+      sender: auth.user._id,
+      reciver: selectedChat.users[1]._id,
+      createdAt: new Date().toISOString(),
+      isSocket: true
+    };
+
+    // Add message to UI instantly
+    setMessages(prev => [...prev, tempMessage]);
+
+    const messageData = {
+      idChat: selectedChat._id,
+      message: messageText,
+      sender: auth.user._id,
+      reciver: selectedChat.users[1]._id
+    };
+
+    // Emit socket message for real-time delivery
+    if (socket) {
+      socket.emit('sendMessage', messageData);
+    }
     
-    // Circuit breaker for API calls
-    const [apiErrorCount, setApiErrorCount] = useState(0);
-    const [lastApiError, setLastApiError] = useState<number | null>(null);
-    const MAX_API_ERRORS = 3;
-    const API_ERROR_RESET_TIME = 30000; // 30 seconds
+    // Send to API in background (don't wait for response)
+    MessageAPI.send(messageData).then(response => {
+      // Replace temp message with real message from API
+      if (response && response._id) {
+        setMessages(prev => 
+          prev.map(msg => 
+            msg._id === tempMessage._id 
+              ? { ...response, idChat: selectedChat._id }
+              : msg
+          )
+        );
+      }
+      setSocketMessages([]);
+      setError(null);
+    }).catch(error => {
+      console.error('Error sending message:', error);
+      setError('Failed to send message');
+      // Remove temp message on error
+      setMessages(prev => prev.filter(msg => msg._id !== tempMessage._id));
+      setNewMessage(messageText); // Restore text on error
+    });
+  };
 
-    const messagesEndRef = useRef<HTMLDivElement | null>(null);
-    const chatContentRef = useRef<HTMLDivElement | null>(null);
-    const theme = useTheme();
+  // ===== EVENT HANDLERS =====
+
+  const handleChatSelect = async (chat) => {
+    setSelectedChat(chat);
+    // Clear socket messages when switching chats to prevent duplicates
+    setSocketMessages([]);
+    await fetchMessages(chat._id);
     
-    // Responsive breakpoints
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const isTablet = useMediaQuery(theme.breakpoints.between('md', 'lg'));
-    const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
-
-    // Circuit breaker function
-    const shouldBlockApiCall = () => {
-      const now = Date.now();
-      
-      // Reset error count if enough time has passed
-      if (lastApiError && (now - lastApiError) > API_ERROR_RESET_TIME) {
-        setApiErrorCount(0);
-        setLastApiError(null);
-        return false;
+    // Mark messages and notifications as read when chat is selected
+    try {
+      if (auth?.user?._id) {
+        console.log('🔖 Marking chat as read for user:', auth.user._id, 'chatId:', chat._id);
+        
+        // Mark messages as read using existing endpoint
+        await MessageAPI.markAllAsRead(chat._id);
+        console.log('✅ Messages marked as read successfully');
+        
+        // Mark notifications as read using existing endpoint
+        await NotificationAPI.markChatAsRead(chat._id);
+        console.log('✅ Notifications marked as read successfully');
+        
+        // Refresh notifications to update the UI
+        markAllSocketMessagesAsRead();
       }
-      
-      // Block if too many errors
-      return apiErrorCount >= MAX_API_ERRORS;
-    };
-
-    const handleApiError = (error: any) => {
-      const now = Date.now();
-      setApiErrorCount(prev => prev + 1);
-      setLastApiError(now);
-      
-      console.error(`🚨 API Error #${apiErrorCount + 1}:`, error);
-      
-      // If it's a 500 error, don't treat it as auth error
-      if (error?.response?.status === 500) {
-        console.error('🚨 Internal Server Error - not treating as auth error');
-        return false; // Don't clear auth
-      }
-      
-      return true; // Treat as auth error
-    };
-
-    // Get message notification data for new chat indicators
-    const { totalUnreadCount, uniqueChatMessages, markAllSocketMessagesAsRead } = useMessageNotifications();
+    } catch (error) {
+      console.error('❌ Error marking chat as read:', error);
+    }
     
-    // Helper function to check if a chat is new/unread
-    const getChatNotificationStatus = (chatId) => {
-      // Check if this chat has unread messages from notifications
-      const chatNotifications = uniqueChatMessages.filter(msg => 
-        msg.chatId === chatId && (msg.isUnRead || (!msg.read && !msg.isSocket))
-      );
-      
-      const hasUnreadNotifications = chatNotifications.length > 0;
-      const unreadCount = chatNotifications.length;
-      
-      // Consider a chat "new" if it was created in the last 24 hours and has unread messages
-      const chat = chats.find(c => c._id === chatId);
-      const isNewChat = chat ? 
-        (new Date().getTime() - new Date(chat.createdAt).getTime()) < 24 * 60 * 60 * 1000 && hasUnreadNotifications
-        : false;
-      
-      return {
-        isNew: isNewChat,
-        hasUnread: hasUnreadNotifications,
-        unreadCount: unreadCount
-      };
-    };
+    if (isMobile) {
+      setSidebarOpen(false);
+      setShowChat(true);
+    }
+  };
 
-    // Function to handle chat opening and mark notifications as read
-    const handleChatClick = async (chat) => {
-      try {
-        // Validate chat data before proceeding
-        if (!chat || !chat._id || !chat.users || !chat.users[1]) {
-          console.error("❌ Invalid chat data:", chat);
-          return;
-        }
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
 
-        // Check if user is still authenticated
-        if (!auth?.user?._id) {
-          console.error("❌ User not authenticated, cannot open chat");
-          return;
-        }
+  const handleBackToChats = () => {
+    setShowChat(false);
+    setSidebarOpen(true);
+  };
 
-        console.log(`🔄 Opening chat for chatId: ${chat._id}`);
-        
-        // Set the chat as active first (this is the main action)
-        setUserChat(chat.users[1]);
-        setIdChat(chat._id);
-        
-        // Handle responsive behavior
-        if (isMobile) {
-          setSidebarOpen(false);
-          setShowChat(true);
-        }
-        
-        // Try to mark notifications as read (this is secondary and completely optional)
-        try {
-          if (chat._id && !shouldBlockApiCall()) {
-            // Mark all notifications as read instead of trying to mark by chat ID
-            await NotificationService.markAllAsRead();
-            markAllSocketMessagesAsRead(); // Also mark socket messages as read
-            console.log(`✅ All notifications marked as read`);
-          } else if (shouldBlockApiCall()) {
-            console.warn("⚠️ Skipping notification marking due to circuit breaker");
-          }
-        } catch (notificationError) {
-          console.warn("⚠️ Failed to mark notifications as read (non-critical):", notificationError);
-          // Don't prevent chat opening if notification marking fails
-          // Don't count this as an API error since it's optional
-        }
-        
-        console.log(`✅ Chat opened successfully for chatId: ${chat._id}`);
-      } catch (error) {
-        console.error("❌ Error opening chat:", error);
-        
-        // If it's an authentication error, don't try to open the chat
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          console.error("❌ Authentication error, cannot open chat");
-          return;
-        }
-        
-        // For other errors, still try to open the chat
-        if (chat && chat.users && chat.users[1]) {
-          setUserChat(chat.users[1]);
-          setIdChat(chat._id);
-          
-          if (isMobile) {
-            setSidebarOpen(false);
-            setShowChat(true);
-          }
-        }
-      }
-    };
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
-    // Handle sidebar toggle for mobile
-    const handleSidebarToggle = () => {
-      setSidebarOpen(!sidebarOpen);
-    };
+  // ===== EFFECTS =====
 
-    // Handle back to chat list on mobile
-    const handleBackToChats = () => {
-      setShowChat(false);
-      setSidebarOpen(true);
-    };
+  useEffect(() => {
+    if (auth?.user?._id) {
+      fetchChats();
+    }
+  }, [auth?.user?._id]);
 
-    useEffect(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, [messages, MessagesSocket, idChat]);
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [combinedMessages]);
 
-    // Detect scroll position to show/hide scroll to bottom button
-    useEffect(() => {
-      const handleScroll = () => {
-        if (!chatContentRef.current) return;
-        
-        const { scrollTop, scrollHeight, clientHeight } = chatContentRef.current;
-        const isScrolledUp = scrollHeight - scrollTop - clientHeight > 100;
-        
-        setShowScrollButton(isScrolledUp);
-      };
+  useEffect(() => {
+    if (location.state?.chat) {
+      handleChatSelect(location.state.chat);
+    }
+  }, [location.state]);
 
-      const chatContent = chatContentRef.current;
-      if (chatContent) {
-        chatContent.addEventListener('scroll', handleScroll);
-      }
-
-      return () => {
-        if (chatContent) {
-          chatContent.removeEventListener('scroll', handleScroll);
-        }
-      };
-    }, [idChat]);
-
-    useEffect(() => {
-      if (search === '') {
-        setFilteredChats(chats);
-        return;
-      }
-      
-      const newAr = chats.filter((e) => 
-        e.users[1].firstName.trim().toLowerCase().includes(search.trim().toLowerCase()) ||
-        e.users[1].lastName.trim().toLowerCase().includes(search.trim().toLowerCase())
-      );
-      setFilteredChats(newAr);
-    }, [search, chats]);
-
-    const location = useLocation();
-
-    useEffect(() => {
-      if (location.state && location.state.chat) {
-        setIdChat(location.state.chat._id);
-        setUserChat(location.state.chat.users[1]);
-      }
-    }, [location]);
-
-    useEffect(() => {
-      if (MessagesSocket.length === 0) return;
-      SetSocketMessages([]);
-    }, [idChat]);
-
-    useEffect(() => {
-      if (!auth.user) return;
-      getAllChats();
-    }, [auth.user]);
-
-    const getAllChats = async () => {
-      // Check if user is authenticated before making API call
-      if (!auth?.user?._id) {
-        console.error("❌ User not authenticated, cannot fetch chats");
-        setLoading(false);
-        return;
-      }
-
-      // Check circuit breaker
-      if (shouldBlockApiCall()) {
-        console.warn("🚨 API calls blocked due to too many errors");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      console.log("🔄 Fetching chats for user:", auth.user._id);
-      
-      try {
-        const res = await ChatAPI.getChats({ id: auth.user._id, from: 'seller' });
-        console.log("✅ Chats fetched successfully:", res);
-        setChats(res);
-        setFilteredChats(res);
-        
-        // Reset error count on success
-        setApiErrorCount(0);
-        setLastApiError(null);
-      } catch (error) {
-        const shouldClearAuth = handleApiError(error);
-        
-        // If it's an authentication error, don't clear existing chats
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          console.error("❌ Authentication error while fetching chats");
-          // Keep existing chats but show error
-        } else if (error?.response?.status === 500) {
-          console.error("❌ Internal server error while fetching chats - not clearing auth");
-          // Don't clear auth for 500 errors
-        } else {
-          // For other errors, you might want to show a retry option
-          console.error("❌ Failed to fetch chats, please try again");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    useEffect(() => {
-      if (idChat === '') return;
-      getAllMessage();
-    }, [idChat, reget]);
-
-    const getAllMessage = async () => {
-      // Check if user is authenticated and we have a valid chat ID
-      if (!auth?.user?._id) {
-        console.error("❌ User not authenticated, cannot fetch messages");
-        setLoading(false);
-        return;
-      }
-
-      if (!idChat) {
-        console.error("❌ No chat ID provided, cannot fetch messages");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      console.log(`🔄 Fetching messages for chatId: ${idChat}`);
-      
-      try {
-        const res = await MessageAPI.getByConversation(idChat);
-        console.log(`✅ Messages fetched successfully for chatId: ${idChat}`, res);
-        setMessages(res);
-      } catch (error) {
-        console.error("❌ Error fetching messages:", error);
-        
-        // If it's an authentication error, don't clear existing messages
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          console.error("❌ Authentication error while fetching messages");
-          // Keep existing messages but show error
-        } else {
-          // For other errors, you might want to show a retry option
-          console.error("❌ Failed to fetch messages, please try again");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    const createMessage = async () => {
-      if (!text.trim()) return;
-      
-      // Check if user is still authenticated
-      if (!auth?.user?._id) {
-        console.error("❌ User not authenticated, cannot send message");
-        return;
-      }
-
-      // Check if we have a valid chat
-      if (!idChat || !userChat?._id) {
-        console.error("❌ No valid chat selected, cannot send message");
-        return;
-      }
-
-      // Check circuit breaker
-      if (shouldBlockApiCall()) {
-        console.warn("🚨 API calls blocked due to too many errors");
-        return;
-      }
-      
-      // Simulate typing indicator
-      setIsTyping(true);
-
-      try {
-        console.log(`🔄 Sending message to chatId: ${idChat}`);
-        
-        await MessageAPI.send({
-          idChat, 
-          message: text, 
-          sender: auth.user._id,
-          reciver: userChat._id
+  // Periodically merge socket messages into main messages to prevent accumulation
+  useEffect(() => {
+    if (socketMessages.length > 0) {
+      const timer = setTimeout(() => {
+        setMessages(prev => {
+          const newMessages = socketMessages.filter(socketMsg => 
+            !prev.some(msg => msg._id === socketMsg._id)
+          );
+          return [...prev, ...newMessages];
         });
-        
-        setText('');
-        SetSocketMessages([]);
-        setReget(p => !p);
-        
-        // Reset error count on success
-        setApiErrorCount(0);
-        setLastApiError(null);
-        
-        console.log(`✅ Message sent successfully to chatId: ${idChat}`);
-      } catch (error) {
-        const shouldClearAuth = handleApiError(error);
-        
-        // If it's an authentication error, don't clear the message
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          console.error("❌ Authentication error, message not sent");
-          // Optionally show a user-friendly message
-        } else if (error?.response?.status === 500) {
-          console.error("❌ Internal server error while sending message - not clearing auth");
-          // Don't clear auth for 500 errors
-        } else {
-          // For other errors, you might want to show a retry option
-          console.error("❌ Failed to send message, please try again");
-        }
-      } finally {
-        setIsTyping(false);
-      }
-    };
-
-    const handleKeyPress = (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        createMessage();
-      }
-    };
-
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    const formatTime = (dateStr) => {
-      const date = new Date(dateStr);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    const formatMessageDate = (timestamp) => {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const isToday = date.getDate() === now.getDate() && 
-                      date.getMonth() === now.getMonth() && 
-                      date.getFullYear() === now.getFullYear();
+        setSocketMessages([]);
+      }, 1000); // Merge after 1 second
       
-      if (isToday) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
-
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
-      const isYesterday = date.getDate() === yesterday.getDate() &&
-                          date.getMonth() === yesterday.getMonth() &&
-                          date.getFullYear() === yesterday.getFullYear();
-      
-      if (isYesterday) {
-        return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      }
-
-      return date.toLocaleDateString([], { 
-        day: 'numeric', 
-        month: 'short',
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-    };
-
-    // Group messages by date for better UI organization
-    const groupMessagesByDate = (messages) => {
-      if (!messages || messages.length === 0) return [];
-
-      let currentSender = null;
-      let currentGroup = [];
-      const groupedMessages = [];
-
-      messages.forEach((message, index) => {
-        // Start a new group when sender changes
-        if (currentSender !== message.sender) {
-          if (currentGroup.length > 0) {
-            groupedMessages.push([...currentGroup]);
-          }
-          currentGroup = [message];
-          currentSender = message.sender;
-        } else {
-          // Add to current group if same sender
-          currentGroup.push(message);
-        }
-
-        // Push the last group
-        if (index === messages.length - 1 && currentGroup.length > 0) {
-          groupedMessages.push([...currentGroup]);
-        }
-      });
-
-      return groupedMessages;
-    };
-
-    const statusIndicator = (status: 'online' | 'offline' | 'away' = 'online') => {
-      const colors = {
-        online: theme.palette.success.main,
-        offline: theme.palette.grey[400],
-        away: theme.palette.warning.main
-      };
-      
-      return (
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            backgroundColor: colors[status],
-            border: `2px solid ${theme.palette.background.paper}`,
-            position: 'absolute',
-            bottom: 2,
-            right: 2
-          }}
-        />
-      );
-    };
-
-    // Deduplicate MessagesSocket by _id whenever it changes
-    useEffect(() => {
-      if (!MessagesSocket || MessagesSocket.length === 0) return;
-      const uniqueMessages = deduplicateMessagesById(MessagesSocket);
-      if (uniqueMessages.length !== MessagesSocket.length) {
-        SetSocketMessages(uniqueMessages);
-      }
-    }, [MessagesSocket, SetSocketMessages]);
-
-    // Safety check: Don't render if user is not authenticated
-    if (!auth?.user?._id) {
-      console.error("❌ User not authenticated, cannot render chat component");
-      return (
-        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-          <Typography variant="h6" color="error">
-            Authentication required. Please log in again.
-          </Typography>
-        </Box>
-      );
+      return () => clearTimeout(timer);
     }
+  }, [socketMessages]);
+
+  // Listen for real-time messages
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (data: any) => {
+      console.log('📨 New message received:', data);
+      if (data.idChat === selectedChat?._id) {
+        // Add to socket messages instead of main messages to avoid duplicates
+        const newMessage = {
+          _id: data._id,
+          idChat: data.idChat,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          createdAt: data.createdAt
+        };
+        
+        // Check if message already exists to avoid duplicates
+        const currentMessages = socketMessages || [];
+        const exists = currentMessages.some(msg => msg._id === data._id);
+        if (!exists) {
+          setSocketMessages([...currentMessages, newMessage]);
+        }
+      }
+    };
+
+    const handleBuyerToSellerMessage = (data: any) => {
+      console.log('📨 Buyer to seller message received:', data);
+      if (data.chatId === selectedChat?._id) {
+        const newMessage = {
+          _id: data.messageId,
+          idChat: data.chatId,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          createdAt: data.timestamp
+        };
+        
+        // Check if message already exists to avoid duplicates
+        const currentMessages = socketMessages || [];
+        const exists = currentMessages.some(msg => msg._id === data.messageId);
+        if (!exists) {
+          setSocketMessages([...currentMessages, newMessage]);
+        }
+      }
+    };
+
+    const handleChatMessageUpdate = (data: any) => {
+      console.log('📡 Chat message update received:', data);
+      if (data.chatId === selectedChat?._id) {
+        const newMessage = {
+          _id: data.messageId,
+          idChat: data.chatId,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          createdAt: data.timestamp
+        };
+        
+        // Check if message already exists to avoid duplicates
+        const currentMessages = socketMessages || [];
+        const exists = currentMessages.some(msg => msg._id === data.messageId);
+        if (!exists) {
+          setSocketMessages([...currentMessages, newMessage]);
+        }
+      }
+    };
+
+    const handleAdminMessage = (data: any) => {
+      console.log('📨 Admin message received:', data);
+      if (data.idChat === selectedChat?._id) {
+        const newMessage = {
+          _id: data._id,
+          idChat: data.idChat,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          createdAt: data.createdAt
+        };
+        
+        // Check if message already exists to avoid duplicates
+        const currentMessages = socketMessages || [];
+        const exists = currentMessages.some(msg => msg._id === data._id);
+        if (!exists) {
+          setSocketMessages([...currentMessages, newMessage]);
+        }
+      }
+    };
+
+    // Listen for different message events
+    socket.on('sendMessage', handleNewMessage);
+    socket.on('buyerToSellerMessage', handleBuyerToSellerMessage);
+    socket.on('chatMessageUpdate', handleChatMessageUpdate);
+    socket.on('adminMessage', handleAdminMessage);
+
+    return () => {
+      socket.off('sendMessage', handleNewMessage);
+      socket.off('buyerToSellerMessage', handleBuyerToSellerMessage);
+      socket.off('chatMessageUpdate', handleChatMessageUpdate);
+      socket.off('adminMessage', handleAdminMessage);
+    };
+  }, [socket, selectedChat?._id]);
+
+  // ===== UTILITY FUNCTIONS =====
+
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getChatNotificationStatus = (chatId) => {
+    const chatNotifications = uniqueChatMessages.filter(msg => 
+      msg.chatId === chatId && (msg.isUnRead || (!msg.read && !msg.isSocket))
+    );
+    
+    const hasUnread = chatNotifications.length > 0;
+    const unreadCount = chatNotifications.length;
+    
+    const chat = chats.find(c => c._id === chatId);
+    const isNew = chat ? 
+      (new Date().getTime() - new Date(chat.createdAt).getTime()) < 24 * 60 * 60 * 1000 && hasUnread
+      : false;
+    
+    return { isNew, hasUnread, unreadCount };
+  };
+
+  const filteredChats = chats.filter(chat => {
+    if (!searchQuery) return true;
+    const user = chat.users[1];
+    return user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           user.lastName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // ===== RENDER FUNCTIONS =====
+
+  const renderContactCard = (chat, index) => {
+    const notificationStatus = getChatNotificationStatus(chat._id);
+    const isActive = selectedChat?._id === chat._id;
 
     return (
-      <ChatLayout>
-        {/* Mobile Header */}
-        <MobileHeader>
-          <Box display="flex" alignItems="center" gap={1}>
-            <IconButton onClick={handleSidebarToggle} size="small">
-              <MenuRounded />
-            </IconButton>
-            <Typography variant="h6" fontWeight={600}>
+      <motion.div
+        key={chat._id}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.05 }}
+      >
+        <ContactCard
+          active={isActive}
+          onClick={() => handleChatSelect(chat)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box position="relative">
+              <Avatar
+                src={imageBuyer}
+                sx={{
+                  width: 50,
+                  height: 50,
+                  border: isActive 
+                    ? '3px solid rgba(255,255,255,0.8)' 
+                    : notificationStatus.hasUnread 
+                      ? '2px solid rgba(255,255,255,0.6)'
+                      : '2px solid rgba(255,255,255,0.3)',
+                  boxShadow: notificationStatus.isNew 
+                    ? '0 0 20px rgba(255,255,255,0.3)' 
+                    : '0 4px 16px rgba(0,0,0,0.1)',
+                }}
+              />
+              {notificationStatus.hasUnread && (
+                <Badge
+                  badgeContent={notificationStatus.unreadCount}
+                  color="error"
+                  sx={{
+                    position: 'absolute',
+                    top: -5,
+                    right: -5,
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.7rem',
+                      minWidth: '18px',
+                      height: '18px',
+                    }
+                  }}
+                />
+              )}
+            </Box>
+            
+            <Box flex={1} minWidth={0}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={isActive ? 700 : notificationStatus.hasUnread ? 600 : 500}
+                  sx={{
+                    color: 'white',
+                    opacity: isActive ? 1 : notificationStatus.hasUnread ? 0.9 : 0.8,
+                  }}
+                  noWrap
+                >
+                  {chat.users[1].firstName} {chat.users[1].lastName}
+                  {notificationStatus.isNew && (
+                    <Chip
+                      label="New"
+                      size="small"
+                      sx={{
+                        ml: 1,
+                        fontSize: '0.6rem',
+                        height: '16px',
+                        background: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        fontWeight: 'bold',
+                      }}
+                    />
+                  )}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  {formatTime(chat.createdAt)}
+                </Typography>
+              </Box>
+              
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'rgba(255,255,255,0.8)',
+                  opacity: notificationStatus.hasUnread ? 1 : 0.7,
+                }}
+                noWrap
+              >
+                {notificationStatus.isNew 
+                  ? 'New conversation started'
+                  : notificationStatus.hasUnread 
+                    ? `${notificationStatus.unreadCount} unread messages`
+                    : 'No new messages'
+                }
+              </Typography>
+            </Box>
+          </Box>
+        </ContactCard>
+      </motion.div>
+    );
+  };
+
+  const renderMessage = (message, index) => {
+    const isSender = message.sender === auth.user._id;
+    
+    return (
+      <motion.div
+        key={message._id || index}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        style={{
+          display: 'flex',
+          justifyContent: isSender ? 'flex-end' : 'flex-start',
+          marginBottom: theme.spacing(1),
+        }}
+      >
+        <MessageBubble sender={isSender}>
+          <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
+            {message.message}
+          </Typography>
+          <MessageTime>
+            {formatTime(message.createdAt)}
+            {isSender && (
+              <CheckCircleRounded 
+                sx={{ 
+                  ml: 0.5, 
+                  fontSize: 12,
+                  verticalAlign: 'middle',
+                  color: 'rgba(255,255,255,0.7)'
+                }} 
+              />
+            )}
+          </MessageTime>
+        </MessageBubble>
+      </motion.div>
+    );
+  };
+
+  // ===== MAIN RENDER =====
+
+  if (!auth?.user?._id) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Typography variant="h6" color="error">
+          Authentication required. Please log in again.
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <ModernChatContainer>
+      {/* Mobile Header */}
+      <MobileHeader>
+        <Box display="flex" alignItems="center" gap={2}>
+          <IconButton 
+            onClick={handleSidebarToggle}
+            sx={{ color: 'white' }}
+          >
+            <MenuRounded />
+          </IconButton>
+          <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
+            {t('chat.title')}
+          </Typography>
+          {totalUnreadCount > 0 && (
+            <Badge 
+              badgeContent={totalUnreadCount} 
+              color="error"
+            />
+          )}
+        </Box>
+        <Box display="flex" gap={1}>
+          <IconButton 
+            onClick={fetchChats}
+            sx={{ color: 'white' }}
+          >
+            <RefreshRounded />
+          </IconButton>
+          <IconButton sx={{ color: 'white' }}>
+            <MoreVertRounded />
+          </IconButton>
+        </Box>
+      </MobileHeader>
+
+      {/* Sidebar Overlay */}
+      <SidebarOverlay 
+        className={sidebarOpen ? 'open' : ''} 
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      {/* Sidebar */}
+      <SidebarContainer className={sidebarOpen ? 'open' : ''}>
+        <SidebarHeader>
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
               {t('chat.title')}
             </Typography>
-            {totalUnreadCount > 0 && (
-              <Badge 
-                badgeContent={totalUnreadCount} 
-                color="error" 
-                sx={{ 
-                  '& .MuiBadge-badge': { 
-                    fontSize: '0.75rem',
-                    minWidth: '18px',
-                    height: '18px'
-                  } 
-                }}
+            <Box display="flex" gap={1}>
+              <IconButton 
+                onClick={fetchChats}
+                sx={{ color: 'white' }}
               >
-                <Box />
-              </Badge>
-            )}
-          </Box>
-          <Box display="flex" gap={1}>
-            <Tooltip title={t('chat.refresh')}>
-              <IconButton size="small" onClick={() => getAllChats()}>
-                <RefreshRounded fontSize="small" />
+                <RefreshRounded />
               </IconButton>
-            </Tooltip>
-            <Tooltip title={t('chat.newChat')}>
-              <IconButton size="small">
-                <Badge color="error" variant="dot">
-                  <MoreVertRounded fontSize="small" />
-                </Badge>
+              <IconButton sx={{ color: 'white' }}>
+                <MoreVertRounded />
               </IconButton>
-            </Tooltip>
+              {isMobile && (
+                <IconButton 
+                  onClick={() => setSidebarOpen(false)}
+                  sx={{ color: 'white' }}
+                >
+                  <CloseRounded />
+                </IconButton>
+              )}
+            </Box>
           </Box>
-        </MobileHeader>
+          
+          <TextField
+            fullWidth
+            placeholder="Search conversations..."
+            size="small"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchRounded sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                </InputAdornment>
+              ),
+              sx: {
+                borderRadius: '20px',
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                '& input': {
+                  color: 'white',
+                  '&::placeholder': {
+                    color: 'rgba(255,255,255,0.7)',
+                    opacity: 1,
+                  },
+                },
+                '& fieldset': {
+                  borderColor: 'rgba(255,255,255,0.2)',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'rgba(255,255,255,0.3)',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: 'rgba(255,255,255,0.5)',
+                },
+              }
+            }}
+          />
+        </SidebarHeader>
 
-        {/* Sidebar Overlay for Mobile */}
-        <SidebarOverlay 
-          className={sidebarOpen ? 'open' : ''} 
-          onClick={() => setSidebarOpen(false)}
-        />
-
-        <Sidebar className={sidebarOpen ? 'open' : ''}>
-          <SidebarHeader>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Typography variant="h6" fontWeight={600}>
-                {t('chat.title')} 
+        <ContactsList>
+          {loading && filteredChats.length === 0 ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+              <CircularProgress sx={{ color: 'white' }} />
+            </Box>
+          ) : filteredChats.length > 0 ? (
+            <AnimatePresence>
+              {filteredChats.map((chat, index) => renderContactCard(chat, index))}
+            </AnimatePresence>
+          ) : (
+            <EmptyState>
+              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                No conversations found
               </Typography>
-              {totalUnreadCount > 0 && (
-                <Badge 
-                  badgeContent={totalUnreadCount} 
-                  color="error" 
-                  sx={{ 
-                    '& .MuiBadge-badge': { 
-                      fontSize: '0.75rem',
-                      minWidth: '18px',
-                      height: '18px'
-                    } 
-                  }}
-                >
-                  <Box />
-                </Badge>
-              )}
-            </Box>
-            <Box display="flex" gap={1}>
-              <Tooltip title={t('chat.refresh')}>
-                <IconButton size="small" onClick={() => getAllChats()}>
-                  <RefreshRounded fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={t('chat.newChat')}>
-                <IconButton size="small">
-                  <Badge color="error" variant="dot">
-                    <MoreVertRounded fontSize="small" />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              {isMobile && (
-                <IconButton size="small" onClick={() => setSidebarOpen(false)}>
-                  <CloseRounded fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </SidebarHeader>
-          
-          <SearchContainer>
-            <TextField
-              fullWidth
-              placeholder={t('chat.searchConversations')}
-              size="small"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchRounded fontSize="small" color="action" />
-                  </InputAdornment>
-                ),
-                sx: {
-                  borderRadius: 5,
-                  backgroundColor: theme.palette.background.default,
-                  '& fieldset': {
-                    borderWidth: '1px !important',
-                    borderColor: `${theme.palette.divider} !important`,
-                  },
-                  '&:hover fieldset': {
-                    borderColor: `${theme.palette.divider} !important`,
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: `${theme.palette.primary.main} !important`,
-                  },
-                }
-              }}
-            />
-          </SearchContainer>
-          
-          <ContactsContainer>
-            {loading && filteredChats.length === 0 ? (
-              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                <CircularProgress size={30} />
-              </Box>
-            ) : filteredChats.length > 0 ? (
-              <AnimatePresence>
-                {filteredChats.map((chat, index) => {
-                  const notificationStatus = getChatNotificationStatus(chat._id);
-                  
-                  return (
-                    <motion.div 
-                      key={chat._id} 
-                      variants={contactItemVariants} 
-                      initial="initial" 
-                      animate="animate" 
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <ModernContactItem 
-                        active={idChat === chat._id}
-                        isNew={notificationStatus.isNew}
-                        hasUnread={notificationStatus.hasUnread}
-                        onClick={() => handleChatClick(chat)}
-                        whileTap={{ scale: 0.98 }}
-                        sx={
-                          !notificationStatus.isNew && !notificationStatus.hasUnread
-                            ? {
-                                background: 'transparent',
-                                border: 'none',
-                                boxShadow: 'none',
-                                fontWeight: 400,
-                                color: 'inherit',
-                              }
-                            : {}
-                        }
-                      >
-                        <Box position="relative">
-                          <Avatar 
-                            src={imageBuyer} 
-                            alt={`${chat.users[1].firstName} ${chat.users[1].lastName}`}
-                            sx={{ 
-                              width: 48, 
-                              height: 48,
-                              border: idChat === chat._id ? `3px solid ${theme.palette.primary.main}` : 
-                                      notificationStatus.isNew ? `3px solid ${theme.palette.primary.main}` :
-                                      notificationStatus.hasUnread ? `2px solid ${theme.palette.primary.main}` : 'none',
-                              boxShadow: notificationStatus.isNew ? `0 0 12px ${alpha(theme.palette.primary.main, 0.4)}` : 'none',
-                            }}
-                          />
-                          {statusIndicator(index % 3 === 0 ? 'online' : (index % 3 === 1 ? 'away' : 'offline'))}
-                          {/* New chat indicator */}
-                          {notificationStatus.isNew && <NewChatIndicator />}
-                        </Box>
-                        <ContactInfo>
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography 
-                              variant="subtitle2" 
-                              fontWeight={
-                                idChat === chat._id ? 700 : 
-                                notificationStatus.hasUnread ? 600 : 400
-                              } 
-                              noWrap
-                              sx={{
-                                color: notificationStatus.isNew ? theme.palette.primary.main : 
-                                       notificationStatus.hasUnread ? theme.palette.primary.main : 'inherit',
-                                fontWeight: !notificationStatus.isNew && !notificationStatus.hasUnread ? 400 : undefined
-                              }}
-                            >
-                              {chat.users[1].firstName} {chat.users[1].lastName}
-                              {notificationStatus.isNew && (
-                                <Chip 
-                                  label={t('chat.new')} 
-                                  size="small" 
-                                  sx={{ 
-                                    ml: 1, 
-                                    fontSize: '0.6rem', 
-                                    height: '16px',
-                                    backgroundColor: theme.palette.primary.main,
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                  }} 
-                                />
-                              )}
-                            </Typography>
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                              <Typography variant="caption" color="text.secondary">
-                                {formatTime(chat.createdAt)}
-                              </Typography>
-                              {notificationStatus.hasUnread && notificationStatus.unreadCount > 0 && (
-                                <UnreadBadge badgeContent={notificationStatus.unreadCount > 0 ? notificationStatus.unreadCount : null} color="error" />
-                              )}
-                            </Box>
-                          </Box>
-                          <Typography 
-                            variant="body2" 
-                            color="text.secondary" 
-                            noWrap 
-                            sx={{ 
-                              opacity: notificationStatus.hasUnread ? 1 : 0.8,
-                              fontWeight: notificationStatus.hasUnread ? 500 : 400,
-                            }}
-                          >
-                            {notificationStatus.isNew ? t('chat.newConversationStarted') : 
-                             notificationStatus.hasUnread ? t('chat.unreadMessages', { count: notificationStatus.unreadCount }) :
-                             t('chat.noNewMessages')}
-                          </Typography>
-                        </ContactInfo>
-                        {/* Modern unread indicator */}
-                        {notificationStatus.hasUnread && (
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              right: 12,
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              width: 8,
-                              height: 8,
-                              borderRadius: '50%',
-                              backgroundColor: notificationStatus.isNew ? theme.palette.primary.main : theme.palette.primary.main,
-                              boxShadow: notificationStatus.isNew ? `0 0 8px ${alpha(theme.palette.primary.main, 0.6)}` : 
-                                         `0 0 6px ${alpha(theme.palette.primary.main, 0.6)}`,
-                              animation: 'pulse 2s infinite',
-                            }}
-                          />
-                        )}
-                      </ModernContactItem>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            ) : (
-              <EmptyChatState>
-                <Typography variant="body1">{t('chat.noChatsFound')}</Typography>
-              </EmptyChatState>
-            )}
-          </ContactsContainer>
-        </Sidebar>
-        
-        {/* Chat Main Area - Show conditionally on mobile */}
-        <ChatMain sx={{ display: { xs: showChat ? 'flex' : 'none', md: 'flex' } }}>
-          <ChatHeader>
-            <Box display="flex" alignItems="center" gap={1}>
-              {isMobile && (
-                <IconButton onClick={handleBackToChats} size="small" sx={{ mr: 1 }}>
-                  <KeyboardBackspaceRounded />
-                </IconButton>
-              )}
-              <Avatar 
-                src={imageBuyer} 
-                sx={{ width: 32, height: 32, mr: 1 }}
-              />
-              <Box>
-                <Typography variant="h6" fontWeight={600}>
-                  {userChat?.firstName} {userChat?.lastName}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {userChat?.status === 'online' ? 'Online now' : 'Last seen recently'}
-                </Typography>
-              </Box>
-            </Box>
-            <Box display="flex" gap={1}>
-              <Tooltip title={t('chat.moreOptions')}>
-                <IconButton size="small">
-                  <MoreVertRounded fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </ChatHeader>
-          <ChatContent ref={chatContentRef}>
-            {loading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                <CircularProgress size={30} />
-              </Box>
-            ) : messages.length > 0 ? (
-              <div>
-                {groupMessagesByDate(messages).map((group, index) => (
-                  <MessageGroup key={index}>
-                    {group.map((message, msgIndex) => (
-                      <MessageBubbleContainer 
-                        key={message._id} 
-                        sender={message.sender === auth.user._id}
-                        variants={MessageBubbleVariants}
-                        initial="initial"
-                        animate="animate"
-                        transition={{ delay: msgIndex * 0.05 }}
-                      >
-                        <MessageBubble sender={message.sender === auth.user._id}>
-                          <Typography variant="body2" sx={{ fontSize: '0.9rem', lineHeight: 1.4 }}>
-                            {message.message}
-                          </Typography>
-                        </MessageBubble>
-                        <MessageTime>{formatTime(message.createdAt)}</MessageTime>
-                      </MessageBubbleContainer>
-                    ))}
-                  </MessageGroup>
-                ))}
-                
-                {/* Typing indicator */}
-                {isTyping && (
-                  <MessageBubbleContainer sender={false}>
-                    <MessageBubble sender={false}>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        gap: 0.5, 
-                        alignItems: 'center',
-                        padding: '4px',
-                        minWidth: '40px'
-                      }}>
-                        <motion.div
-                          animate={{
-                            y: [0, -5, 0],
-                            transition: { repeat: Infinity, duration: 0.5, repeatDelay: 0.2 }
-                          }}
-                        >
-                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.secondary' }} />
-                        </motion.div>
-                        <motion.div
-                          animate={{
-                            y: [0, -5, 0],
-                            transition: { repeat: Infinity, duration: 0.5, delay: 0.2, repeatDelay: 0.2 }
-                          }}
-                        >
-                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.secondary' }} />
-                        </motion.div>
-                        <motion.div
-                          animate={{
-                            y: [0, -5, 0],
-                            transition: { repeat: Infinity, duration: 0.5, delay: 0.4, repeatDelay: 0.2 }
-                          }}
-                        >
-                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'text.secondary' }} />
-                        </motion.div>
-                      </Box>
-                    </MessageBubble>
-                  </MessageBubbleContainer>
+            </EmptyState>
+          )}
+        </ContactsList>
+      </SidebarContainer>
+
+      {/* Chat Area */}
+      <ChatArea sx={{ display: { xs: showChat ? 'flex' : 'none', md: 'flex' } }}>
+        {selectedChat ? (
+          <>
+            <ChatHeader>
+              <Box display="flex" alignItems="center" gap={2}>
+                {isMobile && (
+                  <IconButton onClick={handleBackToChats}>
+                    <KeyboardBackspaceRounded />
+                  </IconButton>
                 )}
-                
-                <div ref={messagesEndRef} />
-              </div>
-            ) : (
-              <EmptyChatState>
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChatRounded sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" gutterBottom fontWeight={600}>
-                    {t('chat.noMessagesYet')}
+                <Avatar 
+                  src={imageBuyer}
+                  sx={{ width: 40, height: 40 }}
+                />
+                <Box>
+                  <Typography variant="h6" fontWeight={600}>
+                    {selectedChat.users[1].firstName} {selectedChat.users[1].lastName}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 300, mx: 'auto' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Online now
+                  </Typography>
+                </Box>
+              </Box>
+              <Box display="flex" gap={1}>
+                <IconButton>
+                  <VideoCallRounded />
+                </IconButton>
+                <IconButton>
+                  <PhoneRounded />
+                </IconButton>
+                <IconButton>
+                  <MoreVertRounded />
+                </IconButton>
+              </Box>
+            </ChatHeader>
+
+            <MessagesContainer ref={chatContentRef}>
+              {loading ? (
+                <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+                  <CircularProgress sx={{ color: '#0063b1' }} />
+                </Box>
+              ) : combinedMessages.length > 0 ? (
+                <>
+                  {combinedMessages.map((message, index) => renderMessage(message, index))}
+                  
+                  
+                  <div ref={messagesEndRef} />
+                </>
+              ) : (
+                <EmptyState>
+                  <ChatRounded sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
+                  <Typography variant="h6" gutterBottom fontWeight={600}>
+                    No messages yet
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
                     Start the conversation by sending a message below
                   </Typography>
-                </motion.div>
-              </EmptyChatState>
-            )}
-          </ChatContent>
-          <ChatInputContainer>
-            <ChatInputWrapper>
-              <Tooltip title={t('chat.attachFile')}>
-                <IconButton size="small" color="primary">
-                  <AttachFileRounded fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              
-              <TextField
-                fullWidth
-                placeholder={t('chat.typeMessage')}
-                size="small"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={handleKeyPress}
-                multiline
-                maxRows={3}
-                InputProps={{
-                  disableUnderline: true,
-                  sx: {
-                    fontSize: '0.9rem',
-                    '& fieldset': {
-                      border: 'none',
-                    },
-                  }
-                }}
-              />
-              
-              <Tooltip title={t('chat.addEmoji')}>
-                <IconButton 
-                  size="small" 
-                  color="primary"
-                  onClick={() => setShowEmoji(!showEmoji)}
-                >
-                  <InsertEmoticonRounded fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              
-              <Tooltip title={t('chat.voiceMessage')}>
-                <IconButton size="small" color="primary">
-                  <MicRounded fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              
-              <IconButton 
-                color="primary" 
-                disabled={!text.trim()}
-                onClick={createMessage}
-                sx={{ 
-                  backgroundColor: text.trim() ? theme.palette.primary.main : alpha(theme.palette.action.disabled, 0.1),
-                  color: text.trim() ? theme.palette.primary.contrastText : theme.palette.action.disabled,
-                  '&:hover': {
-                    backgroundColor: text.trim() ? theme.palette.primary.dark : alpha(theme.palette.action.disabled, 0.1),
-                  },
-                  transition: 'all 0.2s ease',
-                  padding: '8px'
-                }}
-              >
-                <SendRounded fontSize="small" />
-              </IconButton>
-            </ChatInputWrapper>
-          </ChatInputContainer>
-        </ChatMain>
+                </EmptyState>
+              )}
+            </MessagesContainer>
 
-        {/* Floating Action Button for Mobile */}
-        <FloatingActionButton>
-          <Tooltip title={t('chat.openChats')}>
-            <IconButton
-              onClick={handleSidebarToggle}
-              sx={{
-                backgroundColor: theme.palette.primary.main,
-                color: 'white',
-                width: 56,
-                height: 56,
-                boxShadow: theme.shadows[4],
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                  transform: 'scale(1.1)',
-                },
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ChatRounded />
-            </IconButton>
-          </Tooltip>
-        </FloatingActionButton>
-      </ChatLayout>
-    );
+            <InputContainer>
+              <InputWrapper>
+                <IconButton>
+                  <AttachFileRounded />
+                </IconButton>
+                
+                <TextField
+                  fullWidth
+                  multiline
+                  maxRows={3}
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  InputProps={{
+                    disableUnderline: true,
+                    sx: {
+                      fontSize: '0.9rem',
+                      '& fieldset': { border: 'none' },
+                    }
+                  }}
+                />
+                
+                <IconButton>
+                  <InsertEmoticonRounded />
+                </IconButton>
+                
+                <IconButton>
+                  <MicRounded />
+                </IconButton>
+                
+                <IconButton 
+                  disabled={!newMessage.trim()}
+                  onClick={sendMessage}
+                  sx={{
+                    background: newMessage.trim() 
+                      ? 'linear-gradient(45deg, #0063b1, #3366FF)' 
+                      : '#ccc',
+                    color: 'white',
+                    '&:hover': {
+                      background: newMessage.trim() 
+                        ? 'linear-gradient(45deg, #103996, #1939B7)' 
+                        : '#ccc',
+                    },
+                  }}
+                >
+                  <SendRounded />
+                </IconButton>
+              </InputWrapper>
+            </InputContainer>
+          </>
+        ) : (
+          <EmptyState>
+            <ChatRounded sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
+            <Typography variant="h6" gutterBottom fontWeight={600}>
+              Select a conversation
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Choose a chat from the sidebar to start messaging
+            </Typography>
+          </EmptyState>
+        )}
+      </ChatArea>
+
+      {/* Floating Action Button */}
+      <FloatingButton
+        onClick={handleSidebarToggle}
+        color="primary"
+      >
+        <ChatRounded />
+      </FloatingButton>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+      >
+        <Alert onClose={() => setError(null)} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
+    </ModernChatContainer>
+  );
 }

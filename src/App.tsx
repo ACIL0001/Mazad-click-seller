@@ -31,6 +31,7 @@ export default function App() {
   }, []);
 
 
+  // ommented out checkBids functionality as the endpoint doesn't exist
   useEffect(()=>{
     if(!auth || !auth.user) return
     // checkBids()

@@ -352,17 +352,47 @@ export const PaymentMethodSelection = () => {
 
   const handlePayment = async () => {
     setLoading(true);
-    // Simulate payment processing
-    setTimeout(() => {
+    
+    try {
+      // Store the uploaded file in session storage for later use
+      if (uploadedFile) {
+        console.log('Storing payment proof file for later upload:', uploadedFile.name);
+        // Convert file to base64 for storage
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result as string;
+          sessionStorage.setItem('paymentProofFile', base64);
+          sessionStorage.setItem('paymentProofFileName', uploadedFile.name);
+          sessionStorage.setItem('paymentProofFileType', uploadedFile.type);
+        };
+        reader.readAsDataURL(uploadedFile);
+      }
+      
+      // Simulate payment processing
+      setTimeout(() => {
+        setLoading(false);
+        navigate('/payment-success', { 
+          state: { 
+            plan: selectedPlan,
+            paymentMethod: selectedMethod,
+            requiresVerification: selectedMethod === 'cheque' || uploadedFile,
+            hasPaymentProof: !!uploadedFile
+          } 
+        });
+      }, 2000);
+    } catch (error) {
+      console.error('Error processing payment:', error);
       setLoading(false);
+      // Still proceed with payment even if proof processing fails
       navigate('/payment-success', { 
         state: { 
           plan: selectedPlan,
           paymentMethod: selectedMethod,
-          requiresVerification: selectedMethod === 'cheque' || uploadedFile
+          requiresVerification: selectedMethod === 'cheque' || uploadedFile,
+          hasPaymentProof: !!uploadedFile
         } 
       });
-    }, 2000);
+    }
   };
 
   const renderPaymentForm = () => {

@@ -81,6 +81,24 @@ export const NotificationService = {
   },
 
   /**
+   * Mark all chat notifications as read for the current user
+   * @returns Promise<{modifiedCount: number}> Number of chat notifications marked as read
+   */
+  markAllChatNotificationsAsRead: (): Promise<{modifiedCount: number}> => {
+    return monitorApiCall(
+      () => requests.put('notification/chat/read-all', {}).then((result) => {
+        // Dispatch event to update UI components
+        window.dispatchEvent(new CustomEvent('databaseNotificationUpdate', { 
+          detail: { action: 'markAllChatNotificationsAsRead', modifiedCount: result.modifiedCount } 
+        }));
+        return result;
+      }),
+      'notification/chat/read-all',
+      'PUT'
+    );
+  },
+
+  /**
    * Create a test notification for debugging
    * @param message - Optional custom message for the test notification
    * @returns Promise<{success: boolean, notification: Notification}>

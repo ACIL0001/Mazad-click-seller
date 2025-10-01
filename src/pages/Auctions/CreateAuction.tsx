@@ -47,7 +47,6 @@ import useAuth from '@/hooks/useAuth';
 import { alpha } from '@mui/material/styles';
 import { ACCOUNT_TYPE } from '@/types/User';
 import { loadGoogleMapsScript } from '@/utils/loadGoogleMapsScript';
-import app from '@/config';
 
 // Modern styled components
 const MainContainer = styled(Container)(({ theme }) => ({
@@ -876,41 +875,6 @@ declare global {
   }
 }
 
-// Helper function to construct proper image URLs
-const getImageUrl = (attachment: any): string => {
-  if (!attachment) return "";
-  
-  // Handle string URLs
-  if (typeof attachment === "string") {
-    // If it's already a full URL, return as-is
-    if (attachment.startsWith('http://') || attachment.startsWith('https://')) {
-      return attachment;
-    }
-    // If it already starts with /static/, prepend base URL
-    if (attachment.startsWith('/static/')) {
-      return app.route + attachment;
-    }
-    // If it's just a filename, prepend /static/
-    return app.route + '/static/' + attachment;
-  }
-  
-  // Handle object with url property
-  if (typeof attachment === "object" && attachment.url) {
-    // If it's already a full URL, return as-is
-    if (attachment.url.startsWith('http://') || attachment.url.startsWith('https://')) {
-      return attachment.url;
-    }
-    // If it already starts with /static/, prepend base URL
-    if (attachment.url.startsWith('/static/')) {
-      return app.route + attachment.url;
-    }
-    // If it's just a filename, prepend /static/
-    return app.route + '/static/' + attachment.url;
-  }
-  
-  return "";
-};
-
 export default function CreateAuction() {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -1508,8 +1472,10 @@ export default function CreateAuction() {
                   match: category.type === formik.values.bidType
                 });
                 
-                // Filter categories by bid type (PRODUCT or SERVICE)
-                return category.type === formik.values.bidType;
+                // For now, show all categories regardless of type to debug the issue
+                // TODO: Fix category type mapping
+                return true; // Temporarily show all categories
+                // return category.type === formik.values.bidType;
               }
               return true;
             })
@@ -1584,7 +1550,7 @@ export default function CreateAuction() {
                       </IconButton>
                     )}
 
-                    {/* Category Icon/Thumbnail */}
+                    {/* Category Icon */}
                     <Box
                       sx={{
                         width: level === 0 ? 48 : 40,
@@ -1598,46 +1564,13 @@ export default function CreateAuction() {
                         justifyContent: 'center',
                         mr: 2,
                         transition: 'all 0.3s ease',
-                        overflow: 'hidden',
-                        position: 'relative',
                       }}
                     >
-                      {category.thumb && getImageUrl(category.thumb) ? (
-                        <img
-                          src={getImageUrl(category.thumb)}
-                          alt={category.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            borderRadius: '50%',
-                          }}
-                          onError={(e) => {
-  // Fallback to icon if image fails to load
-  const target = e.currentTarget as HTMLImageElement;
-  target.style.display = 'none';
-  const nextElement = target.nextElementSibling as HTMLElement;
-  if (nextElement) {
-    nextElement.style.display = 'flex';
-  }
-}}
-                        />
-                      ) : null}
-                      <Box
-                        sx={{
-                          display: category.thumb && getImageUrl(category.thumb) ? 'none' : 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '100%',
-                          height: '100%',
-                        }}
-                      >
-                        <Iconify
-                          icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
-                          width={level === 0 ? 24 : 20}
-                          sx={{ color: isSelected ? 'white' : theme.palette.primary.main }}
-                        />
-                      </Box>
+                      <Iconify
+                        icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
+                        width={level === 0 ? 24 : 20}
+                        sx={{ color: isSelected ? 'white' : theme.palette.primary.main }}
+                      />
                     </Box>
 
                     {/* Category Info */}
@@ -1711,19 +1644,9 @@ export default function CreateAuction() {
 
         return (
           <StepCard>
-            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 2, fontWeight: 600 }}>
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
               Sélectionnez la catégorie
             </Typography>
-            
-            {/* Type Indicator */}
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Chip
-                label={`Type: ${formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 'Service'}`}
-                color="primary"
-                variant="outlined"
-                sx={{ fontWeight: 600 }}
-              />
-            </Box>
 
             {/* Category Breadcrumb */}
             {selectedCategoryPath.length > 0 && (
@@ -1755,11 +1678,8 @@ export default function CreateAuction() {
                 renderCategoryHierarchy(categories)
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Aucune catégorie disponible pour le type "{formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 'Service'}"
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Veuillez revenir à l'étape précédente et sélectionner un autre type d'enchère.
+                  <Typography variant="h6" color="text.secondary">
+                    Aucune catégorie disponible pour le type sélectionné
                   </Typography>
                 </Box>
               )}

@@ -22,40 +22,10 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { SubscriptionAPI, SubscriptionPlan } from '../api/subscription';
+import { authStore } from '../contexts/authStore';
 
-// Mock API for demonstration
-const SubscriptionAPI = {
-  getPlansByRole: async (role) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const plans = [
-      {
-        id: 1,
-        name: 'Essentiel',
-        role: 'PROFESSIONAL',
-        price: 2500,
-        description: 'Parfait pour débuter votre activité professionnelle',
-        isActive: true
-      },
-      {
-        id: 2,
-        name: 'Premium',
-        role: 'PROFESSIONAL',
-        price: 5000,
-        description: 'Solution complète pour les professionnels établis',
-        isActive: true
-      },
-      {
-        id: 3,
-        name: 'Enterprise',
-        role: 'RESELLER',
-        price: 8500,
-        description: 'Outils avancés pour les grandes entreprises',
-        isActive: true
-      }
-    ];
-    return { plans: plans.filter(p => p.role === role) };
-  }
-};
+// Real API is imported from '../api/subscription'
 
 // Page wrapper component
 const Page = ({ children, title }) => {
@@ -337,34 +307,63 @@ const getPlanIcon = (planRole: string) => {
 const SubscriptionPlans = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState([]);
-  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [userRole, setUserRole] = useState('PROFESSIONAL'); // Mock user role
+  const [userRole, setUserRole] = useState<string>('PROFESSIONAL');
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        const response = await SubscriptionAPI.getPlansByRole(userRole);
-        const activePlans = response.plans.filter(plan => plan.isActive);
+        
+        // Get user role from auth store
+        const { auth } = authStore.getState();
+        const currentUserRole = auth?.user?.type || 'PROFESSIONAL';
+        setUserRole(currentUserRole);
+        
+        console.log('🔍 Fetching subscription plans for role:', currentUserRole);
+        
+        // Fetch plans from real API
+        const response = await SubscriptionAPI.getPlansByRole(currentUserRole);
+        console.log('📦 API Response:', response);
+        
+        // Handle different response formats
+        let plansData = [];
+        if (response.success && response.plans) {
+          plansData = response.plans;
+          console.log('📋 Using response.plans from success response');
+        } else if (Array.isArray(response)) {
+          plansData = response;
+          console.log('📋 Using direct array response');
+        } else if (response.plans) {
+          plansData = response.plans;
+          console.log('📋 Using response.plans from non-success response');
+        } else {
+          console.warn('⚠️ Unexpected response format:', response);
+        }
+        
+        // Filter active plans
+        const activePlans = plansData.filter(plan => plan.isActive !== false);
+        console.log('✅ Active plans:', activePlans);
+        
         setPlans(activePlans);
         if (activePlans.length > 0) {
           setSelectedPlan(activePlans[0]);
         }
         setError(null);
       } catch (err) {
+        console.error('❌ Error fetching subscription plans:', err);
         setError('Impossible de charger les plans d\'abonnement. Veuillez réessayer.');
-        console.error('Error fetching plans:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPlans();
-  }, [userRole]);
+  }, []);
 
   const handleProceedToPayment = () => {
     if (!selectedPlan) {
@@ -377,7 +376,7 @@ const SubscriptionPlans = () => {
     });
   };
 
-  const PlanFeatureList = ({ role }) => {
+  const PlanFeatureList = ({ role }: { role: string }) => {
     let features = [];
     if (role === 'PROFESSIONAL') {
       features = [
@@ -485,6 +484,30 @@ const SubscriptionPlans = () => {
               }}
             >
               {error}
+            </Alert>
+          </Fade>
+        </Container>
+      </MainContainer>
+    );
+  }
+
+  if (!loading && plans.length === 0) {
+    return (
+      <MainContainer>
+        <Container maxWidth="md" sx={{ pt: 8 }}>
+          <Fade in>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                borderRadius: 3,
+                fontSize: '1rem',
+                py: 2.5,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(15px)',
+                border: '1px solid rgba(33, 150, 243, 0.15)'
+              }}
+            >
+              Aucun plan d'abonnement disponible pour votre rôle ({userRole}). Veuillez contacter le support.
             </Alert>
           </Fade>
         </Container>

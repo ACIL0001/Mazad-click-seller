@@ -45,7 +45,6 @@ import Label from '../../components/Label';
 import { useTheme } from '@mui/material/styles';
 import { CategoryAPI } from '@/api/category';
 import ICategory, { CATEGORY_TYPE } from '@/types/Category';
-import app from '@/config';
 
 // Category Detail Modal
 interface CategoryDetailModalProps {
@@ -61,37 +60,26 @@ function CategoryDetailModal({ open, onClose, category }: CategoryDetailModalPro
 
   // Function to get image URL from the attachment
   const getImageUrl = (attachment: any): string => {
-    if (!attachment) return "";
-    
-    // Handle string URLs
-    if (typeof attachment === "string") {
-      // If it's already a full URL, return as-is
-      if (attachment.startsWith('http://') || attachment.startsWith('https://')) {
-        return attachment;
-      }
-      // If it already starts with /static/, prepend base URL
-      if (attachment.startsWith('/static/')) {
-        return app.route + attachment;
-      }
-      // If it's just a filename, prepend /static/
-      return app.route + '/static/' + attachment;
+    console.log('Getting image URL for attachment:', attachment);
+
+    // If no attachment provided
+    if (!attachment) {
+      return '';
     }
-    
-    // Handle object with url property
-    if (typeof attachment === "object" && attachment.url) {
-      // If it's already a full URL, return as-is
-      if (attachment.url.startsWith('http://') || attachment.url.startsWith('https://')) {
-        return attachment.url;
-      }
-      // If it already starts with /static/, prepend base URL
-      if (attachment.url.startsWith('/static/')) {
-        return app.route + attachment.url;
-      }
-      // If it's just a filename, prepend /static/
-      return app.route + '/static/' + attachment.url;
+
+    // If it's a string (direct URL), return it
+    if (typeof attachment === 'string') {
+      return attachment;
     }
-    
-    return "";
+
+    // If it's an object but doesn't have expected properties,
+    // try to get the first non-null value
+    if (typeof attachment === 'object') {
+      const value = Object.values(attachment).find(val => val !== null && val !== undefined);
+      return String(value || '');
+    }
+
+    return '';
   };
 
   return (

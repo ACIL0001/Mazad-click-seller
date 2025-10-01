@@ -26,7 +26,9 @@ const DRAWER_WIDTH_DESKTOP = 300;
 const APPBAR_MOBILE = 64;
 const APPBAR_DESKTOP = 92;
 
-const RootStyle = styled(AppBar)<{ isRTL?: boolean }>(({ theme, isRTL }) => ({
+const RootStyle = styled(AppBar, {
+    shouldForwardProp: (prop) => prop !== 'isRTL',
+})<{ isRTL?: boolean }>(({ theme, isRTL }) => ({
     boxShadow: 'none',
     backdropFilter: 'blur(6px)',
     WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
@@ -43,7 +45,9 @@ const RootStyle = styled(AppBar)<{ isRTL?: boolean }>(({ theme, isRTL }) => ({
     },
 }));
 
-const ToolbarStyle = styled(Toolbar)<{ isRTL?: boolean }>(({ theme, isRTL }) => ({
+const ToolbarStyle = styled(Toolbar, {
+    shouldForwardProp: (prop) => prop !== 'isRTL',
+})<{ isRTL?: boolean }>(({ theme, isRTL }) => ({
     minHeight: APPBAR_MOBILE,
     flexDirection: isRTL ? 'row-reverse' : 'row',
     padding: theme.spacing(0, 1),

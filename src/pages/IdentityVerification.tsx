@@ -14,6 +14,7 @@ import { useSnackbar } from 'notistack';
 import Tooltip from '@mui/material/Tooltip';
 import LogoutIcon from '@mui/icons-material/Logout';
 import useAuth from '@/hooks/useAuth';
+import { uploadPaymentProof, getStoredPaymentProof, clearStoredPaymentProof } from '../utils/paymentProofUpload';
 
 // Animation keyframes for background icons
 const floatAnimation = keyframes`
@@ -555,6 +556,19 @@ export default function IdentityVerification() {
       return;
     }
 
+    // Check if user is verified (has completed OTP validation)
+    if (!authUser?.isVerified) {
+      enqueueSnackbar('Veuillez d\'abord valider votre numéro de téléphone', { 
+        variant: 'warning',
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'center'
+        }
+      });
+      navigate('/login');
+      return;
+    }
+
     // Check if we've already shown this message in this session
     const hasShownMessage = sessionStorage.getItem('identityMessageShown') === 'true';
     if (hasShownMessage) {
@@ -573,7 +587,7 @@ export default function IdentityVerification() {
         const justSubmitted = localStorage.getItem('identityJustSubmitted') === 'true';
         
         if (identity && !justSubmitted) {
-          console.log('IdentityVerification - User already has identity, redirecting to dashboard');
+          console.log('IdentityVerification - User already has identity, redirecting to subscription plans');
           
           // Set the flag to avoid showing the message again in this session
           sessionStorage.setItem('identityMessageShown', 'true');
@@ -720,7 +734,42 @@ export default function IdentityVerification() {
       misesAJourCnas.forEach(file => formData.append('misesAJourCnas', file));
 
       // Call API to upload professional documents
-      await IdentityAPI.create(formData);
+      const identityResult = await IdentityAPI.create(formData);
+      
+      // Upload payment proof if it exists
+      console.log('🔍 Checking for stored payment proof...');
+      const storedPaymentProof = getStoredPaymentProof();
+      console.log('🔍 Stored payment proof:', storedPaymentProof);
+      
+      if (storedPaymentProof && storedPaymentProof.file && identityResult?._id) {
+        console.log('✅ Found stored payment proof, uploading to identity:', identityResult._id);
+        console.log('🔍 Payment proof file details:', {
+          name: storedPaymentProof.fileName,
+          type: storedPaymentProof.fileType,
+          size: storedPaymentProof.file.size
+        });
+        
+        try {
+          const paymentProofUploaded = await uploadPaymentProof(identityResult._id, storedPaymentProof.file);
+          if (paymentProofUploaded) {
+            console.log('✅ Payment proof uploaded successfully');
+            clearStoredPaymentProof(); // Clear from session storage after successful upload
+          } else {
+            console.error('❌ Failed to upload payment proof');
+          }
+        } catch (paymentError) {
+          console.error('❌ Error uploading payment proof:', paymentError);
+          // Don't fail the entire process if payment proof upload fails
+        }
+      } else {
+        console.log('❌ No stored payment proof found or no identity ID');
+        console.log('🔍 Debug info:', {
+          hasStoredProof: !!storedPaymentProof,
+          hasFile: !!(storedPaymentProof && storedPaymentProof.file),
+          hasIdentityId: !!identityResult?._id,
+          identityId: identityResult?._id
+        });
+      }
       
       // Refresh user data to get updated isHasIdentity status
       const updatedUser = await refreshUserData();

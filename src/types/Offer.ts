@@ -14,6 +14,7 @@ export interface Offer {
     currentPrice: number;
   };
   price: number;
+  status?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
   createdAt?: Date;
   updatedAt?: Date;
 }

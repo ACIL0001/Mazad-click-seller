@@ -264,9 +264,6 @@ export default function CreateTender() {
       .required('Le type d\'appel d\'offres est requis'),
     category: Yup.string()
       .required('La catégorie est requise'),
-    maxBudget: Yup.number()
-      .min(1, 'Le budget maximum doit être positif')
-      .required('Le budget maximum est requis'),
     duration: Yup.object()
       .required('La durée est requise'),
     wilaya: Yup.string()
@@ -283,14 +280,12 @@ export default function CreateTender() {
       auctionType: TENDER_AUCTION_TYPES.CLASSIC,
       category: '',
       subCategory: '',
-      maxBudget: '',
       duration: null,
       requirements: [],
       location: '',
       wilaya: '',
       quantity: '',
       isPro: false,
-      minimumPrice: '',
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -455,6 +450,16 @@ export default function CreateTender() {
     setActiveStep((prev) => prev + 1);
   };
 
+  // Reset category selection when tender type changes
+  const handleTenderTypeChange = (tenderType: string) => {
+    formik.setFieldValue('tenderType', tenderType);
+    // Reset category selection when type changes
+    setSelectedCategory(null);
+    setSelectedCategoryPath([]);
+    formik.setFieldValue('category', '');
+    formik.setFieldValue('subCategory', '');
+  };
+
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);
   };
@@ -490,8 +495,6 @@ export default function CreateTender() {
         auctionType: values.auctionType,
         category: values.category,
         subCategory: values.subCategory || undefined,
-        maxBudget: parseFloat(values.maxBudget),
-        currentLowestBid: parseFloat(values.maxBudget), // Start with max budget
         startingAt: now.toISOString(),
         endingAt: endingDate.toISOString(),
         requirements: values.requirements || [],
@@ -499,7 +502,6 @@ export default function CreateTender() {
         wilaya: values.wilaya,
         isPro: values.isPro,
         quantity: values.quantity || '',
-        minimumPrice: parseFloat(values.minimumPrice) || undefined,
       };
 
       const formData = new FormData();
@@ -549,7 +551,7 @@ export default function CreateTender() {
               <Grid item xs={12} md={6}>
                 <SelectionCard
                   className={formik.values.tenderType === TENDER_TYPES.PRODUCT ? 'selected' : ''}
-                  onClick={() => formik.setFieldValue('tenderType', TENDER_TYPES.PRODUCT)}
+                  onClick={() => handleTenderTypeChange(TENDER_TYPES.PRODUCT)}
                 >
                   <Box sx={{ textAlign: 'center' }}>
                     <IconContainer className={formik.values.tenderType === TENDER_TYPES.PRODUCT ? 'selected' : ''}>
@@ -573,7 +575,7 @@ export default function CreateTender() {
               <Grid item xs={12} md={6}>
                 <SelectionCard
                   className={formik.values.tenderType === TENDER_TYPES.SERVICE ? 'selected' : ''}
-                  onClick={() => formik.setFieldValue('tenderType', TENDER_TYPES.SERVICE)}
+                  onClick={() => handleTenderTypeChange(TENDER_TYPES.SERVICE)}
                 >
                   <Box sx={{ textAlign: 'center' }}>
                     <IconContainer className={formik.values.tenderType === TENDER_TYPES.SERVICE ? 'selected' : ''}>
@@ -671,10 +673,8 @@ export default function CreateTender() {
                   match: category.type === formik.values.tenderType
                 });
                 
-                // For now, show all categories regardless of type to debug the issue
-                // TODO: Fix category type mapping
-                return true; // Temporarily show all categories
-                // return category.type === formik.values.tenderType;
+                // Filter categories based on tender type
+                return category.type === formik.values.tenderType;
               }
               return true;
             })
@@ -824,6 +824,13 @@ export default function CreateTender() {
               Sélectionnez la catégorie
             </Typography>
 
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Typography variant="body2">
+                <strong>Type sélectionné :</strong> {formik.values.tenderType === TENDER_TYPES.PRODUCT ? 'Produit' : 'Service'} - 
+                Affichage des catégories correspondantes
+              </Typography>
+            </Alert>
+
             {selectedCategoryPath.length > 0 && (
               <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -849,11 +856,25 @@ export default function CreateTender() {
 
             <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
               {categories.length > 0 ? (
-                renderCategoryHierarchy(categories)
+                (() => {
+                  const filteredCategories = categories.filter(category => category.type === formik.values.tenderType);
+                  return filteredCategories.length > 0 ? (
+                    renderCategoryHierarchy(categories)
+                  ) : (
+                    <Box sx={{ textAlign: 'center', py: 6 }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        Aucune catégorie disponible pour le type "{formik.values.tenderType === TENDER_TYPES.PRODUCT ? 'Produit' : 'Service'}"
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Veuillez contacter l'administrateur pour ajouter des catégories pour ce type.
+                      </Typography>
+                    </Box>
+                  );
+                })()
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <Typography variant="h6" color="text.secondary">
-                    Aucune catégorie disponible pour le type sélectionné
+                    Chargement des catégories...
                   </Typography>
                 </Box>
               )}
@@ -914,49 +935,6 @@ export default function CreateTender() {
                 </Grid>
               )}
 
-              {/* Pricing */}
-              <Grid item xs={12}>
-                <Divider sx={{ my: 3 }} />
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Budget et conditions
-                </Typography>
-
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  <Typography variant="body2">
-                    <strong>Information importante :</strong> Le budget maximum représente le montant maximal que vous êtes prêt à payer. 
-                    Les prestataires feront des offres inférieures à ce montant pour remporter l'appel d'offres.
-                  </Typography>
-                </Alert>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <StyledTextField
-                  fullWidth
-                  type="number"
-                  label="Budget maximum *"
-                  value={formik.values.maxBudget}
-                  onChange={formik.handleChange('maxBudget')}
-                  error={formik.touched.maxBudget && Boolean(formik.errors.maxBudget)}
-                  helperText={formik.touched.maxBudget && formik.errors.maxBudget}
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">DA</InputAdornment>,
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <StyledTextField
-                  fullWidth
-                  type="number"
-                  label="Prix minimum acceptable (optionnel)"
-                  value={formik.values.minimumPrice}
-                  onChange={formik.handleChange('minimumPrice')}
-                  helperText="Prix minimum en dessous duquel vous n'accepterez pas l'offre"
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">DA</InputAdornment>,
-                  }}
-                />
-              </Grid>
 
               {/* Duration */}
               <Grid item xs={12}>

@@ -10,4 +10,7 @@ export const TendersAPI = {
   getTenderBids: (id: string) : Promise<any> => requests.get(`tender/${id}/bids`),
   getTenderBidsByOwner: (ownerId: string) : Promise<any> => requests.get(`tender/owner/${ownerId}/bids`),
   getTenderBidsByBidder: (bidderId: string) : Promise<any> => requests.get(`tender/bidder/${bidderId}/bids`),
+  acceptTenderBid: (bidId: string) : Promise<any> => requests.post(`tender/bids/${bidId}/accept`, {}),
+  rejectTenderBid: (bidId: string) : Promise<any> => requests.post(`tender/bids/${bidId}/reject`, {}),
+  deleteTender: (tenderId: string) : Promise<any> => requests.delete(`tender/${tenderId}`),
 }

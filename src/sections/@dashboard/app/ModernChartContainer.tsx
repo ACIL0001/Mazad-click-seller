@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
   Box,
@@ -32,7 +32,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const TimeframeButton = styled(Button)<{ active?: boolean }>(({ theme, active }) => ({
+const TimeframeButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})<{ active?: boolean }>(({ theme, active }) => ({
   borderRadius: 16,
   textTransform: 'none',
   fontWeight: 600,
@@ -80,16 +82,7 @@ export default function ModernChartContainer({
     { value: 12, label: '1Y' },
   ];
 
-  useEffect(() => {
-    // Add a delay to prevent rapid successive calls
-    const timeoutId = setTimeout(() => {
-      fetchChartData();
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [timeframe, chartType]);
-
-  const fetchChartData = async () => {
+  const fetchChartData = useCallback(async () => {
     try {
       setLoading(true);
       let data: ChartData;
@@ -111,13 +104,24 @@ export default function ModernChartContainer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [chartType, timeframe]);
+
+  useEffect(() => {
+    // Add a delay to prevent rapid successive calls
+    const timeoutId = setTimeout(() => {
+      fetchChartData();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [timeframe, chartType, fetchChartData]);
+
+  const baseChartOptions = BaseOptionChart();
 
   const getChartOptions = () => {
     if (!chartData) return {};
 
     return {
-      ...BaseOptionChart(),
+      ...baseChartOptions,
       chart: {
         type: 'line',
         height: 350,

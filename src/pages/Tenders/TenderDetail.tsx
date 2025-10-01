@@ -28,6 +28,7 @@ import Page from '../../components/Page';
 import Iconify from '../../components/Iconify';
 import Breadcrumb from '@/components/Breadcrumbs';
 import { TendersAPI } from '@/api/tenders';
+import { OffersAPI } from '@/api/offers';
 import { Tender, TenderBid, TENDER_STATUS } from '@/types/Tender';
 import useAuth from '@/hooks/useAuth';
 
@@ -69,6 +70,49 @@ export default function TenderDetail() {
     } catch (error) {
       console.error('Error fetching tender bids:', error);
       enqueueSnackbar('Erreur lors du chargement des offres', { variant: 'error' });
+    }
+  };
+
+  const handleDeleteOffer = async (bidId: string) => {
+    try {
+      setLoading(true);
+      console.log('Deleting tender bid:', bidId);
+      
+      const response = await OffersAPI.deleteOffer(bidId);
+      console.log('Tender bid deleted:', response);
+      
+      enqueueSnackbar('Offre supprimée avec succès!', { variant: 'success' });
+      
+      // Refresh the data
+      fetchTenderBids();
+    } catch (error) {
+      console.error('Error deleting tender bid:', error);
+      enqueueSnackbar('Erreur lors de la suppression de l\'offre.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAllOffers = async () => {
+    if (tenderBids.length === 0) return;
+    
+    try {
+      setLoading(true);
+      console.log('Deleting all tender bids');
+      
+      // Delete all offers in parallel
+      const deletePromises = tenderBids.map(bid => OffersAPI.deleteOffer(bid._id));
+      await Promise.all(deletePromises);
+      
+      enqueueSnackbar(`${tenderBids.length} offres supprimées avec succès!`, { variant: 'success' });
+      
+      // Refresh the data
+      fetchTenderBids();
+    } catch (error) {
+      console.error('Error deleting all tender bids:', error);
+      enqueueSnackbar('Erreur lors de la suppression des offres.', { variant: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -248,35 +292,6 @@ export default function TenderDetail() {
               </Typography>
               
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Budget maximum
-                  </Typography>
-                  <Typography variant="h6" color="primary">
-                    {tender.maxBudget.toLocaleString()} DA
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Offre actuelle la plus basse
-                  </Typography>
-                  <Typography variant="h6" color="success.main">
-                    {tender.currentLowestBid.toLocaleString()} DA
-                  </Typography>
-                </Grid>
-
-                {tender.minimumPrice && (
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Prix minimum acceptable
-                    </Typography>
-                    <Typography variant="body1">
-                      {tender.minimumPrice.toLocaleString()} DA
-                    </Typography>
-                  </Grid>
-                )}
-
                 {tender.quantity && (
                   <Grid item xs={12} sm={6}>
                     <Typography variant="body2" color="text.secondary">
@@ -323,11 +338,25 @@ export default function TenderDetail() {
                 <Typography variant="h6">
                   Offres reçues ({tenderBids.length})
                 </Typography>
-                {tender.status === TENDER_STATUS.OPEN && (
-                  <Typography variant="body2" color="text.secondary">
-                    Les offres sont classées par prix croissant
-                  </Typography>
-                )}
+                <Stack direction="row" spacing={2} alignItems="center">
+                  {tender.status === TENDER_STATUS.OPEN && (
+                    <Typography variant="body2" color="text.secondary">
+                      Les offres sont classées par prix croissant
+                    </Typography>
+                  )}
+                  {tenderBids.length > 0 && (
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      startIcon={<Iconify icon="eva:trash-2-outline" />}
+                      onClick={handleDeleteAllOffers}
+                      disabled={loading}
+                    >
+                      Supprimer toutes
+                    </Button>
+                  )}
+                </Stack>
               </Stack>
 
               {tenderBids.length === 0 ? (
@@ -409,6 +438,16 @@ export default function TenderDetail() {
                                   Attribuer
                                 </Button>
                               )}
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="error"
+                                onClick={() => handleDeleteOffer(bid._id)}
+                                disabled={loading}
+                                startIcon={<Iconify icon="eva:trash-2-outline" />}
+                              >
+                                Supprimer
+                              </Button>
                             </Stack>
                           </TableCell>
                         </TableRow>
@@ -437,20 +476,6 @@ export default function TenderDetail() {
                     {tenderBids.length}
                   </Typography>
                 </Box>
-                
-                {tenderBids.length > 0 && (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Économie potentielle
-                    </Typography>
-                    <Typography variant="h5" color="success.main">
-                      {(tender.maxBudget - Math.min(...tenderBids.map(b => b.bidAmount))).toLocaleString()} DA
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Par rapport au budget maximum
-                    </Typography>
-                  </Box>
-                )}
 
                 {tender.category && (
                   <Box>

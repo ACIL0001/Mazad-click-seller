@@ -204,6 +204,57 @@ export default function SocketProvider({ children }: { children: React.ReactNode
     socket.on('sendMessage', handleSendMessage);
     socket.on('newMessage', handleNewMessage);
     socket.on('notification', handleNotification);
+    
+    // Add specific event listeners for buyer-seller communication
+    socket.on('buyerToSellerMessage', (data: any) => {
+      console.log('💬 SocketContext: Buyer-to-seller message received:', data);
+      setMessages(prev => {
+        const exists = prev.some(msg => 
+          msg._id === data._id || 
+          (msg.chatId === data.chatId && msg.message === data.message && 
+           Math.abs(new Date(msg.createdAt).getTime() - new Date(data.createdAt).getTime()) < 1000)
+        );
+        return exists ? prev : [...prev, data];
+      });
+    });
+    
+    socket.on('messageReceived', (data: any) => {
+      console.log('💬 SocketContext: Message received event:', data);
+      setMessages(prev => {
+        const exists = prev.some(msg => 
+          msg._id === data.messageId || 
+          (msg.chatId === data.chatId && msg.message === data.message && 
+           Math.abs(new Date(msg.createdAt).getTime() - new Date(data.timestamp).getTime()) < 1000)
+        );
+        return exists ? prev : [...prev, {
+          _id: data.messageId,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          idChat: data.chatId,
+          createdAt: data.timestamp
+        }];
+      });
+    });
+    
+    socket.on('chatMessageUpdate', (data: any) => {
+      console.log('💬 SocketContext: Chat message update:', data);
+      setMessages(prev => {
+        const exists = prev.some(msg => 
+          msg._id === data.messageId || 
+          (msg.chatId === data.chatId && msg.message === data.message && 
+           Math.abs(new Date(msg.createdAt).getTime() - new Date(data.timestamp).getTime()) < 1000)
+        );
+        return exists ? prev : [...prev, {
+          _id: data.messageId,
+          message: data.message,
+          sender: data.sender,
+          reciver: data.reciver,
+          idChat: data.chatId,
+          createdAt: data.timestamp
+        }];
+      });
+    });
 
     eventListenersSet.current = true;
 
@@ -214,6 +265,9 @@ export default function SocketProvider({ children }: { children: React.ReactNode
       socket.off('sendMessage', handleSendMessage);
       socket.off('newMessage', handleNewMessage);
       socket.off('notification', handleNotification);
+      socket.off('buyerToSellerMessage');
+      socket.off('messageReceived');
+      socket.off('chatMessageUpdate');
       eventListenersSet.current = false;
     };
   }, [socket]);

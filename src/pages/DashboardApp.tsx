@@ -45,6 +45,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import useServerStats from '@/hooks/useServerStats';
 import SellerStatsService, { QuickSummary, CategoryDistribution } from '../api/sellerStatsService';
+import { TendersAPI } from '@/api/tenders';
 import ProfessionalRestriction from '../components/ProfessionalRestriction';
 import { ACCOUNT_TYPE } from '../types/User';
 
@@ -83,6 +84,8 @@ export default function DashboardApp() {
   const [usingMockData, setUsingMockData] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [totalTendersCount, setTotalTendersCount] = useState<number>(0);
+  const [activeTendersCount, setActiveTendersCount] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
@@ -102,7 +105,7 @@ export default function DashboardApp() {
     const testApiConnection = async () => {
       try {
         console.log('🧪 Testing API connection...');
-        const response = await fetch('https://mazad.click/seller-stats/quick-summary', {
+        const response = await fetch('https://mazadclick-server.onrender.com/seller-stats/quick-summary', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens?.accessToken || 'test-token'}`,
@@ -165,6 +168,21 @@ useEffect(() => {
       console.log('📊 Dashboard: Fetching seller stats for professional user');
       fetchSellerStats();
     }, 1500);
+    // Fetch tenders counts from database
+    const t2 = setTimeout(() => {
+      TendersAPI.getAllTenders()
+        .then((res: any) => {
+          const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+          const total = list.length;
+          const active = list.filter((t: any) => (t.status || '').toUpperCase() === 'OPEN').length;
+          setTotalTendersCount(total);
+          setActiveTendersCount(active);
+          console.log('📊 Dashboard: Tenders counts', { total, active });
+        })
+        .catch((e: any) => {
+          console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
+        });
+    }, 500);
     return () => clearTimeout(timeoutId);
   } else {
     // All other cases (clients, professionals without identity, etc.)
@@ -376,20 +394,20 @@ useEffect(() => {
     },
     {
       title: 'Total Tenders',
-      total: (sellerStats as any).totalTenders || 0, // Use type assertion for missing properties
+      total: totalTendersCount || (sellerStats as any).totalTenders || 0,
       icon: 'mdi:file-document-multiple',
       color: 'secondary',
-      trend: (sellerStats as any).totalTenders > 0 ? 'up' : 'neutral',
-      trendValue: (sellerStats as any).totalTenders > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
+      trend: (totalTendersCount || (sellerStats as any).totalTenders || 0) > 0 ? 'up' : 'neutral',
+      trendValue: (totalTendersCount || (sellerStats as any).totalTenders || 0) > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
       title: 'Active Tenders',
-      total: (sellerStats as any).activeTenders || 0, // Use type assertion for missing properties
+      total: activeTendersCount || (sellerStats as any).activeTenders || 0,
       icon: 'mdi:file-document-edit',
       color: 'info',
-      trend: (sellerStats as any).activeTenders > 0 ? 'up' : 'neutral',
-      trendValue: (sellerStats as any).activeTenders > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
+      trend: (activeTendersCount || (sellerStats as any).activeTenders || 0) > 0 ? 'up' : 'neutral',
+      trendValue: (activeTendersCount || (sellerStats as any).activeTenders || 0) > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
     },
   ] : [];

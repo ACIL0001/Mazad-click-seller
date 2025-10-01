@@ -242,51 +242,65 @@ export default function useNotification() {
     try {
       await NotificationService.markAsRead(id);
       
-      // Update the local state
+      // Update the local state immediately for better UX
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification._id === id ? { ...notification, read: true } : notification
         )
       );
       
-      // Update cache
+      // Update cache immediately
       if (notificationCache.data) {
         notificationCache.data = notificationCache.data.map(notification =>
           notification._id === id ? { ...notification, read: true } : notification
         );
       }
       
-      // Update unread count
+      // Update unread count immediately (decrement by 1)
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      if (notificationCache.unreadCount !== null) {
+        notificationCache.unreadCount = Math.max(0, notificationCache.unreadCount - 1);
+      }
+      
+      // Update socket context
       setNotificationSocket([]);
       setTest((p) => !p);
       setRelode(p=>!p);
       
-      // Force refresh unread count
+      // Notify all subscribers
+      notifySubscribers();
+      
+      // Force refresh unread count from server to ensure accuracy
       fetchUnreadCount(true);
       
     } catch (err) {
       console.error('Error marking notification as read:', err);
     }
-  }, [setNotificationSocket, setRelode, fetchUnreadCount]);
+  }, [setNotificationSocket, setRelode, fetchUnreadCount, notifySubscribers]);
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
       await NotificationService.markAllAsRead();
       
-      // Update the local state
+      // Update the local state immediately for better UX
       setNotifications(prevNotifications =>
         prevNotifications.map(notification => ({ ...notification, read: true }))
       );
       
-      // Update cache
+      // Update cache immediately
       if (notificationCache.data) {
         notificationCache.data = notificationCache.data.map(notification => ({ ...notification, read: true }));
       }
       
-      // Update unread count
+      // Update unread count immediately
       setUnreadCount(0);
       notificationCache.unreadCount = 0;
+      
+      // Update socket context
+      setNotificationSocket([]);
+      setTest((p) => !p);
+      setRelode(p=>!p);
       
       // Notify all subscribers
       notifySubscribers();
@@ -294,7 +308,7 @@ export default function useNotification() {
     } catch (err) {
       console.error('Error marking all notifications as read:', err);
     }
-  }, [notifySubscribers]);
+  }, [notifySubscribers, setNotificationSocket, setRelode]);
 
   // Socket event listener with improved deduplication
   useEffect(() => {
@@ -373,7 +387,7 @@ export default function useNotification() {
     };
   }, [socket, isLogged, auth.user?._id]); // Simplified dependency array
 
-  // Listen for notification read events from the notifications page
+  // Listen for notification read events from the notifications page and chat notifications
   useEffect(() => {
     const handleNotificationRead = () => {
       console.log('🔔 Notification read event received, refreshing counts...');
@@ -381,11 +395,13 @@ export default function useNotification() {
       fetchNotifications(true);
     };
 
-    // Listen for custom event dispatched from NotificationsPage
+    // Listen for custom events dispatched from various components
     window.addEventListener('notificationRead', handleNotificationRead);
+    window.addEventListener('databaseNotificationUpdate', handleNotificationRead);
 
     return () => {
       window.removeEventListener('notificationRead', handleNotificationRead);
+      window.removeEventListener('databaseNotificationUpdate', handleNotificationRead);
     };
   }, [fetchUnreadCount, fetchNotifications]);
 

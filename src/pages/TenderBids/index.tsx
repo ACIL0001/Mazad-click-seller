@@ -20,7 +20,7 @@ import Label from '../../components/Label';
 import Iconify from '../../components/Iconify';
 import { useSnackbar } from 'notistack';
 import ResponsiveTable from '../../components/Tables/ResponsiveTable';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 // types
 import { TenderBid, TenderBidStatus } from '../../types/Tender';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -77,6 +77,48 @@ export default function TenderBids() {
       })
       .finally(() => setLoading(false));
   };
+
+  const handleAcceptOffer = async (bidId: string) => {
+    try {
+      setLoading(true);
+      console.log('Accepting tender bid:', bidId);
+      
+      const response = await TendersAPI.acceptTenderBid(bidId);
+      console.log('Tender bid accepted:', response);
+      
+      enqueueSnackbar('Offre acceptée avec succès!', { variant: 'success' });
+      
+      // Refresh the data
+      get();
+    } catch (error) {
+      console.error('Error accepting tender bid:', error);
+      enqueueSnackbar('Erreur lors de l\'acceptation de l\'offre.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectOffer = async (bidId: string) => {
+    try {
+      setLoading(true);
+      console.log('Rejecting tender bid:', bidId);
+      
+      const response = await TendersAPI.rejectTenderBid(bidId);
+      console.log('Tender bid rejected:', response);
+      
+      enqueueSnackbar('Offre refusée.', { variant: 'info' });
+      
+      // Refresh the data
+      get();
+    } catch (error) {
+      console.error('Error rejecting tender bid:', error);
+      enqueueSnackbar('Erreur lors du refus de l\'offre.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Deletion of tender bids is not supported by tenders API; remove delete actions to match API
 
   const getStatusColor = (status: TenderBidStatus) => {
     switch (status) {
@@ -183,10 +225,8 @@ export default function TenderBids() {
                         size="small"
                         variant="contained"
                         color="success"
-                        onClick={() => {
-                          // Accept bid logic
-                          console.log('Accept bid:', _id);
-                        }}
+                        onClick={() => handleAcceptOffer(_id)}
+                        disabled={loading}
                       >
                         Accepter
                       </Button>
@@ -194,15 +234,14 @@ export default function TenderBids() {
                         size="small"
                         variant="outlined"
                         color="error"
-                        onClick={() => {
-                          // Decline bid logic
-                          console.log('Decline bid:', _id);
-                        }}
+                        onClick={() => handleRejectOffer(_id)}
+                        disabled={loading}
                       >
                         Refuser
                       </Button>
                     </>
                   )}
+                  {/* Delete is not available in tenders API; action removed */}
                 </Stack>
               </TableCell>
             </TableRow>
@@ -220,36 +259,54 @@ export default function TenderBids() {
   return (
     <Page title="Offres Reçues">
       <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          mb={{ xs: 3, sm: 4, md: 5 }}
-          spacing={{ xs: 2, sm: 0 }}
+        <Box
+          sx={{
+            borderRadius: 3,
+            p: { xs: 2, sm: 3 },
+            mb: { xs: 3, sm: 4, md: 5 },
+            background: theme.palette.mode === 'light'
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+          }}
         >
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            alignItems={{ xs: 'stretch', sm: 'center' }} 
+            justifyContent="space-between" 
+            spacing={{ xs: 2, sm: 2 }}
           >
-            Offres Reçues
-          </Typography>
-          <Button
-            variant="contained"
-            component={RouterLink}
-            to="/dashboard/tenders/create"
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            sx={{
-              minWidth: { xs: '100%', sm: 'auto' },
-              py: { xs: 1.5, sm: 1 }
-            }}
-          >
-            Nouvel Appel d'Offres
-          </Button>
-        </Stack>
+            <Typography 
+              variant="h4" 
+              gutterBottom
+              sx={{ 
+                m: 0,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
+              Offres Reçues
+            </Typography>
+            <Stack direction="row" spacing={2}>
+            {/* Bulk delete removed to match tenders API capabilities */}
+              <Button
+                variant="contained"
+                component={RouterLink}
+                to="/dashboard/tenders/create"
+                startIcon={<Iconify icon="eva:plus-fill" />}
+                sx={{
+                  minWidth: { xs: '100%', sm: 'auto' },
+                  py: { xs: 1.5, sm: 1 }
+                }}
+              >
+                Nouvel Appel d'Offres
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
 
         <Stack mb={3}>
           <Breadcrumb />

@@ -117,49 +117,47 @@ function NavItem({ item, active }: any ) {
               const isActiveSub = active(path);
 
               return (
-                <>
-                  <ListItemStyle
-                    key={index}
-                    component={RouterLink}
-                    to={path}
-                    disabled={disabled}
-                    sx={{
-                      ...(isActiveSub && activeSubStyle),
-                    }}
-                  >
-                    <ListItemIconStyle>
-                    {icon ? (
-                      icon
-                    ) : (
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 4,
-                          height: 4,
-                          display: 'flex',
-                          borderRadius: '50%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: 'text.disabled',
-                          transition: (theme) => theme.transitions.create('transform'),
-                          ...(isActiveSub && {
-                            transform: 'scale(2)',
-                            bgcolor: 'primary.main',
-                          }),
-                        }}
-                      />
+                <ListItemStyle
+                  key={index}
+                  component={RouterLink}
+                  to={path}
+                  disabled={disabled}
+                  sx={{
+                    ...(isActiveSub && activeSubStyle),
+                  }}
+                >
+                  <ListItemIconStyle>
+                  {icon ? (
+                    icon
+                  ) : (
+                    <Box
+                      component="span"
+                      sx={{
+                        width: 4,
+                        height: 4,
+                        display: 'flex',
+                        borderRadius: '50%',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        bgcolor: 'text.disabled',
+                        transition: (theme) => theme.transitions.create('transform'),
+                        ...(isActiveSub && {
+                          transform: 'scale(2)',
+                          bgcolor: 'primary.main',
+                        }),
+                      }}
+                    />
+                  )}
+                  </ListItemIconStyle>
+                  <Stack gap={'0px'}>
+                    <ListItemText disableTypography primary={title} />
+                    {description && (
+                      <Typography variant="caption" sx={{ opacity: 1 }}>
+                        {description}
+                      </Typography>
                     )}
-                    </ListItemIconStyle>
-                    <Stack gap={'0px'}>
-                      <ListItemText disableTypography primary={title} />
-                      {description && (
-                        <Typography variant="caption" sx={{ opacity: 1 }}>
-                          {description}
-                        </Typography>
-                      )}
-                    </Stack>
-                  </ListItemStyle>
-                </>
+                  </Stack>
+                </ListItemStyle>
               );
             })}
           </List>
@@ -191,7 +189,7 @@ NavSection.propTypes = {
 
 
 
-export default function NavSection({ ...other }) {
+export default function NavSection({ navConfig, ...other }) {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const { deliveries, updateDelivery } = useDelivery();
@@ -536,7 +534,7 @@ export default function NavSection({ ...other }) {
 
 
 
-  const navConfig = [
+  const defaultNavConfig = [
     {title: t('navigation.dashboard'), path: '/dashboard/app', icon: getIcon('typcn:chart-pie')},
     {
       title: t('navigation.auctions'),
@@ -599,12 +597,64 @@ export default function NavSection({ ...other }) {
     badgeContent: pathname === '/dashboard/notifications' ? null : (unreadCount > 0 ? unreadCount : null)
   });
 
+  // Debug: Check if chat navigation item exists in defaultNavConfig
+  const chatNavItem = defaultNavConfig.find(item => item.path === '/dashboard/chat');
+  console.log('💬 Chat Navigation Debug:', {
+    chatNavItem,
+    chatTranslation: t('navigation.chat'),
+    messageNotificationCount,
+    chatIcon: getIcon('material-symbols:chat', messageNotificationCount > 0 ? messageNotificationCount : null)
+  });
 
+
+
+  // Hide specific entries from the dashboard navigation
+  const hiddenPaths = new Set<string>([
+    '/dashboard/users',
+    '/dashboard/deliveries',
+    '/dashboard/configuration',
+    '/dashboard/reviews',
+    '/dashboard/identities',
+    '/dashboard/products',
+    '/dashboard/reports',
+    '/dashboard/categories',
+    '/dashboard/communication',
+    '/dashboard/communication/notification',
+    '/dashboard/communication/sms',
+    '/dashboard/communication/email',
+  ]);
+  const hiddenPrefixes = ['/dashboard/communication'];
+
+  const filterNav = (items: any[]): any[] =>
+    (items || [])
+      .filter((it) => {
+        if (!it?.path) return true;
+        if (hiddenPaths.has(it.path)) return false;
+        if (hiddenPrefixes.some((p) => it.path.startsWith(p))) return false;
+        return true;
+      })
+      .map((it) => {
+        if (it.children && Array.isArray(it.children)) {
+          const children = filterNav(it.children);
+          return { ...it, children };
+        }
+        return it;
+      })
+      .filter((it) => !(it.children && Array.isArray(it.children) && it.children.length === 0));
+
+  const itemsToRender = filterNav(navConfig || defaultNavConfig);
+
+  // Debug: Log the filtered navigation items
+  console.log('🔍 NavSection Debug - Filtered items:', itemsToRender.map(item => ({
+    title: item.title,
+    path: item.path,
+    icon: item.icon
+  })));
 
   return (
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
-        {navConfig.map((item, index) => (
+        {itemsToRender.map((item, index) => (
           <NavItem key={index} item={item} active={match} />
         ))}
       </List>

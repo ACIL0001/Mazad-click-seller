@@ -202,25 +202,14 @@ export default function OtpVerification() {
       const fromLogin = location.state?.fromLogin;
       const fromRegistration = location.state?.fromRegistration;
       
-      // Check if user is CLIENT type first - they should always go to login
-      const userType = verificationResult.user?.type;
-      const isClient = userType === 'CLIENT' || userType === ACCOUNT_TYPE.CLIENT;
-      
-      if (isClient) {
-        // CLIENT users always redirect to login with success message
-        console.log('OtpVerification - Client user detected, redirecting to login');
-        setTimeout(() => {
-          enqueueSnackbar('Vérification réussie! Veuillez vous connecter.', { variant: 'success' });
-          navigate('/login', { replace: true });
-        }, 1500);
-      } else if (fromLogin || fromBuyer) {
+      if (fromLogin || fromBuyer) {
         // User came from login, redirect them back to login to complete the login process
         console.log('OtpVerification - User came from login/buyer, redirecting back to login');
         setTimeout(() => {
           if (fromBuyer) {
             enqueueSnackbar('Numéro vérifié avec succès! Redirection vers l\'application acheteur...', { variant: 'success' });
             // Redirect back to buyer app login
-            window.location.href = `${window.location.origin}/auth/login`;
+            window.location.href = `${window.location.protocol}//${window.location.hostname}:3000/auth/login`;
           } else {
             enqueueSnackbar('Numéro vérifié avec succès! Veuillez vous connecter à nouveau.', { variant: 'success' });
             navigate('/login', { replace: true });
@@ -232,7 +221,11 @@ export default function OtpVerification() {
         
         // Store authentication data
         const authData = {
-          user: verificationResult.user,
+          user: {
+            ...verificationResult.user,
+            isVerified: true, // Ensure isVerified is set to true
+            isHasIdentity: false // Ensure isHasIdentity is set to false for new users
+          },
           tokens: {
             accessToken: verificationResult.tokens.accessToken,
             refreshToken: verificationResult.tokens.refreshToken
@@ -241,19 +234,23 @@ export default function OtpVerification() {
         authStore.getState().set(authData);
         console.log('OtpVerification - Stored auth data:', authData);
         
-        // Navigate based on user type (CLIENT users already handled above)
+        // Navigate based on user type
         setTimeout(() => {
           const userType = verificationResult.user.type;
           console.log('OtpVerification - User type for navigation:', userType);
+          console.log('OtpVerification - User data:', verificationResult.user);
+          console.log('OtpVerification - Auth store state:', authStore.getState().auth);
           
+          // Restore proper flow for professional users
           if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
             console.log('OtpVerification - Professional user detected, navigating to identity verification');
-            navigate('/identity-verification', { state: { user: verificationResult.user } });
+            console.log('OtpVerification - About to navigate to /identity-verification');
+            navigate('/identity-verification', { state: { user: verificationResult.user }, replace: true });
           } else {
             console.log('OtpVerification - Regular user, navigating to dashboard');
-            navigate('/dashboard/app');
+            navigate('/dashboard/app', { replace: true });
           }
-        }, 1500);
+        }, 500);
       } else {
         // Legacy response format or no tokens - redirect to login
         console.log('OtpVerification - Legacy response or no tokens, redirecting to login');

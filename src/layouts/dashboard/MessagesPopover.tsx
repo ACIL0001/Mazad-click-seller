@@ -49,6 +49,7 @@ export default function MessagesPopover() {
   
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [clickedMessageId, setClickedMessageId] = useState(null);
   
   // Use the new custom hook for message notifications
   const { 
@@ -171,6 +172,10 @@ export default function MessagesPopover() {
   });
 
   const handleMessageClick = async (message) => {
+    // Set loading state and clicked message ID
+    setLoading(true);
+    setClickedMessageId(message._id || message.id);
+    
     try {
       console.log("📖 Handling message click:", {
         messageId: message._id || message.id,
@@ -178,42 +183,80 @@ export default function MessagesPopover() {
         type: message.type,
         isConversation: message.type === 'conversation',
         isSocket: message.isSocket,
-        source: message.source
+        source: message.source,
+        read: message.read
       });
       
-      // Handle conversation-based notifications
-      if (message.type === 'conversation') {
-        console.log("📊 Conversation notification clicked - navigating to chat:", message.chatId);
-        
-        // For conversation notifications, we always have a chatId
-        if (message.chatId) {
-          navigate(`/dashboard/chat`);
-          handleClose();
-          return;
+      // STEP 1: Mark notification as read (if not already read)
+      if (message._id && !message.read) {
+        try {
+          console.log("🔖 Marking notification as read:", {
+            messageId: message._id,
+            currentReadStatus: message.read,
+            messageType: message.type,
+            chatId: message.chatId
+          });
+          
+          const result = await NotificationService.markAsRead(message._id);
+          console.log("✅ Notification marked as read successfully:", {
+            result,
+            updatedNotification: result
+          });
+          
+          // Update the local message state to reflect the change
+          message.read = true;
+          
+          // Verify the notification was actually marked as read
+          if (result && result.read === true) {
+            console.log("✅ Database confirmed: notification is now marked as read");
+          } else {
+            console.warn("⚠️ Warning: API returned but read status unclear:", result);
+          }
+          
+        } catch (markError) {
+          console.error("❌ Error marking notification as read:", {
+            error: markError,
+            messageId: message._id,
+            errorMessage: markError?.message,
+            errorStatus: markError?.response?.status
+          });
+          // Continue with navigation even if marking as read fails
+        }
+      } else {
+        console.log("ℹ️ Notification already read or no ID available:", {
+          messageId: message._id,
+          read: message.read,
+          hasId: !!message._id
+        });
+      }
+      
+      // STEP 2: Mark socket messages as read (if applicable)
+      if (message.isSocket || message.source === 'socket') {
+        try {
+          console.log("🔖 Marking socket messages as read");
+          markAllSocketMessagesAsRead();
+          console.log("✅ Socket messages marked as read");
+        } catch (socketError) {
+          console.error("❌ Error marking socket messages as read:", socketError);
         }
       }
       
-      // If this is a conversation notification with multiple unread messages, mark all as read for the chat
-      if (message.type === 'conversation' && message.chatId && message.unreadMessageCount > 1) {
-        await NotificationService.markAsRead(message._id);
-        console.log(`✅ Marked all notifications as read for chatId:`, message.chatId);
-        // Refresh notifications to update the badge immediately
+      // STEP 3: Get fresh data from backend
+      try {
+        console.log("🔄 Fetching fresh notification data...");
         await fetchNotifications();
+        console.log("✅ Fresh notification data fetched");
         
         // Trigger sidebar badge update
-        window.dispatchEvent(new CustomEvent('messageNotificationsUpdated'));
-      } else if (message._id && !message.read) {
-        // Otherwise, mark the single notification as read
-        await NotificationService.markAsRead(message._id);
-        console.log(`✅ Marked notification as read for id:`, message._id);
-        // Refresh notifications to update the badge immediately
-        await fetchNotifications();
-        
-        // Trigger sidebar badge update
-        window.dispatchEvent(new CustomEvent('messageNotificationsUpdated'));
+        window.dispatchEvent(new CustomEvent('messageNotificationsUpdated', {
+          detail: { action: 'messageClicked', messageId: message._id }
+        }));
+      } catch (fetchError) {
+        console.error("❌ Error fetching fresh data:", fetchError);
+        // Continue with navigation even if data refresh fails
       }
       
-      // Enhanced navigation with comprehensive fallbacks
+      // STEP 4: Navigate to chat page
       const targetChatId = message.chatId || message.data?.chatId;
       
       if (targetChatId) {
@@ -224,13 +267,13 @@ export default function MessagesPopover() {
         navigate('/dashboard/chat');
       }
       
-      // Close the popover immediately for better UX
+      // STEP 5: Close the popover
       handleClose();
       
     } catch (error) {
       console.error("❌ Error handling message click:", error);
       
-      // Ensure navigation happens even if there's an error
+      // Fallback: Ensure navigation happens even if there's an error
       const fallbackChatId = message.chatId || message.data?.chatId;
       
       if (fallbackChatId) {
@@ -242,6 +285,10 @@ export default function MessagesPopover() {
       }
       
       handleClose();
+    } finally {
+      // Clear loading state
+      setLoading(false);
+      setClickedMessageId(null);
     }
   };
 
@@ -359,6 +406,7 @@ export default function MessagesPopover() {
                 
                 return unreadMessages.map((message, index) => {
                   const messageKey = message._id || message.id || `${message.chatId}-${index}`;
+                  const isClicked = clickedMessageId === (message._id || message.id);
                   console.log('🔍 Rendering unread message with key:', messageKey, 'Message:', message);
                   
                   return (
@@ -366,6 +414,8 @@ export default function MessagesPopover() {
                       key={messageKey}
                       message={message} 
                       onClick={() => handleMessageClick(message)}
+                      isLoading={loading}
+                      isClicked={isClicked}
                     />
                   );
                 });
@@ -402,7 +452,7 @@ export default function MessagesPopover() {
 
 // ----------------------------------------------------------------------
 
-function MessageItem({ message, onClick }) {
+function MessageItem({ message, onClick, isLoading, isClicked }) {
   const isUnread = message.isUnRead || (!message.read && !message.isSocket);
   const isNew = message.isSocket || message.source === 'socket'; 
   const isConversation = message.type === 'conversation';
@@ -418,6 +468,7 @@ function MessageItem({ message, onClick }) {
 
   return (
     <ListItemButton
+      disabled={isLoading && isClicked}
       sx={{
         py: 1.5,
         px: 2.5,
@@ -426,6 +477,7 @@ function MessageItem({ message, onClick }) {
         overflow: 'hidden',
         borderRadius: 1.5,
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: isLoading && isClicked ? 0.6 : 1,
         ...(isUnread && {
           bgcolor: 'action.selected',
           border: '1px solid',
@@ -438,11 +490,14 @@ function MessageItem({ message, onClick }) {
         }),
         '&:hover': {
           bgcolor: isUnread ? 'action.selected' : 'action.hover',
-          transform: 'translateX(4px)',
+          transform: isLoading && isClicked ? 'none' : 'translateX(4px)',
           boxShadow: (theme) => `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
         },
+        '&:disabled': {
+          cursor: 'not-allowed',
+        }
       }}
-      onClick={onClick}
+      onClick={isLoading && isClicked ? undefined : onClick}
     >
       <ListItemAvatar>
         <Box position="relative">
@@ -588,7 +643,9 @@ function MessageItem({ message, onClick }) {
         >
           {message.createdAt ? fToNow(message.createdAt) : 'Maintenant'}
         </Typography>
-        {isUnread && (
+        {isLoading && isClicked ? (
+          <CircularProgress size={12} color="primary" />
+        ) : isUnread && (
           <Box
             sx={{
               width: 8,

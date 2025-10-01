@@ -35,21 +35,22 @@ export default function RequireIdentityVerification({ children }: RequireIdentit
           console.log('🛡️ RequireIdentityVerification: isHasIdentity =', userToCheck?.isHasIdentity);
           console.log('🛡️ RequireIdentityVerification: isVerified =', userToCheck?.isVerified);
           
+          // Check if user is verified - if not, redirect to waiting for verification page instead of login
+          const isVerified = userToCheck.isVerified === true || 
+                           (userToCheck.isVerified !== false && userToCheck.isVerified !== 0);
+          
+          if (userToCheck && !isVerified) {
+            console.log('🛡️ RequireIdentityVerification: User is not verified, redirecting to waiting for verification');
+            // Don't clear auth data - just redirect to waiting page
+            setShouldRedirect({ to: '/waiting-for-verification' });
+            return;
+          }
+          
           // Check if documents were just submitted (to avoid circular redirects)
           const justSubmitted = localStorage.getItem('identityJustSubmitted') === 'true';
           
           // Check identity requirements for PROFESSIONAL users only
           if (userToCheck && userToCheck.type === 'PROFESSIONAL') {
-            // Check if user is verified - if not, redirect to waiting for verification page instead of login
-            const isVerified = userToCheck.isVerified === true || 
-                             (userToCheck.isVerified !== false && userToCheck.isVerified !== 0);
-            
-            if (!isVerified) {
-              console.log('🛡️ RequireIdentityVerification: Professional user is not verified, redirecting to waiting for verification');
-              // Don't clear auth data - just redirect to waiting page
-              setShouldRedirect({ to: '/waiting-for-verification' });
-              return;
-            }
             // Check isHasIdentity from user data
             if (!userToCheck.isHasIdentity && !justSubmitted) {
               console.log('RequireIdentityVerification: Professional user has not uploaded identity, redirecting to identity verification');
@@ -63,11 +64,8 @@ export default function RequireIdentityVerification({ children }: RequireIdentit
             
             console.log('RequireIdentityVerification: Professional user has identity, allowing dashboard access');
           } else if (userToCheck && (userToCheck.type === 'CLIENT' || userToCheck.type === 'RESELLER')) {
-            // CLIENT and RESELLER users don't need identity verification or verification checks
-            console.log('RequireIdentityVerification: Client/Reseller user, no identity verification or verification required');
-            // Allow access immediately for CLIENT and RESELLER users
-            setShouldRedirect(null);
-            return;
+            // CLIENT and RESELLER users don't need identity verification
+            console.log('RequireIdentityVerification: Client/Reseller user, no identity verification required');
           }
         } else {
           console.log('RequireIdentityVerification: Identity message shown already, skipping checks');

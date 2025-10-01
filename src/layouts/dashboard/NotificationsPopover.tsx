@@ -517,6 +517,9 @@ function NotificationItem({ notification, onMarkAsRead, onOpenReviewModal }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Convert createdAt string to Date object if needed
+  const createdAtDate = createdAt instanceof Date ? createdAt : new Date(createdAt);
+
   const handleClick = (event) => {
     
     // Check for different types of auction sale notifications
@@ -613,7 +616,7 @@ function NotificationItem({ notification, onMarkAsRead, onOpenReviewModal }) {
               }}
             >
               <Iconify icon="eva:clock-fill" sx={{ mr: 0.5, width: 16, height: 16 }} />
-              {isValidDate(createdAt) ? fToNow(createdAt) : 'À l\'instant'}
+              {isValidDate(createdAtDate) ? fToNow(createdAtDate) : 'À l\'instant'}
             </Typography>
           </>
         }
@@ -696,7 +699,7 @@ function renderContent(notification) {
 
 NotificationItem.propTypes = {
   notification: PropTypes.shape({
-    createdAt: PropTypes.instanceOf(Date),
+    createdAt: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
     id: PropTypes.string,
     isUnRead: PropTypes.bool,
     title: PropTypes.string,

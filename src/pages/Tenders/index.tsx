@@ -12,6 +12,7 @@ import {
   Container,
   Typography,
   Chip,
+  Box,
 } from '@mui/material';
 // components
 import Page from '../../components/Page';
@@ -19,7 +20,7 @@ import Label from '../../components/Label';
 import Iconify from '../../components/Iconify';
 import { useSnackbar } from 'notistack';
 import ResponsiveTable from '../../components/Tables/ResponsiveTable';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 // types
 import { Tender, TENDER_AUCTION_TYPE, TENDER_STATUS } from '../../types/Tender';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -36,7 +37,6 @@ export default function Tenders() {
     { id: 'title', label: t('title'), alignRight: false, searchable: true, sortable: true },
     { id: 'tenderType', label: t('type'), alignRight: false, searchable: false },
     { id: 'auctionType', label: t('mode'), alignRight: false, searchable: false },
-    { id: 'maxBudget', label: 'Budget Max', alignRight: false, searchable: false, sortable: true },
     { id: 'currentLowestBid', label: 'Offre Actuelle', alignRight: false, searchable: false, sortable: true },
     { id: 'endingAt', label: t('endsAt'), alignRight: false, searchable: false, sortable: true },
     { id: 'status', label: t('status'), alignRight: false, searchable: false },
@@ -65,37 +65,39 @@ export default function Tenders() {
 
   const get = () => {
     setLoading(true);
-    TendersAPI.getTenders()
-        .then((response) => {
-            if (response && Array.isArray(response)) {
-                setTenders(response);
-                console.log("tenders", response);
-            } else if (response && response.data && Array.isArray(response.data)) {
-                setTenders(response.data);
-                console.log("tenders", response.data);
-            } else {
-                console.error("Unexpected response format:", response);
-                setTenders([]); // Set empty array instead of showing error
-                console.log("No tenders found, showing empty list");
-            }
-        })
-        .catch((e) => {
-            console.error("Error fetching tenders:", e);
-            setTenders([]); // Set empty array to show empty state
-            
-            // Handle specific error types
-            if (e.response?.status === 401) {
-                enqueueSnackbar('Session expirée. Veuillez vous reconnecter.', { variant: 'warning' });
-            } else if (e.response?.status === 403) {
-                enqueueSnackbar('Vous devez être connecté en tant que vendeur pour accéder aux appels d\'offres.', { variant: 'warning' });
-            } else if (e.response?.data?.message) {
-                enqueueSnackbar(`Erreur: ${e.response.data.message}`, { variant: 'error' });
-            } else {
-                enqueueSnackbar('Impossible de charger les appels d\'offres. Veuillez réessayer.', { variant: 'error' });
-            }
-        })
-        .finally(() => setLoading(false));
-};
+    // Prefer public endpoint that returns data from the database for all tenders.
+    // If needed later, we can switch back to my-tenders for owner-specific view.
+    TendersAPI.getAllTenders()
+      .then((response) => {
+        if (response && Array.isArray(response)) {
+          setTenders(response);
+          console.log('tenders', response);
+        } else if (response && response.data && Array.isArray(response.data)) {
+          setTenders(response.data);
+          console.log('tenders', response.data);
+        } else {
+          console.error('Unexpected response format:', response);
+          setTenders([]);
+          console.log('No tenders found, showing empty list');
+        }
+      })
+      .catch((e) => {
+        console.error('Error fetching tenders:', e);
+        setTenders([]);
+        
+        // Provide clearer guidance depending on error
+        if (e.response?.status === 401) {
+          enqueueSnackbar('Session expirée. Veuillez vous reconnecter.', { variant: 'warning' });
+        } else if (e.response?.status === 403) {
+          enqueueSnackbar("Accès refusé aux appels d'offres.", { variant: 'warning' });
+        } else if (e.response?.data?.message) {
+          enqueueSnackbar(`Erreur: ${e.response.data.message}`, { variant: 'error' });
+        } else {
+          enqueueSnackbar("Impossible de charger les appels d'offres. Veuillez réessayer.", { variant: 'error' });
+        }
+      })
+      .finally(() => setLoading(false));
+  };
 
   const getStatusColor = (status: TENDER_STATUS) => {
     switch (status) {
@@ -144,13 +146,49 @@ export default function Tenders() {
     });
   };
 
+  const formatAmount = (value: any) => {
+    const num = typeof value === 'number' ? value : (value != null && !isNaN(Number(value)) ? Number(value) : null);
+    return num != null ? `${num.toFixed(2)} DA` : '-';
+  };
+
+  const handleDeleteTender = async (tenderId: string) => {
+    try {
+      setLoading(true);
+      await TendersAPI.deleteTender(tenderId);
+      enqueueSnackbar('Appel d\'offres supprimé avec succès', { variant: 'success' });
+      get();
+    } catch (error) {
+      console.error('Error deleting tender:', error);
+      enqueueSnackbar('Erreur lors de la suppression de l\'appel d\'offres.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selected.length === 0) return;
+    
+    try {
+      setLoading(true);
+      await Promise.all(selected.map(id => TendersAPI.deleteTender(id)));
+      enqueueSnackbar(`${selected.length} appel(s) d'offres supprimé(s) avec succès`, { variant: 'success' });
+      setSelected([]);
+      get();
+    } catch (error) {
+      console.error('Error bulk deleting tenders:', error);
+      enqueueSnackbar('Erreur lors de la suppression des appels d\'offres.', { variant: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const TableBodyComponent = ({ data = [] }) => {
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
     return (
       <TableBody>
         {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-          const { _id, title, tenderType, auctionType, maxBudget, currentLowestBid, endingAt, status } = row;
+          const { _id, title, tenderType, auctionType, currentLowestBid, endingAt, status } = row;
 
           return (
             <TableRow
@@ -173,9 +211,8 @@ export default function Tenders() {
                   {translateBackendData(t, 'tenderAuctionType' as any, auctionType, getAuctionTypeLabel(auctionType))}
                 </Label>
               </TableCell>
-              <TableCell align="left">{maxBudget.toFixed(2)} DA</TableCell>
-              <TableCell align="left">{currentLowestBid.toFixed(2)} DA</TableCell>
-              <TableCell align="left">{formatDate(endingAt)}</TableCell>
+              <TableCell align="left">{formatAmount(currentLowestBid)}</TableCell>
+              <TableCell align="left">{endingAt ? formatDate(endingAt) : '-'}</TableCell>
               <TableCell align="left">
                 <Chip
                   label={translateBackendData(t, 'tenderStatus' as any, status, status === TENDER_STATUS.OPEN ? 'OPEN' : status)}
@@ -185,21 +222,45 @@ export default function Tenders() {
                 />
               </TableCell>
               <TableCell align="right">
-                <Button
-                  component={RouterLink}
-                  to={`/dashboard/tenders/${_id}`}
-                  size="small"
-                  variant="outlined"
-                >
-                  {t('view')}
-                </Button>
+                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <Button
+                    component={RouterLink}
+                    to={`/dashboard/tenders/${_id}`}
+                    size="small"
+                    variant="outlined"
+                  >
+                    {t('view')}
+                  </Button>
+                  <Button
+                    component={RouterLink}
+                    to={`/dashboard/tenders/update/${_id}`}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<Iconify icon="eva:edit-fill" />}
+                  >
+                    Modifier
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTender(_id);
+                    }}
+                    disabled={loading}
+                  >
+                    Supprimer
+                  </Button>
+                </Stack>
               </TableCell>
             </TableRow>
           );
         })}
         {emptyRows > 0 && (
           <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={8} />
+            <TableCell colSpan={7} />
           </TableRow>
         )}
       </TableBody>
@@ -209,36 +270,51 @@ export default function Tenders() {
   return (
     <Page title="Appels d'Offres">
       <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          mb={{ xs: 3, sm: 4, md: 5 }}
-          spacing={{ xs: 2, sm: 0 }}
+        <Box
+          sx={{
+            borderRadius: 3,
+            p: { xs: 2, sm: 3 },
+            mb: { xs: 3, sm: 4, md: 5 },
+            background: theme.palette.mode === 'light'
+              ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
+          }}
         >
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            alignItems={{ xs: 'stretch', sm: 'center' }} 
+            justifyContent="space-between" 
+            spacing={{ xs: 2, sm: 2 }}
           >
-            Appels d'Offres
-          </Typography>
-          <Button
-            variant="contained"
-            component={RouterLink}
-            to="/dashboard/tenders/create"
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            sx={{
-              minWidth: { xs: '100%', sm: 'auto' },
-              py: { xs: 1.5, sm: 1 }
-            }}
-          >
-            Nouvel Appel d'Offres
-          </Button>
-        </Stack>
+            <Typography 
+              variant="h4" 
+              gutterBottom
+              sx={{ 
+                m: 0,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
+              Appels d'Offres
+            </Typography>
+            <Button
+              variant="contained"
+              component={RouterLink}
+              to="/dashboard/tenders/create"
+              startIcon={<Iconify icon="eva:plus-fill" />}
+              sx={{
+                minWidth: { xs: '100%', sm: 'auto' },
+                py: { xs: 1.5, sm: 1 }
+              }}
+            >
+              Nouvel Appel d'Offres
+            </Button>
+          </Stack>
+        </Box>
 
         <Stack mb={3}>
           <Breadcrumb />
