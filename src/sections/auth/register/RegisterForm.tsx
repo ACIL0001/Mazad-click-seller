@@ -114,20 +114,113 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   marginBottom: theme.spacing(2)
 }));
 
-// Terms Agreement Box
+// Terms Agreement Box - Modern card style matching buyer app
 const TermsAgreementBox = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2.5),
-  borderRadius: 8,
-  border: `1px solid ${theme.palette.grey[300]}`,
-  backgroundColor: theme.palette.grey[50],
+  padding: theme.spacing(3),
+  borderRadius: 12,
+  border: `1px solid ${theme.palette.grey[200]}`,
+  backgroundColor: theme.palette.background.paper,
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  '& .MuiFormControlLabel-root': {
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+    borderRadius: '12px 12px 0 0',
+  },
+  '& .terms-card-header': {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(2),
+    gap: theme.spacing(1.5),
+  },
+  '& .terms-card-icon': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.primary.main,
+  },
+  '& .terms-card-title': {
+    fontSize: '1rem',
+    fontWeight: 600,
+    color: theme.palette.text.primary,
     margin: 0,
+  },
+  '& .terms-card-subtitle': {
+    fontSize: '0.875rem',
+    color: theme.palette.text.secondary,
+    margin: 0,
+  },
+  '& .terms-row': {
+    display: 'flex',
     alignItems: 'flex-start',
-    '& .MuiCheckbox-root': {
-      marginTop: -4,
-      marginRight: theme.spacing(1),
+    gap: theme.spacing(1.5),
+    cursor: 'pointer',
+    margin: 0,
+    padding: theme.spacing(1),
+    borderRadius: 8,
+    transition: 'background-color 0.2s ease',
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+  '& .terms-checkbox': {
+    margin: 0,
+    marginTop: 2,
+    '&.MuiCheckbox-root': {
+      padding: 0,
+      '&.Mui-checked': {
+        color: theme.palette.primary.main,
+      },
+    },
+  },
+  '& .terms-text': {
+    fontSize: '0.875rem',
+    lineHeight: 1.5,
+    color: theme.palette.text.primary,
+    flex: 1,
+  },
+  '& .terms-link': {
+    background: 'none',
+    border: 'none',
+    color: theme.palette.primary.main,
+    textDecoration: 'none',
+    cursor: 'pointer',
+    fontSize: 'inherit',
+    fontWeight: 600,
+    padding: 0,
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  '& .terms-warning': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    marginTop: theme.spacing(1.5),
+    padding: theme.spacing(1.5),
+    backgroundColor: theme.palette.warning.light,
+    borderRadius: 8,
+    border: `1px solid ${theme.palette.warning.main}`,
+    '& .warning-icon': {
+      color: theme.palette.warning.main,
+      fontSize: '1rem',
+    },
+    '& span': {
+      fontSize: '0.875rem',
+      color: theme.palette.warning.dark,
+      fontWeight: 500,
     },
   },
 }));
@@ -876,73 +969,56 @@ export default function RegisterForm(props: RegisterFormProps) {
               helperText={touched.password && errors.password}
             />
 
-            {/* Terms Agreement Section - only show if terms exist */}
+            {/* Terms Agreement Section - Modern card style matching buyer app */}
             {hasTerms && (
               <TermsAgreementBox>
-                <FormControlLabel
-                  control={
-                    <Checkbox 
-                      checked={termsAccepted} 
-                      onChange={(e) => setTermsAccepted(e.target.checked)}
-                      sx={{
-                        '&.Mui-checked': {
-                          color: 'primary.main',
-                        }
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.5 }}>
-                      J'ai lu et j'accepte les{' '}
-                      <Link 
-                        component="button" 
-                        variant="body2" 
-                        onClick={handleOpenTerms}
-                        sx={{ 
-                          fontWeight: 600,
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
-                        }}
-                      >
-                        termes et conditions d'utilisation
-                      </Link>
-                      {' '}ainsi que la{' '}
-                      <Link 
-                        component="button" 
-                        variant="body2" 
-                        onClick={handleOpenTerms}
-                        sx={{ 
-                          fontWeight: 600,
-                          color: 'primary.main',
-                          textDecoration: 'none',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
-                        }}
-                      >
-                        politique de confidentialité
-                      </Link>
-                      .
-                    </Typography>
-                  }
-                />
-                
-                {!termsAccepted && (
-                  <Alert 
-                    severity="warning" 
-                    sx={{ 
-                      mt: 1.5, 
-                      fontSize: '0.875rem',
-                      '& .MuiAlert-icon': {
-                        fontSize: '1rem'
+                <div className="terms-card-header">
+                  <div className="terms-card-icon">
+                    <Iconify icon="eva:file-text-fill" width={20} height={20} />
+                  </div>
+                  <div>
+                    <div className="terms-card-title">Termes et confidentialité</div>
+                    <div className="terms-card-subtitle">Veuillez lire et accepter pour continuer</div>
+                  </div>
+                </div>
+
+                <label className="terms-row" onClick={() => setTermsAccepted(!termsAccepted)}>
+                  <Checkbox 
+                    checked={termsAccepted} 
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="terms-checkbox"
+                    sx={{
+                      '&.Mui-checked': {
+                        color: 'primary.main',
                       }
                     }}
-                  >
-                    Vous devez accepter les termes et conditions pour continuer
-                  </Alert>
+                  />
+                  <div className="terms-text">
+                    J'ai lu et j'accepte les{' '}
+                    <button 
+                      type="button" 
+                      className="terms-link" 
+                      onClick={handleOpenTerms}
+                    >
+                      termes et conditions d'utilisation
+                    </button>{' '}
+                    ainsi que la{' '}
+                    <button 
+                      type="button" 
+                      className="terms-link" 
+                      onClick={handleOpenTerms}
+                    >
+                      politique de confidentialité
+                    </button>
+                    .
+                  </div>
+                </label>
+
+                {!termsAccepted && (
+                  <div className="terms-warning" role="alert">
+                    <Iconify icon="eva:alert-circle-fill" className="warning-icon" />
+                    <span>Vous devez accepter les termes et conditions pour continuer</span>
+                  </div>
                 )}
               </TermsAgreementBox>
             )}
@@ -965,6 +1041,8 @@ export default function RegisterForm(props: RegisterFormProps) {
                 '&.Mui-disabled': {
                   backgroundColor: 'grey.300',
                   color: 'grey.500',
+                  opacity: 0.6,
+                  cursor: 'not-allowed',
                 }
               }}
             >
