@@ -152,45 +152,89 @@ export default function DashboardApp() {
     return () => clearInterval(timer);
   }, []);
 
-useEffect(() => {
-  console.log('🔍 Dashboard: Checking user role:', {
-    user: user?._id,
-    userType: user?.type,
-    isProfessional: user?.type === ACCOUNT_TYPE.PROFESSIONAL,
-    isHasIdentity: user?.isHasIdentity
-  });
-  
-  if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) { 
-    console.log('✅ Dashboard: Professional user with identity - setting up dashboard');
-    setIsProfessionalSubscriber(true);
-    // Fetch seller stats for professional users with a delay to prevent rapid calls
-    const timeoutId = setTimeout(() => {
-      console.log('📊 Dashboard: Fetching seller stats for professional user');
-      fetchSellerStats();
-    }, 1500);
-    // Fetch tenders counts from database
-    const t2 = setTimeout(() => {
-      TendersAPI.getAllTenders()
-        .then((res: any) => {
-          const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
-          const total = list.length;
-          const active = list.filter((t: any) => (t.status || '').toUpperCase() === 'OPEN').length;
-          setTotalTendersCount(total);
-          setActiveTendersCount(active);
-          console.log('📊 Dashboard: Tenders counts', { total, active });
-        })
-        .catch((e: any) => {
-          console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
-        });
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  } else {
-    // All other cases (clients, professionals without identity, etc.)
-    console.log('🚫 Dashboard: User not eligible for full dashboard');
-    setIsProfessionalSubscriber(false);
-    setLoading(false);
-  }
-}, [user]);
+  useEffect(() => {
+    console.log('🔍 Dashboard: Checking user role:', {
+      user: user?._id,
+      userType: user?.type,
+      isProfessional: user?.type === ACCOUNT_TYPE.PROFESSIONAL,
+      isHasIdentity: user?.isHasIdentity,
+      isVerified: user?.isVerified,
+      isAdminVerified: user?.isAdminVerified
+    });
+    
+    // Check if user just submitted identity documents
+    const identityJustSubmitted = localStorage.getItem('identityJustSubmitted') === 'true';
+    if (identityJustSubmitted && user) {
+      console.log('🔄 Dashboard: User just submitted identity documents');
+      // Clear the flag but don't reload - let normal flow handle it
+      localStorage.removeItem('identityJustSubmitted');
+    }
+    
+    if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) { 
+      console.log('✅ Dashboard: Professional user with identity');
+      
+      // CRITICAL: Check if admin has verified the documents
+      // This is a NEW field you need to add to your User model in the backend
+      const isAdminVerified = user?.isAdminVerified === true;
+      
+      if (!isAdminVerified) {
+        console.log('⏳ Dashboard: Professional identity not yet admin-verified');
+        console.log('🔄 Dashboard: Redirecting to waiting-for-verification page');
+        navigate('/waiting-for-verification', { replace: true });
+        return;
+      }
+      
+      console.log('✅ Dashboard: Professional admin-verified - setting up dashboard');
+      setIsProfessionalSubscriber(true);
+      
+      // Fetch seller stats for professional users with a delay to prevent rapid calls
+      const timeoutId = setTimeout(() => {
+        console.log('📊 Dashboard: Fetching seller stats for professional user');
+        fetchSellerStats();
+      }, 1500);
+      
+      // Fetch tenders counts from database
+      const t2 = setTimeout(() => {
+        TendersAPI.getAllTenders()
+          .then((res: any) => {
+            const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+            const total = list.length;
+            const active = list.filter((t: any) => (t.status || '').toUpperCase() === 'OPEN').length;
+            setTotalTendersCount(total);
+            setActiveTendersCount(active);
+            console.log('📊 Dashboard: Tenders counts', { total, active });
+          })
+          .catch((e: any) => {
+            console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
+          });
+      }, 500);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        clearTimeout(t2);
+      };
+    } else {
+      // All other cases (clients, professionals without identity, etc.)
+      console.log('🚫 Dashboard: User not eligible for full dashboard or needs verification');
+      
+      // If professional with identity but not admin verified
+      if (user?.type === ACCOUNT_TYPE.PROFESSIONAL && user?.isHasIdentity === true && user?.isAdminVerified !== true) {
+        console.log('⏳ Dashboard: Redirecting professional to waiting page (not admin verified)');
+        navigate('/waiting-for-verification', { replace: true });
+        return;
+      }
+      
+      // If client with identity but not admin verified
+      if (user?.type === ACCOUNT_TYPE.CLIENT && user?.isHasIdentity === true && user?.isAdminVerified !== true) {
+        console.log('⏳ Dashboard: Redirecting client to waiting page (not admin verified)');
+        navigate('/waiting-for-verification', { replace: true });
+        return;
+      }
+      
+      setIsProfessionalSubscriber(false);
+      setLoading(false);
+    }
+  }, [user, navigate]);
 
   const fetchSellerStats = async (isRefresh = false) => {
     try {

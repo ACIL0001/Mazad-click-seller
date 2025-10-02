@@ -60,6 +60,8 @@ import SouCategories from './pages/SouCategories/SouCategories';
 import AddSouCategory from './pages/SouCategories/AddSouCategories';
 
 // Root redirect component that checks verification status
+// routes.tsx - Replace the RootRedirect function with this updated version
+
 function RootRedirect() {
     const { isLogged, auth, isReady } = useAuth();
     const [loading, setLoading] = useState(true);
@@ -91,29 +93,63 @@ function RootRedirect() {
                 return;
             }
 
-            // Check if user has completed identity verification
+            // Check user verification status
             const hasIdentity = auth.user.isHasIdentity === true;
             const isVerified = auth.user.isVerified === true || 
                             (auth.user.isVerified !== false && auth.user.isVerified !== 0);
+            const isProfessional = auth.user.type === ACCOUNT_TYPE.PROFESSIONAL;
+            const isAdminVerified = auth.user.isAdminVerified === true; // New field from backend
             
-            console.log('🔐 RootRedirect - User verification status:', { 
+            console.log('🔍 RootRedirect - User verification status:', { 
                 isVerified, 
-                hasIdentity, 
+                hasIdentity,
+                isProfessional,
+                isAdminVerified,
+                userType: auth.user.type,
                 user: auth.user 
             });
             
-            if (isVerified && hasIdentity) {
-                // User is fully verified and has identity, redirect to dashboard
-                console.log('✅ RootRedirect - User is fully verified with identity, redirecting to dashboard');
+            // PROFESSIONAL users
+            if (isProfessional) {
+                if (isVerified && hasIdentity && isAdminVerified) {
+                    // Professional fully verified by admin - go to dashboard
+                    console.log('✅ RootRedirect - Professional fully verified, redirecting to dashboard');
+                    setRedirectPath('/dashboard/app');
+                } else if (isVerified && hasIdentity && !isAdminVerified) {
+                    // Professional with identity documents but not admin-verified yet
+                    console.log('⏳ RootRedirect - Professional waiting for admin verification');
+                    setRedirectPath('/waiting-for-verification');
+                } else if (isVerified && !hasIdentity) {
+                    // Professional verified OTP but no identity documents
+                    console.log('📋 RootRedirect - Professional needs identity verification');
+                    setRedirectPath('/identity-verification');
+                } else {
+                    // Professional not verified
+                    console.log('⏳ RootRedirect - Professional not OTP verified, redirecting to waiting');
+                    setRedirectPath('/waiting-for-verification');
+                }
+            }
+            // CLIENT users with submitted identity documents
+            else if (auth.user.type === ACCOUNT_TYPE.CLIENT && hasIdentity) {
+                if (isAdminVerified) {
+                    // Client with verified identity - can access dashboard
+                    console.log('✅ RootRedirect - Client with admin-verified identity, redirecting to dashboard');
+                    setRedirectPath('/dashboard/app');
+                } else {
+                    // Client with identity but not admin-verified
+                    console.log('📋 RootRedirect - Client with identity waiting for admin verification');
+                    setRedirectPath('/waiting-for-verification');
+                }
+            }
+            // CLIENT users without identity documents (regular clients)
+            else if (auth.user.type === ACCOUNT_TYPE.CLIENT && !hasIdentity) {
+                console.log('👤 RootRedirect - Regular client without identity, redirecting to dashboard');
                 setRedirectPath('/dashboard/app');
-            } else if (isVerified && !hasIdentity) {
-                // User is OTP verified but hasn't completed identity verification
-                console.log('📋 RootRedirect - User OTP verified but needs identity verification, redirecting to identity page');
-                setRedirectPath('/identity-verification');
-            } else {
-                // User is not verified, redirect to waiting for verification page
-                console.log('⏳ RootRedirect - User is not verified, redirecting to waiting page');
-                setRedirectPath('/waiting-for-verification');
+            }
+            // Fallback
+            else {
+                console.log('❓ RootRedirect - Unknown state, redirecting to login');
+                setRedirectPath('/login');
             }
             
             setLoading(false);
