@@ -123,11 +123,14 @@ const AxiosInterceptor = ({ children }: any) => {
       setLoading(false);
       const originalRequest = error.config;
 
-      console.error('❌ Response error:', {
-        url: originalRequest?.url,
-        status: error.response?.status,
-        message: error.message
-      });
+      // Only log non-network errors to reduce console spam
+      if (error.code !== 'ERR_NETWORK') {
+        console.error('❌ Response error:', {
+          url: originalRequest?.url,
+          status: error.response?.status,
+          message: error.message
+        });
+      }
 
       // Handle 401 Unauthorized - token refresh
       if (error.response?.status === 401 && !originalRequest._retry) {
@@ -218,7 +221,26 @@ const AxiosInterceptor = ({ children }: any) => {
                             'un problème est survenu';
         enqueueSnackbar(errorMessage, { variant: 'error' });
       } else if (error.code === 'ERR_NETWORK') {
-        enqueueSnackbar('Impossible de se connecter au serveur. Vérifiez votre connexion.', { variant: 'error' });
+        // Only show network error snackbar for non-public endpoints
+        const publicEndpoints = [
+          '/auth/signin',
+          '/auth/signup',
+          '/auth/refresh',
+          '/auth/exists',
+          '/auth/2factor',
+          '/auth/reset-password',
+          '/otp/confirm-phone',
+          '/otp/resend/confirm-phone',
+          '/tender',
+          '/terms/public',
+          '/terms/latest',
+        ];
+        const isPublicEndpoint = publicEndpoints.some((endpoint) => 
+          originalRequest?.url?.includes(endpoint)
+        );
+        if (!isPublicEndpoint) {
+          enqueueSnackbar('Impossible de se connecter au serveur. Vérifiez votre connexion.', { variant: 'error' });
+        }
       }
 
       if (error.response) {

@@ -28,8 +28,7 @@ export default function Logo({ disabledLink = false, sx }) {
             src="/static/logo/logo.black.png" 
             alt="MazadClick Logo"
             onError={(e) => {
-                console.error('Failed to load logo:', e);
-                // Hide the image if both logos fail to load
+                // Silently hide the image if it fails to load
                 e.currentTarget.style.display = 'none';
             }}
             sx={{ 

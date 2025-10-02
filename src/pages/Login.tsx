@@ -389,8 +389,7 @@ export default function Login() {
         alt="login" 
         src="/static/logo/mazadclick-cover.png" 
         onError={(e) => {
-          console.error('Failed to load login image:', e);
-          // Hide the image if it fails to load
+          // Silently hide the image if it fails to load
           e.currentTarget.style.display = 'none';
         }}
         style={{

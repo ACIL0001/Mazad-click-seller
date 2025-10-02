@@ -537,34 +537,24 @@ export default function RegisterForm(props: RegisterFormProps) {
   useEffect(() => {
     const checkTermsAvailability = async () => {
       if (!hasTerms && !termsContent) {
-        console.log('Checking terms availability...');
         try {
           const latest = await TermsAPI.getLatest();
-          console.log('Latest terms response:', latest);
           if (latest && latest.content) {
-            console.log('Terms found, setting hasTerms to true');
             setHasTerms(true);
           } else {
             // Fallback to get all public terms if getLatest fails
-            console.log('No latest terms, trying public terms...');
             const list = await TermsAPI.getPublic();
-            console.log('Public terms response:', list);
             const hasTermsAvailable = !!(list && list.length > 0);
-            console.log('Setting hasTerms to:', hasTermsAvailable);
             setHasTerms(hasTermsAvailable);
           }
         } catch (error) {
-          console.warn('Terms availability check failed:', error);
-          // Don't set hasTerms to false on network error, just log it
-          // This prevents the terms section from disappearing due to network issues
+          // Silently handle network errors without console spam
           if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-            console.log('Network error detected, keeping terms section hidden until connection is restored');
-            // Retry after 5 seconds if we haven't exceeded max retries
-            if (retryCount < 3) {
+            // Retry after 10 seconds if we haven't exceeded max retries
+            if (retryCount < 2) {
               setTimeout(() => {
                 setRetryCount(prev => prev + 1);
-                console.log(`Retrying terms fetch (attempt ${retryCount + 1}/3)...`);
-              }, 5000);
+              }, 10000);
             }
           } else {
             setHasTerms(false);
@@ -576,8 +566,7 @@ export default function RegisterForm(props: RegisterFormProps) {
     checkTermsAvailability();
   }, [hasTerms, termsContent, retryCount]);
 
-  // Debug log for rendering
-  console.log('Rendering terms section, hasTerms:', hasTerms, 'termsContent:', termsContent);
+  // Terms section will show when hasTerms is true
 
   return (
     <FormikProvider value={formik}>

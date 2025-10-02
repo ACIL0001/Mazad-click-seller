@@ -10,6 +10,10 @@ export const TermsAPI = {
     try {
       return await requests.get('terms/public');
     } catch (error) {
+      // Silently handle network errors
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        return [];
+      }
       console.error('Failed to fetch public terms:', error);
       return [];
     }
@@ -22,6 +26,10 @@ export const TermsAPI = {
     try {
       return await requests.get('terms/latest');
     } catch (error) {
+      // Silently handle network errors
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        return null;
+      }
       console.error('Failed to fetch latest terms:', error);
       return null;
     }
