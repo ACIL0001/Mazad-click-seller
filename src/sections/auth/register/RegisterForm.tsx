@@ -64,19 +64,23 @@ const AccountTypeToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   width: '100%',
   '& .MuiToggleButton-root': {
     flex: 1,
-    minHeight: 56,
+    minHeight: 80,
     fontSize: '1.1rem',
     fontWeight: 600,
     textTransform: 'none',
-    borderRadius: 8,
+    borderRadius: 12,
     border: `2px solid ${theme.palette.grey[300]}`,
     color: theme.palette.text.secondary,
     backgroundColor: theme.palette.background.paper,
-    transition: 'all 0.3s ease-in-out',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    position: 'relative',
+    overflow: 'hidden',
     '&:hover': {
       backgroundColor: theme.palette.primary.light,
       color: theme.palette.primary.contrastText,
       borderColor: theme.palette.primary.main,
+      transform: 'translateY(-2px)',
+      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
     },
     '&.Mui-selected': {
       backgroundColor: theme.palette.primary.main,
@@ -223,6 +227,7 @@ export default function RegisterForm(props: RegisterFormProps) {
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsContent, setTermsContent] = useState('');
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
+  const [hasTerms, setHasTerms] = useState<boolean>(false);
   const theme = useTheme();
 
   const RegisterSchema = Yup.object().shape({
@@ -259,11 +264,11 @@ export default function RegisterForm(props: RegisterFormProps) {
       email: '',
       password: '',
       phone: '',
-      type: USER_TYPE.CLIENT,
+      type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL since CLIENT is disabled
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
-      if (!termsAccepted) {
+      if (hasTerms && !termsAccepted) {
         alert('Vous devez accepter les termes et conditions pour continuer');
         setSubmitting(false);
         return;
@@ -401,6 +406,7 @@ export default function RegisterForm(props: RegisterFormProps) {
         
         if (latestTerms && latestTerms.content) {
           setTermsContent(latestTerms.content);
+          setHasTerms(true);
         } else {
           // Fallback to get all public terms if getLatest fails
           const publicTermsList = await TermsAPI.getPublic();
@@ -411,21 +417,47 @@ export default function RegisterForm(props: RegisterFormProps) {
             
             if (mostRecentTerms) {
               setTermsContent(mostRecentTerms.content);
+              setHasTerms(true);
             } else {
-              setTermsContent('<p>Aucun terme et condition disponible actuellement.</p>');
+              setTermsContent('');
+              setHasTerms(false);
             }
           } else {
-            setTermsContent('<p>Aucun terme et condition disponible actuellement.</p>');
+            setTermsContent('');
+            setHasTerms(false);
           }
         }
       } catch (error) {
         console.error('Failed to fetch terms:', error);
-        setTermsContent('<p>Erreur lors du chargement des termes et conditions. Veuillez réessayer plus tard.</p>');
+        setTermsContent('');
+        setHasTerms(false);
       } finally {
         setIsLoadingTerms(false);
       }
     }
   };
+
+  // Check once on mount if terms exist; if yes, require acceptance, otherwise hide the section
+  // and allow registration without displaying terms
+  // We purposefully keep it silent and fast
+  if (!hasTerms && !termsContent) {
+    TermsAPI.getLatest()
+      .then((latest) => {
+        if (latest && latest.content) {
+          setHasTerms(true);
+        } else {
+          setHasTerms(false);
+        }
+      })
+      .catch(async () => {
+        try {
+          const list = await TermsAPI.getPublic();
+          setHasTerms(!!(list && list.length > 0));
+        } catch {
+          setHasTerms(false);
+        }
+      });
+  }
 
   return (
     <FormikProvider value={formik}>
@@ -468,33 +500,260 @@ export default function RegisterForm(props: RegisterFormProps) {
               onChange={handleTypeChange}
               aria-label="account type"
             >
-              <ToggleButton value={USER_TYPE.CLIENT} aria-label="acheteur vendeur">
+              <ToggleButton 
+                value={USER_TYPE.CLIENT} 
+                aria-label="acheteur vendeur"
+                disabled={true}
+                sx={{
+                  opacity: 0.7,
+                  cursor: 'not-allowed',
+                  position: 'relative',
+                  background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
+                  border: '2px solid #d0d0d0',
+                  color: 'text.disabled',
+                  '&:hover': {
+                    backgroundColor: 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)',
+                    color: 'text.disabled',
+                    transform: 'none',
+                    boxShadow: 'none',
+                  },
+                  '&.Mui-selected': {
+                    backgroundColor: 'linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%)',
+                    color: 'text.disabled',
+                    borderColor: '#c0c0c0',
+                  },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)',
+                    borderRadius: 'inherit',
+                    pointerEvents: 'none',
+                  }
+                }}
+              >
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center',
-                  gap: 1
+                  gap: 1.5,
+                  position: 'relative',
+                  zIndex: 1
                 }}>
-                  <Iconify icon="eva:people-fill" width={24} height={24} />
-                  <Typography variant="subtitle1" fontWeight="inherit">
-                    Acheteur & Vendeur
-                  </Typography>
+                  <Box sx={{ 
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%)',
+                    border: '2px solid #d0d0d0',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                  }}>
+                    <Iconify icon="eva:people-fill" width={28} height={28} sx={{ color: '#999' }} />
+                    <Box sx={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      width: 20,
+                      height: 20,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 6px rgba(255, 152, 0, 0.3)',
+                      border: '2px solid white'
+                    }}>
+                      <Iconify 
+                        icon="eva:clock-fill" 
+                        width={12} 
+                        height={12} 
+                        sx={{ color: 'white' }}
+                      />
+                    </Box>
+                  </Box>
+                  
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      fontWeight={600}
+                      sx={{ 
+                        color: '#666',
+                        mb: 0.5,
+                        fontSize: '1rem'
+                      }}
+                    >
+                      Acheteur & Vendeur
+                    </Typography>
+                    <Box sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+                      border: '1px solid #ffb74d',
+                      boxShadow: '0 1px 3px rgba(255, 152, 0, 0.2)'
+                    }}>
+                      <Iconify 
+                        icon="eva:clock-outline" 
+                        width={12} 
+                        height={12} 
+                        sx={{ color: '#f57c00' }}
+                      />
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          color: '#e65100',
+                          fontWeight: 700,
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        Bientôt disponible
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Box>
               </ToggleButton>
-              <ToggleButton value={USER_TYPE.PROFESSIONAL} aria-label="professionnel">
+              <ToggleButton 
+                value={USER_TYPE.PROFESSIONAL} 
+                aria-label="professionnel"
+                sx={{
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                  color: 'white',
+                  border: '2px solid #1976d2',
+                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '&.Mui-selected': {
+                    background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
+                  }
+                }}
+              >
                 <Box sx={{ 
                   display: 'flex', 
                   flexDirection: 'column', 
                   alignItems: 'center',
-                  gap: 1
+                  gap: 1.5
                 }}>
-                  <Iconify icon="eva:briefcase-fill" width={24} height={24} />
-                  <Typography variant="subtitle1" fontWeight="inherit">
-                    Professionnel
-                  </Typography>
+                  <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: 'inset 0 2px 4px rgba(255, 255, 255, 0.1)'
+                  }}>
+                    <Iconify icon="eva:briefcase-fill" width={28} height={28} sx={{ color: 'white' }} />
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      variant="subtitle1" 
+                      fontWeight={700}
+                      sx={{ 
+                        color: 'white',
+                        fontSize: '1rem',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      Professionnel
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      sx={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontSize: '0.7rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      Disponible maintenant
+                    </Typography>
+                  </Box>
                 </Box>
               </ToggleButton>
             </AccountTypeToggleButtonGroup>
+            
+            {/* Information about disabled CLIENT option */}
+            <Box sx={{
+              mt: 1,
+              mb: 1,
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              p: 1.5,
+              background: 'linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%)',
+              borderRadius: 1,
+              border: '1px solid #ffb74d',
+              boxShadow: '0 2px 6px rgba(255, 152, 0, 0.1)',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 2,
+                background: 'linear-gradient(90deg, #ff9800 0%, #f57c00 100%)',
+                borderRadius: '4px 4px 0 0'
+              }
+            }}>
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                width: '100%'
+              }}>
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  boxShadow: '0 1px 4px rgba(255, 152, 0, 0.3)',
+                  flexShrink: 0
+                }}>
+                  <Iconify 
+                    icon="eva:clock-fill" 
+                    width={12} 
+                    height={12} 
+                    sx={{ color: 'white' }}
+                  />
+                </Box>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: '#bf360c', 
+                    lineHeight: 1.4,
+                    fontSize: '0.8rem',
+                    fontWeight: 500
+                  }}
+                >
+                  Le compte <strong>"Acheteur & Vendeur"</strong> sera bientôt disponible. 
+                  Créez un compte <strong>Professionnel</strong> en attendant.
+                </Typography>
+              </Box>
+            </Box>
+
             {values.type === USER_TYPE.PROFESSIONAL && (
               <Box sx={{
                 mt: 1,
@@ -617,81 +876,83 @@ export default function RegisterForm(props: RegisterFormProps) {
               helperText={touched.password && errors.password}
             />
 
-            {/* Professional Terms Agreement Section */}
-            <TermsAgreementBox>
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={termsAccepted} 
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    sx={{
-                      '&.Mui-checked': {
-                        color: 'primary.main',
+            {/* Terms Agreement Section - only show if terms exist */}
+            {hasTerms && (
+              <TermsAgreementBox>
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={termsAccepted} 
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      sx={{
+                        '&.Mui-checked': {
+                          color: 'primary.main',
+                        }
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.5 }}>
+                      J'ai lu et j'accepte les{' '}
+                      <Link 
+                        component="button" 
+                        variant="body2" 
+                        onClick={handleOpenTerms}
+                        sx={{ 
+                          fontWeight: 600,
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        termes et conditions d'utilisation
+                      </Link>
+                      {' '}ainsi que la{' '}
+                      <Link 
+                        component="button" 
+                        variant="body2" 
+                        onClick={handleOpenTerms}
+                        sx={{ 
+                          fontWeight: 600,
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        politique de confidentialité
+                      </Link>
+                      .
+                    </Typography>
+                  }
+                />
+                
+                {!termsAccepted && (
+                  <Alert 
+                    severity="warning" 
+                    sx={{ 
+                      mt: 1.5, 
+                      fontSize: '0.875rem',
+                      '& .MuiAlert-icon': {
+                        fontSize: '1rem'
                       }
                     }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.5 }}>
-                    J'ai lu et j'accepte les{' '}
-                    <Link 
-                      component="button" 
-                      variant="body2" 
-                      onClick={handleOpenTerms}
-                      sx={{ 
-                        fontWeight: 600,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      termes et conditions d'utilisation
-                    </Link>
-                    {' '}ainsi que la{' '}
-                    <Link 
-                      component="button" 
-                      variant="body2" 
-                      onClick={handleOpenTerms}
-                      sx={{ 
-                        fontWeight: 600,
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      politique de confidentialité
-                    </Link>
-                    .
-                  </Typography>
-                }
-              />
-              
-              {!termsAccepted && (
-                <Alert 
-                  severity="warning" 
-                  sx={{ 
-                    mt: 1.5, 
-                    fontSize: '0.875rem',
-                    '& .MuiAlert-icon': {
-                      fontSize: '1rem'
-                    }
-                  }}
-                >
-                  Vous devez accepter les termes et conditions pour continuer
-                </Alert>
-              )}
-            </TermsAgreementBox>
+                  >
+                    Vous devez accepter les termes et conditions pour continuer
+                  </Alert>
+                )}
+              </TermsAgreementBox>
+            )}
 
             <LoadingButton
               fullWidth
               size="large"
               type="submit"
               variant="contained"
-              disabled={!termsAccepted}
+              disabled={hasTerms ? !termsAccepted : false}
               loading={isSubmitting}
               sx={{ 
                 borderRadius: 1.5,
