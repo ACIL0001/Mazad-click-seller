@@ -428,6 +428,7 @@ export default function RegisterForm(props: RegisterFormProps) {
           }
         }
       } catch (error) {
+        // Only log to console, no snackbar alerts
         console.error('Failed to fetch terms:', error);
         setTermsContent('');
         setHasTerms(false);
@@ -450,10 +451,12 @@ export default function RegisterForm(props: RegisterFormProps) {
         }
       })
       .catch(async () => {
+        // Only log to console, no snackbar alerts
         try {
           const list = await TermsAPI.getPublic();
           setHasTerms(!!(list && list.length > 0));
-        } catch {
+        } catch (fallbackError) {
+          console.error('Failed to fetch public terms:', fallbackError);
           setHasTerms(false);
         }
       });

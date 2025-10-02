@@ -86,7 +86,15 @@ export default function Register() {
 
   const renderSection = (
     <SectionStyle>
-      <img alt="register" src="/static/logo/mazadclick-cover.png" />
+      <img 
+        alt="register" 
+        src="/static/logo/mazadclick-cover.png" 
+        onError={(e) => {
+          console.error('Failed to load register image:', e);
+          // Hide the image if it fails to load
+          e.currentTarget.style.display = 'none';
+        }}
+      />
     </SectionStyle>
   );
 

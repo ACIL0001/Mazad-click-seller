@@ -385,7 +385,15 @@ export default function Login() {
 
   const renderSection = (
     <SectionStyle>
-      <img alt="login" src="/static/logo/mazadclick-cover.png" />
+      <img 
+        alt="login" 
+        src="/static/logo/mazadclick-cover.png" 
+        onError={(e) => {
+          console.error('Failed to load login image:', e);
+          // Hide the image if it fails to load
+          e.currentTarget.style.display = 'none';
+        }}
+      />
     </SectionStyle>
   );
 
