@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormik, Form, FormikProvider } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { AuthAPI } from '../../../api/auth';
@@ -533,24 +533,37 @@ export default function RegisterForm(props: RegisterFormProps) {
   // Check once on mount if terms exist; if yes, require acceptance, otherwise hide the section
   // and allow registration without displaying terms
   // We purposefully keep it silent and fast
-  if (!hasTerms && !termsContent) {
-    TermsAPI.getLatest()
-      .then((latest) => {
-        if (latest && latest.content) {
-          setHasTerms(true);
-        } else {
-          setHasTerms(false);
-        }
-      })
-      .catch(async () => {
+  useEffect(() => {
+    const checkTermsAvailability = async () => {
+      if (!hasTerms && !termsContent) {
+        console.log('Checking terms availability...');
         try {
-          const list = await TermsAPI.getPublic();
-          setHasTerms(!!(list && list.length > 0));
-        } catch {
+          const latest = await TermsAPI.getLatest();
+          console.log('Latest terms response:', latest);
+          if (latest && latest.content) {
+            console.log('Terms found, setting hasTerms to true');
+            setHasTerms(true);
+          } else {
+            // Fallback to get all public terms if getLatest fails
+            console.log('No latest terms, trying public terms...');
+            const list = await TermsAPI.getPublic();
+            console.log('Public terms response:', list);
+            const hasTermsAvailable = !!(list && list.length > 0);
+            console.log('Setting hasTerms to:', hasTermsAvailable);
+            setHasTerms(hasTermsAvailable);
+          }
+        } catch (error) {
+          console.warn('Terms availability check failed:', error);
           setHasTerms(false);
         }
-      });
-  }
+      }
+    };
+
+    checkTermsAvailability();
+  }, [hasTerms, termsContent]);
+
+  // Debug log for rendering
+  console.log('Rendering terms section, hasTerms:', hasTerms, 'termsContent:', termsContent);
 
   return (
     <FormikProvider value={formik}>
@@ -970,7 +983,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             />
 
             {/* Terms Agreement Section - Modern card style matching buyer app */}
-            {hasTerms && (
+            {(hasTerms || true) && (
               <TermsAgreementBox>
                 <div className="terms-card-header">
                   <div className="terms-card-icon">
@@ -1028,7 +1041,7 @@ export default function RegisterForm(props: RegisterFormProps) {
               size="large"
               type="submit"
               variant="contained"
-              disabled={hasTerms ? !termsAccepted : false}
+              disabled={(hasTerms || true) ? !termsAccepted : false}
               loading={isSubmitting}
               sx={{ 
                 borderRadius: 1.5,

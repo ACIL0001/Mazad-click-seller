@@ -39,6 +39,8 @@ instance.interceptors.request.use(
       '/otp/confirm-phone',
       '/otp/resend/confirm-phone',
       '/tender', // public tenders listing
+      '/terms/public', // public terms endpoint
+      '/terms/latest', // latest terms endpoint
     ];
     
     const isPublicEndpoint = publicEndpoints.some((endpoint) => 
