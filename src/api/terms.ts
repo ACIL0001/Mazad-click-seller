@@ -34,7 +34,12 @@ export const TermsAPI = {
     }
     
     try {
-      return await requests.get('terms/latest');
+      const response = await requests.get('terms/latest');
+      // Handle the case where no terms are found
+      if (response && response.message && response.data === null) {
+        return null;
+      }
+      return response;
     } catch (error) {
       // Silently handle network errors
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
