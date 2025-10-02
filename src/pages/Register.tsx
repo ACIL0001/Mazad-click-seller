@@ -93,6 +93,12 @@ export default function Register() {
           // Silently hide the image if it fails to load
           e.currentTarget.style.display = 'none';
         }}
+        onLoadStart={(e) => {
+          // Check if we're offline and prevent loading
+          if (!navigator.onLine) {
+            e.currentTarget.style.display = 'none';
+          }
+        }}
         style={{
           width: '100%',
           height: '100%',

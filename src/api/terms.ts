@@ -7,6 +7,11 @@ export const TermsAPI = {
    * Get all terms and conditions (Public endpoint)
    */
   getPublic: async (): Promise<Terms[]> => {
+    // Don't make requests if offline
+    if (!navigator.onLine) {
+      return [];
+    }
+    
     try {
       return await requests.get('terms/public');
     } catch (error) {
@@ -23,6 +28,11 @@ export const TermsAPI = {
    * Get latest terms (Public endpoint)
    */
   getLatest: async (): Promise<Terms | null> => {
+    // Don't make requests if offline
+    if (!navigator.onLine) {
+      return null;
+    }
+    
     try {
       return await requests.get('terms/latest');
     } catch (error) {

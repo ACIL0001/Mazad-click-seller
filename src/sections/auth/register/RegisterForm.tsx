@@ -537,6 +537,11 @@ export default function RegisterForm(props: RegisterFormProps) {
   useEffect(() => {
     const checkTermsAvailability = async () => {
       if (!hasTerms && !termsContent) {
+        // Don't make API calls if we're offline
+        if (!navigator.onLine) {
+          return;
+        }
+        
         try {
           const latest = await TermsAPI.getLatest();
           if (latest && latest.content) {
