@@ -86,25 +86,21 @@ export default function Register() {
 
   const renderSection = (
     <SectionStyle>
-      <img 
-        alt="register" 
-        src="/static/logo/mazadclick-cover.png" 
-        onError={(e) => {
-          // Silently hide the image if it fails to load
-          e.currentTarget.style.display = 'none';
-        }}
-        onLoadStart={(e) => {
-          // Check if we're offline and prevent loading
-          if (!navigator.onLine) {
+      {navigator.onLine && (
+        <img 
+          alt="register" 
+          src="/static/logo/mazadclick-cover.png" 
+          onError={(e) => {
+            // Silently hide the image if it fails to load
             e.currentTarget.style.display = 'none';
-          }
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover'
-        }}
-      />
+          }}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      )}
     </SectionStyle>
   );
 

@@ -22,7 +22,7 @@ export default function Logo({ disabledLink = false, sx }) {
     const PRIMARY_DARK = theme.palette.primary.dark;
 
     // OR
-    const logo = (
+    const logo = navigator.onLine ? (
         <Box 
             component="img" 
             src="/static/logo/logo.black.png" 
@@ -31,12 +31,6 @@ export default function Logo({ disabledLink = false, sx }) {
                 // Silently hide the image if it fails to load
                 e.currentTarget.style.display = 'none';
             }}
-            onLoadStart={(e) => {
-                // Check if we're offline and prevent loading
-                if (!navigator.onLine) {
-                    e.currentTarget.style.display = 'none';
-                }
-            }}
             sx={{ 
                 height: 120, 
                 borderRadius: 5, 
@@ -44,6 +38,23 @@ export default function Logo({ disabledLink = false, sx }) {
                 ...sx 
             }} 
         />
+    ) : (
+        <Box 
+            sx={{ 
+                height: 120, 
+                borderRadius: 5, 
+                marginLeft: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.palette.grey[100],
+                color: theme.palette.text.secondary,
+                fontSize: '0.875rem',
+                ...sx 
+            }} 
+        >
+            MazadClick
+        </Box>
     )
 
     /*
