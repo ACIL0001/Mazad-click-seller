@@ -685,144 +685,144 @@ export default function IdentityVerification() {
   };
 
   // Submit handler
-  // IdentityVerification.tsx - Replace the handleSubmit function with this updated version
+  const handleSubmit = async () => {
+    // Validate NEW required fields
+    const requiredFieldsValidation = [
+      { files: registreCommerceCarteAuto, name: 'Registre de commerce/carte auto-entrepreneur/agrément/carte d\'artisan' },
+      { files: nifRequired, name: 'NIF' },
+      { files: numeroArticle, name: 'Numéro d\'article' },
+      { files: c20, name: 'C20' },
+      { files: misesAJourCnas, name: 'Mises à jour CNAS/CASNOS et CACOBAPT' },
+    ];
 
-const handleSubmit = async () => {
-  // Validate NEW required fields
-  const requiredFieldsValidation = [
-    { files: registreCommerceCarteAuto, name: 'Registre de commerce/carte auto-entrepreneur/agrément/carte d\'artisan' },
-    { files: nifRequired, name: 'NIF' },
-    { files: numeroArticle, name: 'Numéro d\'article' },
-    { files: c20, name: 'C20' },
-    { files: misesAJourCnas, name: 'Mises à jour CNAS/CASNOS et CACOBAPT' },
-  ];
-
-  const missingRequired = requiredFieldsValidation.filter(field => !field.files.length);
-  
-  if (missingRequired.length > 0) {
-    const missingNames = missingRequired.map(field => field.name).join(', ');
-    setSubmitStatus({
-      type: 'error',
-      message: `Les documents suivants sont requis: ${missingNames}`,
-    });
-    return;
-  }
-
-  setIsSubmitting(true);
-  setSubmitStatus({
-    type: 'info',
-    message: 'Soumission des documents en cours...',
-  });
-
-  try {
-    const formData = new FormData();
+    const missingRequired = requiredFieldsValidation.filter(field => !field.files.length);
     
-    // OPTIONAL FIELDS ONLY
-    if (nis.length) {
-      nis.forEach(file => formData.append('nis', file));
-    }
-    if (balanceSheet.length) {
-      balanceSheet.forEach(file => formData.append('last3YearsBalanceSheet', file));
-    }
-    if (certificates.length) {
-      certificates.forEach(file => formData.append('certificates', file));
-    }
-
-    // NEW REQUIRED FIELDS
-    registreCommerceCarteAuto.forEach(file => formData.append('registreCommerceCarteAuto', file));
-    nifRequired.forEach(file => formData.append('nifRequired', file));
-    numeroArticle.forEach(file => formData.append('numeroArticle', file));
-    c20.forEach(file => formData.append('c20', file));
-    misesAJourCnas.forEach(file => formData.append('misesAJourCnas', file));
-
-    // Call API to upload professional documents
-    console.log('📤 Uploading identity documents...');
-    const identityResult = await IdentityAPI.create(formData);
-    console.log('✅ Identity documents uploaded:', identityResult);
-    
-    // Upload payment proof if it exists
-    console.log('🔍 Checking for stored payment proof...');
-    const storedPaymentProof = getStoredPaymentProof();
-    console.log('📄 Stored payment proof:', storedPaymentProof);
-    
-    if (storedPaymentProof && storedPaymentProof.file && identityResult?._id) {
-      console.log('✅ Found stored payment proof, uploading to identity:', identityResult._id);
-      console.log('📄 Payment proof file details:', {
-        name: storedPaymentProof.fileName,
-        type: storedPaymentProof.fileType,
-        size: storedPaymentProof.file.size
-      });
-      
-      try {
-        const paymentProofUploaded = await uploadPaymentProof(identityResult._id, storedPaymentProof.file);
-        if (paymentProofUploaded) {
-          console.log('✅ Payment proof uploaded successfully');
-          clearStoredPaymentProof();
-        } else {
-          console.error('❌ Failed to upload payment proof');
-        }
-      } catch (paymentError) {
-        console.error('❌ Error uploading payment proof:', paymentError);
-        // Don't fail the entire process if payment proof upload fails
-      }
-    } else {
-      console.log('ℹ️ No stored payment proof found or no identity ID');
-    }
-    
-    // Refresh user data to get updated isHasIdentity status
-    console.log('🔄 Refreshing user data...');
-    const updatedUser = await refreshUserData();
-    
-    console.log('✅ User data after upload:', updatedUser);
-    console.log('📋 isHasIdentity status:', updatedUser?.isHasIdentity);
-    
-    // Set flags to indicate documents have been submitted in this session
-    localStorage.setItem('identityJustSubmitted', 'true');
-    sessionStorage.setItem('identityMessageShown', 'true');
-    
-    setSubmitStatus({
-      type: 'success',
-      message: 'Documents soumis avec succès! Redirection vers la page d\'attente...',
-    });
-    enqueueSnackbar('Documents soumis avec succès', { variant: 'success' });
-    
-    // CHANGED: Always redirect to waiting page after identity submission
-    setTimeout(() => {
-      console.log('✅ Redirecting to waiting-for-verification page');
-      navigate('/waiting-for-verification', { replace: true });
-    }, 1500);
-    
-  } catch (error: any) {
-    console.error('❌ Error submitting identity documents:', error);
-    
-    // Handle specific error cases
-    let errorMessage = 'Une erreur est survenue lors de la soumission. Veuillez réessayer.';
-    
-    if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-    
-    // If it's a duplicate submission error, redirect to waiting page
-    if (errorMessage.includes('déjà soumis') || errorMessage.includes('doublon')) {
+    if (missingRequired.length > 0) {
+      const missingNames = missingRequired.map(field => field.name).join(', ');
       setSubmitStatus({
-        type: 'info',
-        message: 'Vous avez déjà soumis vos documents d\'identité. Redirection...',
+        type: 'error',
+        message: `Les documents suivants sont requis: ${missingNames}`,
       });
-      enqueueSnackbar('Documents déjà soumis', { variant: 'info' });
-      navigate('/waiting-for-verification', { replace: true });
       return;
     }
-    
+
+    setIsSubmitting(true);
     setSubmitStatus({
-      type: 'error',
-      message: errorMessage,
-    }); 
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      type: 'info',
+      message: 'Soumission des documents en cours...',
+    });
+
+    try {
+      const formData = new FormData();
+      
+      // OPTIONAL FIELDS ONLY (removed redundant ones)
+      if (nis.length) {
+        nis.forEach(file => formData.append('nis', file));
+      }
+      if (balanceSheet.length) {
+        balanceSheet.forEach(file => formData.append('last3YearsBalanceSheet', file));
+      }
+      if (certificates.length) {
+        certificates.forEach(file => formData.append('certificates', file));
+      }
+
+      // NEW REQUIRED FIELDS
+      registreCommerceCarteAuto.forEach(file => formData.append('registreCommerceCarteAuto', file));
+      nifRequired.forEach(file => formData.append('nifRequired', file));
+      numeroArticle.forEach(file => formData.append('numeroArticle', file));
+      c20.forEach(file => formData.append('c20', file));
+      misesAJourCnas.forEach(file => formData.append('misesAJourCnas', file));
+
+      // Call API to upload professional documents
+      const identityResult = await IdentityAPI.create(formData);
+      
+      // Upload payment proof if it exists
+      console.log('🔍 Checking for stored payment proof...');
+      const storedPaymentProof = getStoredPaymentProof();
+      console.log('🔍 Stored payment proof:', storedPaymentProof);
+      
+      if (storedPaymentProof && storedPaymentProof.file && identityResult?._id) {
+        console.log('✅ Found stored payment proof, uploading to identity:', identityResult._id);
+        console.log('🔍 Payment proof file details:', {
+          name: storedPaymentProof.fileName,
+          type: storedPaymentProof.fileType,
+          size: storedPaymentProof.file.size
+        });
+        
+        try {
+          const paymentProofUploaded = await uploadPaymentProof(identityResult._id, storedPaymentProof.file);
+          if (paymentProofUploaded) {
+            console.log('✅ Payment proof uploaded successfully');
+            clearStoredPaymentProof(); // Clear from session storage after successful upload
+          } else {
+            console.error('❌ Failed to upload payment proof');
+          }
+        } catch (paymentError) {
+          console.error('❌ Error uploading payment proof:', paymentError);
+          // Don't fail the entire process if payment proof upload fails
+        }
+      } else {
+        console.log('❌ No stored payment proof found or no identity ID');
+        console.log('🔍 Debug info:', {
+          hasStoredProof: !!storedPaymentProof,
+          hasFile: !!(storedPaymentProof && storedPaymentProof.file),
+          hasIdentityId: !!identityResult?._id,
+          identityId: identityResult?._id
+        });
+      }
+      
+      // Refresh user data to get updated isHasIdentity status
+      const updatedUser = await refreshUserData();
+      
+      console.log('IdentityVerification - User data after upload:', updatedUser);
+      console.log('IdentityVerification - isHasIdentity status:', updatedUser?.isHasIdentity);
+      
+      // Set flags to indicate documents have been submitted in this session
+      localStorage.setItem('identityJustSubmitted', 'true');
+      sessionStorage.setItem('identityMessageShown', 'true');
+      
+      setSubmitStatus({
+        type: 'success',
+        message: 'Documents soumis avec succès! Redirection vers le tableau de bord...',
+      });
+      enqueueSnackbar('Documents soumis avec succès', { variant: 'success' });
+      
+      // Add a small delay to ensure state updates are processed
+      setTimeout(() => {
+        // Navigate to dashboard to show the updated status (Documents Under Review page)
+        navigate('/subscription-plans');
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error submitting identity documents:', error);
+      
+      // Handle specific error cases
+      let errorMessage = 'Une erreur est survenue lors de la soumission. Veuillez réessayer.';
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      // If it's a duplicate submission error, redirect to subscription plans
+      if (errorMessage.includes('déjà soumis') || errorMessage.includes('doublon')) {
+        setSubmitStatus({
+          type: 'info',
+          message: 'Vous avez déjà soumis vos documents d\'identité. Redirection vers le tableau de bord...',
+        });
+        enqueueSnackbar('Documents déjà soumis', { variant: 'info' });
+        navigate('/subscription-plans');
+        return;
+      }
+      
+      setSubmitStatus({
+        type: 'error',
+        message: errorMessage,
+      }); 
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Handle cancel button
   const handleCancel = () => {

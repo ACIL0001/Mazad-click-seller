@@ -234,6 +234,7 @@ const PaymentBackgroundIcons = () => {
 
   return (
     <AnimatedBackground>
+      {/* Animated Icons */}
       {icons.map(({ Icon, top, left, right, delay, animation }, index) => (
         <BackgroundIcon
           key={index}
@@ -249,6 +250,7 @@ const PaymentBackgroundIcons = () => {
         </BackgroundIcon>
       ))}
       
+      {/* Animated Shapes */}
       {shapes.map(({ shape, size, top, left, right, delay }, index) => (
         <PaymentShape
           key={`shape-${index}`}
@@ -355,6 +357,7 @@ export const PaymentMethodSelection = () => {
       // Store the uploaded file in session storage for later use
       if (uploadedFile) {
         console.log('Storing payment proof file for later upload:', uploadedFile.name);
+        // Convert file to base64 for storage
         const reader = new FileReader();
         reader.onload = () => {
           const base64 = reader.result as string;
@@ -380,6 +383,7 @@ export const PaymentMethodSelection = () => {
     } catch (error) {
       console.error('Error processing payment:', error);
       setLoading(false);
+      // Still proceed with payment even if proof processing fails
       navigate('/payment-success', { 
         state: { 
           plan: selectedPlan,
@@ -539,6 +543,7 @@ export const PaymentMethodSelection = () => {
             
             <Divider sx={{ mb: 4 }} />
 
+            {/* Payment Methods */}
             <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
               Choisissez votre méthode de paiement
             </Typography>
@@ -572,8 +577,10 @@ export const PaymentMethodSelection = () => {
               ))}
             </Grid>
 
+            {/* Payment Form */}
             {selectedMethod && renderPaymentForm()}
 
+            {/* File Upload Section */}
             {(selectedMethod === 'cheque' || selectedMethod) && (
               <Box sx={{ mt: 4 }}>
                 <Typography variant="h6" gutterBottom>
@@ -641,6 +648,7 @@ export const PaymentMethodSelection = () => {
               </Box>
             )}
 
+            {/* Submit Button */}
             <LoadingButton
               variant="contained"
               size="large"
@@ -673,13 +681,13 @@ export const PaymentMethodSelection = () => {
   );
 };
 
-// Enhanced Success Page - UPDATED to redirect to identity verification
+// Enhanced Success Page with animated background
 export const SuccessPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { plan, paymentMethod, requiresVerification } = location.state || {};
   const [openPopup, setOpenPopup] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(15);
 
   useEffect(() => {
     if (!plan) {
@@ -693,14 +701,7 @@ export const SuccessPage = () => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          // CHANGED: Redirect to identity verification instead of login
-          navigate('/identity-verification', { 
-            state: { 
-              fromPayment: true,
-              plan: plan 
-            },
-            replace: true 
-          });
+          navigate('/login', { replace: true });
           return 0;
         }
         return prev - 1;
@@ -712,23 +713,11 @@ export const SuccessPage = () => {
 
   const handleClosePopup = () => {
     setOpenPopup(false);
-    navigate('/identity-verification', { 
-      state: { 
-        fromPayment: true,
-        plan: plan 
-      },
-      replace: true 
-    });
+    navigate('/login', { replace: true });
   };
 
-  const handleGoToIdentityVerification = () => {
-    navigate('/identity-verification', { 
-      state: { 
-        fromPayment: true,
-        plan: plan 
-      },
-      replace: true 
-    });
+  const handleGoToLogin = () => {
+    navigate('/login', { replace: true });
   };
 
   const getMethodDetails = () => {
@@ -787,6 +776,7 @@ export const SuccessPage = () => {
             </Typography>
           </Box>
 
+          {/* Enhanced Success Popup with animations */}
           <Dialog
             open={openPopup}
             onClose={handleClosePopup}
@@ -810,6 +800,13 @@ export const SuccessPage = () => {
               sx={{ position: 'absolute', top: '5%', right: '10%', opacity: 0.08 }}
             >
               <PaymentIcon fontSize="inherit" />
+            </BackgroundIcon>
+            <BackgroundIcon
+              delay={1.5}
+              animation="pulse"
+              sx={{ position: 'absolute', bottom: '10%', left: '15%', opacity: 0.08 }}
+            >
+              <AttachMoneyIcon fontSize="inherit" />
             </BackgroundIcon>
             
             <DialogTitle sx={{ pb: 2 }}>
@@ -844,21 +841,81 @@ export const SuccessPage = () => {
               />
               
               <Typography variant="h6" gutterBottom>
-                Plan "{plan?.name}" enregistré avec succès
+                Plan "{plan?.name}" activé avec succès
               </Typography>
               
-              <Alert severity="info" sx={{ mt: 3, mb: 3 }}>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Prochaine étape:</strong> Vérification d'identité
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: 'center', 
+                mt: 3, 
+                mb: 3,
+                p: 3,
+                backgroundColor: requiresVerification ? 'rgba(255, 152, 0, 0.1)' : 'rgba(33, 150, 243, 0.1)',
+                borderRadius: 3,
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <BackgroundIcon
+                  delay={0.5}
+                  animation="wave"
+                  sx={{ position: 'absolute', top: '20%', right: '20%', opacity: 0.05 }}
+                >
+                  <AccessTimeIcon fontSize="inherit" />
+                </BackgroundIcon>
+                <AccessTimeIcon sx={{ 
+                  mb: 1, 
+                  color: requiresVerification ? 'warning.dark' : 'info.dark',
+                  fontSize: 32,
+                  animation: `${rotate360} 4s linear infinite`
+                }} />
+                <Typography variant="h6" color={requiresVerification ? 'warning.dark' : 'info.dark'} fontWeight="bold">
+                  {requiresVerification ? 'Vérification en cours' : 'Traitement en cours'}
                 </Typography>
-                <Typography variant="body2">
-                  Vous allez être redirigé vers la page de soumission des documents professionnels.
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {requiresVerification 
+                    ? `Votre justificatif sera vérifié sous 24-48h`
+                    : `Confirmation dans les ${methodDetails.time}`
+                  }
                 </Typography>
-              </Alert>
+              </Box>
+              
+              <Box sx={{ position: 'relative', mb: 2 }}>
+                <BackgroundIcon
+                  delay={1}
+                  animation="bounce"
+                  sx={{ position: 'absolute', left: '-30px', top: '50%', transform: 'translateY(-50%)', opacity: 0.1 }}
+                >
+                  <ReceiptIcon fontSize="inherit" />
+                </BackgroundIcon>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                  📧 Un email de confirmation a été envoyé
+                </Typography>
+              </Box>
+              
+              <Box sx={{ position: 'relative', mb: 3 }}>
+                <BackgroundIcon
+                  delay={2}
+                  animation="wave"
+                  sx={{ position: 'absolute', right: '-30px', top: '50%', transform: 'translateY(-50%)', opacity: 0.1 }}
+                >
+                  <PhoneAndroidIcon fontSize="inherit" />
+                </BackgroundIcon>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  📱 Vous recevrez un SMS de validation
+                </Typography>
+              </Box>
               
               <Divider sx={{ my: 2 }} />
               
               <Box sx={{ position: 'relative' }}>
+                <BackgroundIcon
+                  delay={0}
+                  animation="pulse"
+                  sx={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', opacity: 0.05 }}
+                >
+                  <AccessTimeIcon fontSize="inherit" />
+                </BackgroundIcon>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   Redirection automatique dans{' '}
                   <Chip 
@@ -879,7 +936,7 @@ export const SuccessPage = () => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={handleGoToIdentityVerification}
+                onClick={handleGoToLogin}
                 size="large"
                 sx={{ 
                   borderRadius: 12, 
@@ -896,7 +953,7 @@ export const SuccessPage = () => {
                 }}
                 startIcon={<CheckCircleOutlineIcon />}
               >
-                Continuer la vérification
+                Accéder à mon compte
               </Button>
               <Button
                 variant="outlined"
