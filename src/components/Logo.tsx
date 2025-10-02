@@ -29,8 +29,8 @@ export default function Logo({ disabledLink = false, sx }) {
             alt="MazadClick Logo"
             onError={(e) => {
                 console.error('Failed to load logo:', e);
-                // Try fallback to white logo
-                e.currentTarget.src = '/static/logo/logo.white.png';
+                // Hide the image if both logos fail to load
+                e.currentTarget.style.display = 'none';
             }}
             sx={{ 
                 height: 120, 
