@@ -321,6 +321,7 @@ export default function RegisterForm(props: RegisterFormProps) {
   const [termsContent, setTermsContent] = useState('');
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [hasTerms, setHasTerms] = useState<boolean>(false);
+  const [retryCount, setRetryCount] = useState<number>(0);
   const theme = useTheme();
 
   const RegisterSchema = Yup.object().shape({
@@ -554,13 +555,26 @@ export default function RegisterForm(props: RegisterFormProps) {
           }
         } catch (error) {
           console.warn('Terms availability check failed:', error);
-          setHasTerms(false);
+          // Don't set hasTerms to false on network error, just log it
+          // This prevents the terms section from disappearing due to network issues
+          if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+            console.log('Network error detected, keeping terms section hidden until connection is restored');
+            // Retry after 5 seconds if we haven't exceeded max retries
+            if (retryCount < 3) {
+              setTimeout(() => {
+                setRetryCount(prev => prev + 1);
+                console.log(`Retrying terms fetch (attempt ${retryCount + 1}/3)...`);
+              }, 5000);
+            }
+          } else {
+            setHasTerms(false);
+          }
         }
       }
     };
 
     checkTermsAvailability();
-  }, [hasTerms, termsContent]);
+  }, [hasTerms, termsContent, retryCount]);
 
   // Debug log for rendering
   console.log('Rendering terms section, hasTerms:', hasTerms, 'termsContent:', termsContent);
@@ -983,7 +997,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             />
 
             {/* Terms Agreement Section - Modern card style matching buyer app */}
-            {(hasTerms || true) && (
+            {hasTerms && (
               <TermsAgreementBox>
                 <div className="terms-card-header">
                   <div className="terms-card-icon">
@@ -1041,7 +1055,7 @@ export default function RegisterForm(props: RegisterFormProps) {
               size="large"
               type="submit"
               variant="contained"
-              disabled={(hasTerms || true) ? !termsAccepted : false}
+              disabled={hasTerms ? !termsAccepted : false}
               loading={isSubmitting}
               sx={{ 
                 borderRadius: 1.5,

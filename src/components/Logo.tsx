@@ -22,7 +22,24 @@ export default function Logo({ disabledLink = false, sx }) {
     const PRIMARY_DARK = theme.palette.primary.dark;
 
     // OR
-    const logo = <Box style={{ borderRadius: 5, marginLeft: 5 }} component="img" src="/static/logo/logo.black.png" sx={{ height: 120, ...sx }} />
+    const logo = (
+        <Box 
+            component="img" 
+            src="/static/logo/logo.black.png" 
+            alt="MazadClick Logo"
+            onError={(e) => {
+                console.error('Failed to load logo:', e);
+                // Try fallback to white logo
+                e.currentTarget.src = '/static/logo/logo.white.png';
+            }}
+            sx={{ 
+                height: 120, 
+                borderRadius: 5, 
+                marginLeft: 5,
+                ...sx 
+            }} 
+        />
+    )
 
     /*
     const logo = (

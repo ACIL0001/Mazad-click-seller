@@ -393,6 +393,11 @@ export default function Login() {
           // Hide the image if it fails to load
           e.currentTarget.style.display = 'none';
         }}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover'
+        }}
       />
     </SectionStyle>
   );
