@@ -1065,13 +1065,14 @@ export default function CreateAuction() {
           // For duration section, highlight the entire section briefly
           setTimeout(() => {
             console.log('Highlighting duration section');
-            element.style.transition = 'all 0.5s ease';
-            element.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
-            element.style.borderRadius = '12px';
-            element.style.padding = '16px';
+            const htmlElement = element as HTMLElement;
+            htmlElement.style.transition = 'all 0.5s ease';
+            htmlElement.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
+            htmlElement.style.borderRadius = '12px';
+            htmlElement.style.padding = '16px';
             setTimeout(() => {
-              element.style.backgroundColor = '';
-              element.style.padding = '';
+              htmlElement.style.backgroundColor = '';
+              htmlElement.style.padding = '';
             }, 2500);
           }, 400);
         }
@@ -2219,7 +2220,7 @@ export default function CreateAuction() {
 
                 {formik.touched.duration && formik.errors.duration && (
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    {formik.errors.duration}
+                    {typeof formik.errors.duration === 'string' ? formik.errors.duration : JSON.stringify(formik.errors.duration)}
                   </Alert>
                 )}
 
