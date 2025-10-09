@@ -92,7 +92,7 @@ export default function AccountPopover() {
             'x-access-key': app.apiKey,
             'Content-Type': 'application/json',
           },
-          withCredentials: true,
+          credentials: 'include',
         });
 
         const data = await response.json();

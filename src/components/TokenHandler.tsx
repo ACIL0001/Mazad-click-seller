@@ -23,13 +23,13 @@ export default function TokenHandler({ children }: TokenHandlerProps) {
       const from = urlParams.get('from');
 
       if (token && refreshToken && from === 'buyer') {
-        console.log('🔑 TokenHandler: Detected tokens from buyer app URL.');
+        console.log('🔐 TokenHandler: Detected tokens from buyer app URL.');
         setLoading(true);
         setError(null);
 
         try {
           // Use the existing /auth/status to get user data and validate token
-          const statusResponse = await AuthAPI.status(token);
+          const statusResponse = await AuthAPI.status();
           
           if (statusResponse.authenticated && statusResponse.user) {
             const authData = {
@@ -39,7 +39,7 @@ export default function TokenHandler({ children }: TokenHandlerProps) {
                 refreshToken: refreshToken,
               },
             };
-            console.log('🔑 TokenHandler: Storing auth data from URL:', authData);
+            console.log('🔐 TokenHandler: Storing auth data from URL:', authData);
             set(authData); // Update Zustand store
 
             // Clean up URL parameters
@@ -48,7 +48,7 @@ export default function TokenHandler({ children }: TokenHandlerProps) {
             newUrl.searchParams.delete('refreshToken');
             newUrl.searchParams.delete('from');
             window.history.replaceState({}, '', newUrl.pathname + newUrl.search);
-            console.log('🔑 TokenHandler: URL parameters cleaned up.');
+            console.log('🔐 TokenHandler: URL parameters cleaned up.');
           } else {
             throw new Error('Failed to authenticate user with provided tokens.');
           }
