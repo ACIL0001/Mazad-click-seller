@@ -93,6 +93,10 @@ const SelectionCard = styled(Paper)(({ theme }) => ({
     borderColor: theme.palette.primary.main,
     backgroundColor: alpha(theme.palette.primary.light, 0.05),
     boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}`,
+  },
+  '&.error': {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
   }
 }));
 
@@ -231,6 +235,10 @@ const BidTypeCard = styled(Paper)(({ theme }) => ({
       boxShadow: `0 2px 8px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
     },
   },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
+  },
 }))
 
 const CategoryCard = styled(Paper)(({ theme }) => ({
@@ -277,6 +285,10 @@ const CategoryCard = styled(Paper)(({ theme }) => ({
       height: '4px',
       backgroundColor: theme.palette.primary.main,
     }
+  },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
   }
 }));
 
@@ -293,6 +305,9 @@ const IconContainer = styled(Box)(({ theme }) => ({
   '&.selected': {
     backgroundColor: theme.palette.primary.main,
     transform: 'scale(1.1)',
+  },
+  '&.error': {
+    backgroundColor: alpha(theme.palette.error.main, 0.1),
   }
 }));
 
@@ -319,6 +334,10 @@ const CategoryIcon = styled(Box)(({ theme }) => ({
     transform: "scale(1.15)",
     borderColor: theme.palette.primary.main,
     boxShadow: `0 8px 24px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+  },
+  "&.error": {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.light, 0.15)} 100%)`,
+    borderColor: alpha(theme.palette.error.main, 0.3),
   },
 }))
 
@@ -359,6 +378,10 @@ const SubCategoryCard = styled(Paper)(({ theme }) => ({
       backgroundColor: theme.palette.primary.main,
     },
   },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
+  },
 }))
 
 const SubCategoryContent = styled(Box)(({ theme }) => ({
@@ -378,6 +401,9 @@ const SubCategoryIcon = styled(Box)(({ theme }) => ({
   transition: "all 0.3s ease",
   "&.selected": {
     backgroundColor: theme.palette.primary.main,
+  },
+  "&.error": {
+    backgroundColor: alpha(theme.palette.error.main, 0.3),
   },
 }))
 
@@ -419,6 +445,10 @@ const AttributeCard = styled(Paper)(({ theme }) => ({
       backgroundColor: theme.palette.primary.dark,
     },
   },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
+  },
 }))
 
 const AttributeIcon = styled(Box)(({ theme }) => ({
@@ -434,6 +464,9 @@ const AttributeIcon = styled(Box)(({ theme }) => ({
   transition: "all 0.3s ease",
   "&.selected": {
     backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  "&.error": {
+    backgroundColor: alpha(theme.palette.error.main, 0.3),
   },
 }))
 
@@ -531,6 +564,10 @@ const AttributeToggle = styled(Box)(({ theme }) => ({
     borderColor: theme.palette.primary.main,
     boxShadow: `0 4px 12px 0 ${alpha(theme.palette.primary.main, 0.3)}`,
   },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
+  },
 }))
 
 const AttributeCheckbox = styled(Box)(({ theme }) => ({
@@ -546,6 +583,9 @@ const AttributeCheckbox = styled(Box)(({ theme }) => ({
   "&.selected": {
     backgroundColor: "#fff",
     borderColor: theme.palette.primary.main,
+  },
+  "&.error": {
+    borderColor: theme.palette.error.main,
   },
 }))
 
@@ -609,6 +649,10 @@ const AuctionTypeCard = styled(Paper)(({ theme }) => ({
       height: "3px",
     },
   },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
+  },
 }))
 
 const AuctionTypeIcon = styled(Box)(({ theme }) => ({
@@ -628,6 +672,10 @@ const AuctionTypeIcon = styled(Box)(({ theme }) => ({
     transform: "scale(1.1)",
     borderColor: theme.palette.primary.main,
     boxShadow: `0 6px 20px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+  },
+  "&.error": {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.light, 0.15)} 100%)`,
+    borderColor: alpha(theme.palette.error.main, 0.3),
   },
 }))
 
@@ -673,6 +721,10 @@ const DurationCard = styled(Paper)(({ theme }) => ({
 
     backgroundColor: alpha(theme.palette.primary.light, 0.05),
     boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.2)}`,
+  },
+  "&.error": {
+    borderColor: theme.palette.error.main,
+    backgroundColor: alpha(theme.palette.error.main, 0.05),
   }
 }));
 
@@ -706,6 +758,10 @@ const DurationIcon = styled(Box)(({ theme }) => ({
     transform: "scale(1.08)",
     borderColor: theme.palette.primary.main,
     boxShadow: `0 4px 16px 0 ${alpha(theme.palette.primary.main, 0.3)}`,
+  },
+  "&.error": {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.light, 0.15)} 100%)`,
+    borderColor: alpha(theme.palette.error.main, 0.3),
   },
 }))
 
@@ -901,6 +957,290 @@ export default function CreateAuction() {
     { title: 'Détails', description: 'Remplissez les informations' }
   ];
 
+  // Enhanced validation schema
+  const validationSchema = Yup.object().shape({
+    title: Yup.string()
+      .min(3, 'Le titre doit contenir au moins 3 caractères')
+      .max(100, 'Le titre est trop long')
+      .required('Le titre est requis'),
+    description: Yup.string()
+      .min(10, 'La description doit contenir au moins 10 caractères')
+      .required('La description est requise'),
+    bidType: Yup.string()
+      .oneOf(Object.values(BID_TYPES), 'Type d\'enchère invalide')
+      .required('Le type d\'enchère est requis'),
+    auctionType: Yup.string()
+      .oneOf(Object.values(AUCTION_TYPES), 'Type d\'enchère invalide')
+      .required('Le type d\'enchère est requis'),
+    productCategory: Yup.string()
+      .required('La catégorie est requise'),
+    startingPrice: Yup.number()
+      .min(1, 'Le prix de départ doit être positif')
+      .required('Le prix de départ est requis'),
+    duration: Yup.object()
+      .nullable()
+      .required('La durée est requise'),
+    wilaya: Yup.string()
+      .required('La wilaya est requise'),
+    place: Yup.string()
+      .required('L\'emplacement est requis'),
+    hidden: Yup.boolean(),
+    quantity: Yup.string().when('bidType', ([bidType], schema) => {
+      return bidType === BID_TYPES.PRODUCT
+        ? schema.required('La quantité est requise pour les produits')
+        : schema.notRequired();
+    }),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      title: '',
+      description: '',
+      bidType: BID_TYPES.PRODUCT,
+      auctionType: AUCTION_TYPES.CLASSIC,
+      productCategory: '',
+      productSubCategory: '',
+      startingPrice: '',
+      duration: null,
+      attributes: [],
+      place: '',
+      wilaya: '',
+      quantity: '',
+      isPro: false,
+      hidden: false,
+      reservePrice: '',
+    },
+    validationSchema,
+    validateOnChange: false,
+    validateOnBlur: true,
+    onSubmit: async (values) => {
+      console.log('📋 Formik onSubmit called');
+      await handleSubmit(values);
+    },
+  });
+
+  // Helper function to scroll to first error field
+  const scrollToField = (fieldName: string) => {
+    console.log(`🎯 scrollToField called with: ${fieldName}`);
+    
+    setTimeout(() => {
+      let element: Element | null = null;
+      
+      // Special handling for duration (which is not a standard input field)
+      if (fieldName === 'duration') {
+        element = document.getElementById('duration-section');
+        console.log('Looking for duration section by ID:', element ? 'FOUND' : 'NOT FOUND');
+      } else {
+        element = document.querySelector(`[name="${fieldName}"]`);
+        console.log(`Looking for field [name="${fieldName}"]:`, element ? 'FOUND' : 'NOT FOUND');
+      }
+      
+      if (element) {
+        console.log(`✅ Element found for ${fieldName}, scrolling now...`);
+        
+        // Scroll to element with some offset for better visibility
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - 120;
+        
+        console.log(`Scroll position calculated: ${offsetPosition}px`);
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Focus the field for better visibility (only for input elements)
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+          setTimeout(() => {
+            console.log(`Focusing and highlighting field: ${fieldName}`);
+            (element as HTMLElement).focus();
+            // Add a visual pulse effect
+            element.style.transition = 'box-shadow 0.3s ease';
+            element.style.boxShadow = '0 0 0 4px rgba(255, 0, 0, 0.4)';
+            setTimeout(() => {
+              element.style.boxShadow = '';
+            }, 2500);
+          }, 400);
+        } else if (fieldName === 'duration') {
+          // For duration section, highlight the entire section briefly
+          setTimeout(() => {
+            console.log('Highlighting duration section');
+            element.style.transition = 'all 0.5s ease';
+            element.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
+            element.style.borderRadius = '12px';
+            element.style.padding = '16px';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+              element.style.padding = '';
+            }, 2500);
+          }, 400);
+        }
+        
+        console.log(`✅ Successfully scrolled to field: ${fieldName}`);
+      } else {
+        console.error(`❌ Field not found: ${fieldName}`);
+        console.log('Available input names:', Array.from(document.querySelectorAll('input, textarea, select')).map((el: any) => el.name).filter(Boolean));
+      }
+    }, 300);
+  };
+
+  // Validation functions for each step
+  const validateStep = (step: number, values: any): boolean => {
+    switch (step) {
+      case 0: // Bid Type & Auction Type
+        if (!values.bidType) {
+          enqueueSnackbar('Veuillez sélectionner un type d\'enchère', { variant: 'error' });
+          // Scroll to top of the page to show bid type selection
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        if (!values.auctionType) {
+          enqueueSnackbar('Veuillez sélectionner un type d\'enchère', { variant: 'error' });
+          // Scroll to auction type section
+          window.scrollTo({ top: 400, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 1: // Category
+        if (!values.productCategory) {
+          enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
+          // Scroll to top to show categories
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 2: // Details
+        console.log('📝 Validating Step 2 (Details)...');
+        const errors = [];
+        let firstErrorField = '';
+        
+        if (!values.title || values.title.length < 3) {
+          errors.push('Le titre est requis et doit contenir au moins 3 caractères');
+          if (!firstErrorField) {
+            firstErrorField = 'title';
+            console.log('❌ First error: title');
+          }
+        }
+        if (!values.description || values.description.length < 10) {
+          errors.push('La description est requise et doit contenir au moins 10 caractères');
+          if (!firstErrorField) {
+            firstErrorField = 'description';
+            console.log('❌ First error: description');
+          }
+        }
+        if (values.bidType === BID_TYPES.PRODUCT && !values.quantity) {
+          errors.push('La quantité est requise pour les produits');
+          if (!firstErrorField) {
+            firstErrorField = 'quantity';
+            console.log('❌ First error: quantity');
+          }
+        }
+        if (!values.startingPrice || parseFloat(values.startingPrice) < 1) {
+          errors.push('Le prix de départ doit être positif');
+          if (!firstErrorField) {
+            firstErrorField = 'startingPrice';
+            console.log('❌ First error: startingPrice');
+          }
+        }
+        if (!values.duration) {
+          errors.push('La durée est requise');
+          if (!firstErrorField) {
+            firstErrorField = 'duration';
+            console.log('❌ First error: duration');
+          }
+        }
+        if (!values.place) {
+          errors.push('L\'emplacement est requis');
+          if (!firstErrorField) {
+            firstErrorField = 'place';
+            console.log('❌ First error: place');
+          }
+        }
+        if (!values.wilaya) {
+          errors.push('La wilaya est requise');
+          if (!firstErrorField) {
+            firstErrorField = 'wilaya';
+            console.log('❌ First error: wilaya');
+          }
+        }
+
+        if (errors.length > 0) {
+          console.log(`❌ Step 2 validation failed with ${errors.length} errors`);
+          console.log('First error field:', firstErrorField);
+          console.log('All errors:', errors);
+          
+          // Show ONLY the first error message (user-friendly, one at a time)
+          enqueueSnackbar(errors[0], { variant: 'error', autoHideDuration: 5000 });
+          
+          // Scroll to the first error field
+          if (firstErrorField) {
+            console.log(`🚀 Calling scrollToField with: ${firstErrorField}`);
+            scrollToField(firstErrorField);
+          } else {
+            console.warn('⚠️ No firstErrorField found, cannot scroll!');
+          }
+          
+          return false;
+        }
+        console.log('✅ Step 2 validation passed');
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
+  // Helper function to mark fields as touched for validation
+  const markStepFieldsAsTouched = (step: number) => {
+    const touchedFields: any = {};
+    
+    switch (step) {
+      case 0:
+        touchedFields.bidType = true;
+        touchedFields.auctionType = true;
+        break;
+      case 1:
+        touchedFields.productCategory = true;
+        break;
+      case 2:
+        touchedFields.title = true;
+        touchedFields.description = true;
+        touchedFields.startingPrice = true;
+        touchedFields.duration = true;
+        touchedFields.place = true;
+        touchedFields.wilaya = true;
+        if (formik.values.bidType === BID_TYPES.PRODUCT) {
+          touchedFields.quantity = true;
+        }
+        break;
+    }
+    
+    formik.setTouched(touchedFields);
+  };
+
+  const handleNext = () => {
+    // Validate current step before proceeding
+    const isValid = validateStep(activeStep, formik.values);
+    
+    if (!isValid) {
+      // Mark fields as touched to show validation errors
+      markStepFieldsAsTouched(activeStep);
+      return;
+    }
+
+    setActiveStep((prev) => prev + 1);
+    // Scroll to top when moving to next step
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setActiveStep((prev) => prev - 1);
+    // Scroll to top when going back
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Helper functions for category hierarchy
   const hasChildren = (category: any) => {
     return category.children && category.children.length > 0;
@@ -950,59 +1290,6 @@ export default function CreateAuction() {
     { label: '16 heures', value: 16, icon: 'mdi:clock-time-four' },
     { label: '24 heures', value: 24, icon: 'mdi:clock-time-twelve' }
   ];
-
-  // Validation schema
-  const validationSchema = Yup.object().shape({
-    title: Yup.string()
-      .min(3, 'Le titre doit contenir au moins 3 caractères')
-      .max(100, 'Le titre est trop long')
-      .required('Le titre est requis'),
-    description: Yup.string()
-      .min(10, 'La description doit contenir au moins 10 caractères')
-      .required('La description est requise'),
-    bidType: Yup.string()
-      .oneOf(Object.values(BID_TYPES))
-      .required('Le type d\'enchère est requis'),
-    auctionType: Yup.string()
-      .oneOf(Object.values(AUCTION_TYPES))
-      .required('Le type d\'enchère est requis'),
-    productCategory: Yup.string()
-      .required('La catégorie est requise'),
-    startingPrice: Yup.number()
-      .min(1, 'Le prix de départ doit être positif')
-      .required('Le prix de départ est requis'),
-    duration: Yup.object()
-      .required('La durée est requise'),
-    wilaya: Yup.string()
-      .required('La wilaya est requise'),
-    place: Yup.string()
-      .required('L\'emplacement est requis'),
-    hidden: Yup.boolean(),
-  });
-
-  const formik = useFormik({
-    initialValues: {
-      title: '',
-      description: '',
-      bidType: BID_TYPES.PRODUCT,
-      auctionType: AUCTION_TYPES.CLASSIC,
-      productCategory: '',
-      productSubCategory: '',
-      startingPrice: '',
-      duration: null,
-      attributes: [],
-      place: '',
-      wilaya: '',
-      quantity: '',
-      isPro: false,
-      hidden: false,
-      reservePrice: '',
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      await handleSubmit(values);
-    },
-  });
 
   // Load categories and handle auth check
   useEffect(() => {
@@ -1235,17 +1522,49 @@ export default function CreateAuction() {
     console.log('detectedWilaya state changed to:', detectedWilaya);
   }, [detectedWilaya]);
 
-  const handleNext = () => {
-    setActiveStep((prev) => prev + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-  };
-
   const handleSubmit = async (values: any) => {
+    console.log('=== SUBMIT BUTTON CLICKED ===');
+    console.log('Current step:', activeStep);
+    console.log('Form values:', values);
+    
+    // Validate all steps before submission
+    for (let step = 0; step < steps.length; step++) {
+      console.log(`Validating step ${step}...`);
+      if (!validateStep(step, values)) {
+        console.log(`❌ Validation failed on step ${step}`);
+        setActiveStep(step);
+        markStepFieldsAsTouched(step);
+        
+        // Don't show generic error message - validateStep already showed specific error
+        // Only show message if we're switching steps
+        if (step !== activeStep) {
+          const stepNames = ['le type d\'enchère', 'la catégorie', 'les détails'];
+          enqueueSnackbar(`Veuillez compléter ${stepNames[step]}`, { variant: 'warning' });
+        }
+        
+        // If error is on step 0 or 1, scroll to top to show step selector
+        // If error is on step 2 (current step), validateStep already handled scrolling to the field
+        if (step !== 2) {
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 100);
+        }
+        return;
+      }
+      console.log(`✅ Step ${step} validated successfully`);
+    }
+
+    // Additional validation for files
     if (thumbs.length === 0 && videos.length === 0) {
       enqueueSnackbar('Veuillez télécharger au moins une image ou une vidéo', { variant: 'error' });
+      setActiveStep(2); // Go to details step where files are uploaded
+      // Scroll to images section
+      setTimeout(() => {
+        const imagesSection = document.querySelector('h5')?.parentElement?.parentElement;
+        if (imagesSection) {
+          imagesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
       return;
     }
 
@@ -1349,19 +1668,36 @@ export default function CreateAuction() {
               Choisissez le type d'enchère
             </Typography>
 
+            {/* Bid Type Validation Error */}
+            {formik.touched.bidType && formik.errors.bidType && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {formik.errors.bidType}
+              </Alert>
+            )}
+
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <SelectionCard
-                  className={formik.values.bidType === BID_TYPES.PRODUCT ? 'selected' : ''}
+                  className={
+                    formik.values.bidType === BID_TYPES.PRODUCT ? 'selected' : 
+                    formik.touched.bidType && formik.errors.bidType ? 'error' : ''
+                  }
                   onClick={() => formik.setFieldValue('bidType', BID_TYPES.PRODUCT)}
                 >
                   <Box sx={{ textAlign: 'center' }}>
-                    <IconContainer className={formik.values.bidType === BID_TYPES.PRODUCT ? 'selected' : ''}>
+                    <IconContainer className={
+                      formik.values.bidType === BID_TYPES.PRODUCT ? 'selected' : 
+                      formik.touched.bidType && formik.errors.bidType ? 'error' : ''
+                    }>
                       <Iconify
                         icon="mdi:package-variant"
                         width={32}
                         height={32}
-                        sx={{ color: formik.values.bidType === BID_TYPES.PRODUCT ? 'white' : theme.palette.primary.main }}
+                        sx={{ 
+                          color: formik.values.bidType === BID_TYPES.PRODUCT ? 'white' : 
+                                formik.touched.bidType && formik.errors.bidType ? theme.palette.error.main : 
+                                theme.palette.primary.main 
+                        }}
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
@@ -1376,16 +1712,26 @@ export default function CreateAuction() {
 
               <Grid item xs={12} md={6}>
                 <SelectionCard
-                  className={formik.values.bidType === BID_TYPES.SERVICE ? 'selected' : ''}
+                  className={
+                    formik.values.bidType === BID_TYPES.SERVICE ? 'selected' : 
+                    formik.touched.bidType && formik.errors.bidType ? 'error' : ''
+                  }
                   onClick={() => formik.setFieldValue('bidType', BID_TYPES.SERVICE)}
                 >
                   <Box sx={{ textAlign: 'center' }}>
-                    <IconContainer className={formik.values.bidType === BID_TYPES.SERVICE ? 'selected' : ''}>
+                    <IconContainer className={
+                      formik.values.bidType === BID_TYPES.SERVICE ? 'selected' : 
+                      formik.touched.bidType && formik.errors.bidType ? 'error' : ''
+                    }>
                       <Iconify
                         icon="mdi:handshake"
                         width={32}
                         height={32}
-                        sx={{ color: formik.values.bidType === BID_TYPES.SERVICE ? 'white' : theme.palette.primary.main }}
+                        sx={{ 
+                          color: formik.values.bidType === BID_TYPES.SERVICE ? 'white' : 
+                                formik.touched.bidType && formik.errors.bidType ? theme.palette.error.main : 
+                                theme.palette.primary.main 
+                        }}
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
@@ -1404,19 +1750,36 @@ export default function CreateAuction() {
                 Type d'enchère
               </Typography>
 
+              {/* Auction Type Validation Error */}
+              {formik.touched.auctionType && formik.errors.auctionType && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {formik.errors.auctionType}
+                </Alert>
+              )}
+
               <Grid container spacing={2} justifyContent="center">
                 <Grid item xs={12} sm={6}>
                   <SelectionCard
-                    className={formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'selected' : ''}
+                    className={
+                      formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'selected' : 
+                      formik.touched.auctionType && formik.errors.auctionType ? 'error' : ''
+                    }
                     onClick={() => formik.setFieldValue('auctionType', AUCTION_TYPES.CLASSIC)}
                   >
                     <Box sx={{ textAlign: 'center' }}>
-                      <IconContainer className={formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'selected' : ''}>
+                      <IconContainer className={
+                        formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'selected' : 
+                        formik.touched.auctionType && formik.errors.auctionType ? 'error' : ''
+                      }>
                         <Iconify
                           icon="mdi:clock-outline"
                           width={24}
                           height={24}
-                          sx={{ color: formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'white' : theme.palette.primary.main }}
+                          sx={{ 
+                            color: formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'white' : 
+                                  formik.touched.auctionType && formik.errors.auctionType ? theme.palette.error.main : 
+                                  theme.palette.primary.main 
+                          }}
                         />
                       </IconContainer>
                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -1431,16 +1794,26 @@ export default function CreateAuction() {
 
                 <Grid item xs={12} sm={6}>
                   <SelectionCard
-                    className={formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'selected' : ''}
+                    className={
+                      formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'selected' : 
+                      formik.touched.auctionType && formik.errors.auctionType ? 'error' : ''
+                    }
                     onClick={() => formik.setFieldValue('auctionType', AUCTION_TYPES.EXPRESS)}
                   >
                     <Box sx={{ textAlign: 'center' }}>
-                      <IconContainer className={formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'selected' : ''}>
+                      <IconContainer className={
+                        formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'selected' : 
+                        formik.touched.auctionType && formik.errors.auctionType ? 'error' : ''
+                      }>
                         <Iconify
                           icon="mdi:lightning-bolt"
                           width={24}
                           height={24}
-                          sx={{ color: formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'white' : theme.palette.primary.main }}
+                          sx={{ 
+                            color: formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'white' : 
+                                  formik.touched.auctionType && formik.errors.auctionType ? theme.palette.error.main : 
+                                  theme.palette.primary.main 
+                          }}
                         />
                       </IconContainer>
                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
@@ -1485,6 +1858,7 @@ export default function CreateAuction() {
               const isExpanded = expandedCategories[categoryId];
               const isSelected = selectedCategory?._id === categoryId;
               const currentPath = [...parentPath, category];
+              const hasError = formik.touched.productCategory && formik.errors.productCategory;
 
               return (
                 <Box key={categoryId} sx={{ mb: 1 }}>
@@ -1505,11 +1879,17 @@ export default function CreateAuction() {
                       position: 'relative',
                       boxShadow: isSelected 
                         ? `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}` 
+                        : hasError
+                        ? `0 2px 8px ${alpha(theme.palette.error.main, 0.2)}`
                         : '0 2px 8px rgba(0, 0, 0, 0.05)',
                       transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
                       ...(isSelected && {
                         borderColor: theme.palette.primary.main,
                         backgroundColor: alpha(theme.palette.primary.light, 0.05),
+                      }),
+                      ...(hasError && !isSelected && {
+                        borderColor: theme.palette.error.main,
+                        backgroundColor: alpha(theme.palette.error.main, 0.05),
                       }),
                     }}
                     onClick={() => hasSubcategories ? toggleCategory(categoryId) : selectCategory(category, parentPath)}
@@ -1537,12 +1917,15 @@ export default function CreateAuction() {
                         }}
                         sx={{
                           mr: 2,
-                          bgcolor: isExpanded ? theme.palette.primary.main : '#f1f5f9',
-                          color: isExpanded ? 'white' : '#64748b',
+                          bgcolor: isExpanded ? theme.palette.primary.main : 
+                                    hasError ? theme.palette.error.main : '#f1f5f9',
+                          color: isExpanded ? 'white' : 
+                                 hasError ? 'white' : '#64748b',
                           transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
                           transition: 'all 0.3s ease',
                           '&:hover': {
-                            bgcolor: isExpanded ? theme.palette.primary.dark : theme.palette.primary.light,
+                            bgcolor: isExpanded ? theme.palette.primary.dark : 
+                                      hasError ? theme.palette.error.dark : theme.palette.primary.light,
                           },
                         }}
                       >
@@ -1558,6 +1941,8 @@ export default function CreateAuction() {
                         borderRadius: '50%',
                         bgcolor: isSelected 
                           ? theme.palette.primary.main 
+                          : hasError
+                          ? theme.palette.error.main
                           : alpha(theme.palette.primary.main, 0.1),
                         display: 'flex',
                         alignItems: 'center',
@@ -1569,7 +1954,7 @@ export default function CreateAuction() {
                       <Iconify
                         icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
                         width={level === 0 ? 24 : 20}
-                        sx={{ color: isSelected ? 'white' : theme.palette.primary.main }}
+                        sx={{ color: isSelected || hasError ? 'white' : theme.palette.primary.main }}
                       />
                     </Box>
 
@@ -1599,7 +1984,7 @@ export default function CreateAuction() {
                         label={category.children.length}
                         size="small"
                         sx={{
-                          bgcolor: theme.palette.primary.main,
+                          bgcolor: hasError ? theme.palette.error.main : theme.palette.primary.main,
                           color: 'white',
                           fontWeight: 600,
                           ml: 1,
@@ -1645,8 +2030,15 @@ export default function CreateAuction() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Sélectionnez la catégorie
+              Sélectionnez la catégorie *
             </Typography>
+
+            {/* Category Validation Error */}
+            {formik.touched.productCategory && formik.errors.productCategory && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {formik.errors.productCategory}
+              </Alert>
+            )}
 
             {/* Category Breadcrumb */}
             {selectedCategoryPath.length > 0 && (
@@ -1705,11 +2097,19 @@ export default function CreateAuction() {
               <Grid item xs={12}>
                 <StyledTextField
                   fullWidth
-                  label="Titre de l'enchère"
+                  label="Titre de l'enchère *"
+                  name="title"
                   value={formik.values.title}
-                  onChange={formik.handleChange('title')}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.title && Boolean(formik.errors.title)}
-                  helperText={formik.touched.title && formik.errors.title}
+                  helperText={
+                    formik.touched.title && formik.errors.title ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.title}
+                      </Alert> : 
+                      'Le titre doit contenir au moins 3 caractères'
+                  }
                   placeholder="Ex: iPhone 13 Pro Max - État neuf"
                 />
               </Grid>
@@ -1719,11 +2119,19 @@ export default function CreateAuction() {
                   fullWidth
                   multiline
                   rows={4}
-                  label="Description détaillée"
+                  label="Description détaillée *"
+                  name="description"
                   value={formik.values.description}
-                  onChange={formik.handleChange('description')}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.description && Boolean(formik.errors.description)}
-                  helperText={formik.touched.description && formik.errors.description}
+                  helperText={
+                    formik.touched.description && formik.errors.description ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.description}
+                      </Alert> : 
+                      'La description doit contenir au moins 10 caractères'
+                  }
                   placeholder="Décrivez votre produit/service en détail..."
                 />
               </Grid>
@@ -1732,10 +2140,19 @@ export default function CreateAuction() {
                 <Grid item xs={12} md={6}>
                   <StyledTextField
                     fullWidth
-                    label="Quantité"
+                    label="Quantité *"
+                    name="quantity"
                     value={formik.values.quantity}
-                    onChange={formik.handleChange('quantity')}
-                    placeholder="Ex: 1 unité, 5 pièces..."
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.quantity && Boolean(formik.errors.quantity)}
+                    helperText={
+                      formik.touched.quantity && formik.errors.quantity ? 
+                        <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                          {formik.errors.quantity}
+                        </Alert> : 
+                        'Ex: 1 unité, 5 pièces...'
+                    }
                   />
                 </Grid>
               )}
@@ -1760,10 +2177,18 @@ export default function CreateAuction() {
                   fullWidth
                   type="number"
                   label="Prix de départ *"
+                  name="startingPrice"
                   value={formik.values.startingPrice}
-                  onChange={formik.handleChange('startingPrice')}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.startingPrice && Boolean(formik.errors.startingPrice)}
-                  helperText={formik.touched.startingPrice && formik.errors.startingPrice}
+                  helperText={
+                    formik.touched.startingPrice && formik.errors.startingPrice ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.startingPrice}
+                      </Alert> : 
+                      'Le prix de départ doit être positif'
+                  }
                   InputProps={{
                     endAdornment: <InputAdornment position="end">DA</InputAdornment>,
                   }}
@@ -1775,8 +2200,9 @@ export default function CreateAuction() {
                   fullWidth
                   type="number"
                   label="Prix de réserve (optionnel)"
+                  name="reservePrice"
                   value={formik.values.reservePrice}
-                  onChange={formik.handleChange('reservePrice')}
+                  onChange={formik.handleChange}
                   helperText="Prix minimum pour accepter l'enchère"
                   InputProps={{
                     endAdornment: <InputAdornment position="end">DA</InputAdornment>,
@@ -1785,25 +2211,46 @@ export default function CreateAuction() {
               </Grid>
 
               {/* Duration */}
-              <Grid item xs={12}>
+              <Grid item xs={12} id="duration-section">
                 <Divider sx={{ my: 3 }} />
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Durée de l'enchère
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }} id="duration-heading">
+                  Durée de l'enchère *
                 </Typography>
+
+                {formik.touched.duration && formik.errors.duration && (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    {formik.errors.duration}
+                  </Alert>
+                )}
 
                 <Grid container spacing={2}>
                   {(formik.values.auctionType === AUCTION_TYPES.CLASSIC ? TimeOptions : ExpressTimeOptions).map((option) => (
                     <Grid item xs={6} sm={4} md={2.4} key={option.value}>
                       <DurationCard
-                        className={formik.values.duration?.value === option.value ? 'selected' : ''}
+                        className={
+                          formik.values.duration?.value === option.value ? 'selected' : 
+                          formik.touched.duration && formik.errors.duration ? 'error' : ''
+                        }
                         onClick={() => formik.setFieldValue('duration', option)}
+                        sx={{
+                          borderColor: formik.touched.duration && formik.errors.duration ? 
+                            theme.palette.error.main : 'transparent',
+                          borderWidth: formik.touched.duration && formik.errors.duration ? 2 : 0
+                        }}
                       >
-                        <IconContainer className={formik.values.duration?.value === option.value ? 'selected' : ''}>
+                        <IconContainer className={
+                          formik.values.duration?.value === option.value ? 'selected' : 
+                          formik.touched.duration && formik.errors.duration ? 'error' : ''
+                        }>
                           <Iconify
                             icon={option.icon}
                             width={20}
                             height={20}
-                            sx={{ color: formik.values.duration?.value === option.value ? 'white' : theme.palette.primary.main }}
+                            sx={{ 
+                              color: formik.values.duration?.value === option.value ? 'white' : 
+                                    formik.touched.duration && formik.errors.duration ? theme.palette.error.main : 
+                                    theme.palette.primary.main 
+                            }}
                           />
                         </IconContainer>
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -1834,7 +2281,8 @@ export default function CreateAuction() {
                 <StyledTextField
                   inputRef={inputRef}
                   fullWidth
-                  label="Adresse"
+                  label="Adresse *"
+                  name="place"
                   value={formik.values.place}
                   onChange={(e) => {
                     const newPlace = e.target.value;
@@ -1847,10 +2295,14 @@ export default function CreateAuction() {
                       formik.setFieldValue('wilaya', '');
                     }
                   }}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.place && Boolean(formik.errors.place)}
                   helperText={
-                    formik.touched.place && formik.errors.place || 
-                    'Commencez à taper votre adresse pour voir les suggestions'
+                    formik.touched.place && formik.errors.place ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.place}
+                      </Alert> : 
+                      'Commencez à taper votre adresse pour voir les suggestions'
                   }
                   placeholder="Ex: 123 Rue de la Liberté, Alger, Algérie"
                 />
@@ -1860,7 +2312,8 @@ export default function CreateAuction() {
                 <StyledTextField
                   fullWidth
                   select
-                  label="Wilaya"
+                  label="Wilaya *"
+                  name="wilaya"
                   key={forceUpdate}
                   value={detectedWilaya || formik.values.wilaya || ''}
                   onChange={(e) => {
@@ -1872,15 +2325,19 @@ export default function CreateAuction() {
                       setWilayaAutoDetected(false);
                     }
                   }}
+                  onBlur={formik.handleBlur}
                   InputProps={{
                     readOnly: wilayaAutoDetected && !!detectedWilaya,
                   }}
                   error={formik.touched.wilaya && Boolean(formik.errors.wilaya)}
                   helperText={
+                    formik.touched.wilaya && formik.errors.wilaya ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.wilaya}
+                      </Alert> :
                     wilayaAutoDetected && detectedWilaya
                       ? `Wilaya détectée automatiquement: ${detectedWilaya}`
-                      : formik.touched.wilaya && formik.errors.wilaya || 
-                        'Sélectionnez manuellement si non détectée'
+                      : 'Sélectionnez manuellement si non détectée'
                   }
                 >
                   <MenuItem value="">
@@ -2098,9 +2555,14 @@ export default function CreateAuction() {
 
               {activeStep === steps.length - 1 ? (
                 <LoadingButton
-                  type="submit"
+                  type="button"
                   variant="contained"
                   loading={isSubmitting}
+                  onClick={async () => {
+                    console.log('🔘 Créer l\'enchère button clicked');
+                    // Use our custom handleSubmit instead of Formik's
+                    await handleSubmit(formik.values);
+                  }}
                   endIcon={<Iconify icon="eva:checkmark-fill" />}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
@@ -2108,6 +2570,7 @@ export default function CreateAuction() {
                 </LoadingButton>
               ) : (
                 <Button
+                  type="button"
                   variant="contained"
                   onClick={handleNext}
                   endIcon={<Iconify icon="eva:arrow-forward-fill" />}

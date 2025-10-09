@@ -30,6 +30,7 @@ import Iconify from '../../components/Iconify';
 import useNavConfig from './NavConfig';
 import app from '../../config';
 import useAuth from '@/hooks/useAuth';
+import AccountPopover from './AccountPopover';
 // ----------------------------------------------------------------------
 
 const DRAWER_WIDTH = 280;
@@ -246,6 +247,10 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
               </Box>
             </AccountStyle>
           </Link>
+          {/* Mobile account button to open user menu inside the sidebar */}
+          <Box sx={{ mt: 1.5, display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', width: '100%' }}>
+            <AccountPopover />
+          </Box>
         </Box>
       </Slide>
 

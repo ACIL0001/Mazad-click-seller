@@ -288,10 +288,196 @@ export default function CreateTender() {
       isPro: false,
     },
     validationSchema,
+    validateOnChange: false,
+    validateOnBlur: true,
     onSubmit: async (values) => {
+      console.log('📋 Formik onSubmit called for tender');
       await handleSubmit(values);
     },
   });
+
+  // Helper function to scroll to first error field
+  const scrollToField = (fieldName: string) => {
+    console.log(`🎯 scrollToField called with: ${fieldName}`);
+    
+    setTimeout(() => {
+      let element: Element | null = null;
+      
+      // Special handling for duration (which is not a standard input field)
+      if (fieldName === 'duration') {
+        element = document.getElementById('tender-duration-section');
+      } else {
+        element = document.querySelector(`[name="${fieldName}"]`);
+      }
+      
+      if (element) {
+        console.log(`✅ Element found for ${fieldName}, scrolling now...`);
+        
+        // Scroll to element with some offset for better visibility
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - 120;
+        
+        console.log(`Scroll position calculated: ${offsetPosition}px`);
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Focus the field for better visibility (only for input elements)
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+          setTimeout(() => {
+            console.log(`Focusing and highlighting field: ${fieldName}`);
+            (element as HTMLElement).focus();
+            // Add a visual pulse effect
+            element.style.transition = 'box-shadow 0.3s ease';
+            element.style.boxShadow = '0 0 0 4px rgba(255, 0, 0, 0.4)';
+            setTimeout(() => {
+              element.style.boxShadow = '';
+            }, 2500);
+          }, 400);
+        } else if (fieldName === 'duration') {
+          // For duration section, highlight the entire section briefly
+          setTimeout(() => {
+            console.log('Highlighting duration section');
+            element.style.transition = 'all 0.5s ease';
+            element.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
+            element.style.borderRadius = '12px';
+            element.style.padding = '16px';
+            setTimeout(() => {
+              element.style.backgroundColor = '';
+              element.style.padding = '';
+            }, 2500);
+          }, 400);
+        }
+        
+        console.log(`✅ Successfully scrolled to field: ${fieldName}`);
+      } else {
+        console.error(`❌ Field not found: ${fieldName}`);
+        console.log('Available input names:', Array.from(document.querySelectorAll('input, textarea, select')).map((el: any) => el.name).filter(Boolean));
+      }
+    }, 300);
+  };
+
+  // Validation functions for each step
+  const validateStep = (step: number, values: any): boolean => {
+    switch (step) {
+      case 0: // Tender Type
+        if (!values.tenderType) {
+          enqueueSnackbar('Veuillez sélectionner un type (Produit ou Service)', { variant: 'error' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 1: // Auction Type
+        if (!values.auctionType) {
+          enqueueSnackbar('Veuillez sélectionner un type d\'appel d\'offres', { variant: 'error' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 2: // Category
+        if (!values.category) {
+          enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 3: // Details
+        console.log('📝 Validating Step 3 (Details)...');
+        const errors = [];
+        let firstErrorField = '';
+        
+        if (!values.title || values.title.length < 3) {
+          errors.push('Le titre est requis et doit contenir au moins 3 caractères');
+          if (!firstErrorField) {
+            firstErrorField = 'title';
+            console.log('❌ First error: title');
+          }
+        }
+        if (!values.description || values.description.length < 10) {
+          errors.push('La description est requise et doit contenir au moins 10 caractères');
+          if (!firstErrorField) {
+            firstErrorField = 'description';
+            console.log('❌ First error: description');
+          }
+        }
+        if (!values.duration) {
+          errors.push('La durée est requise');
+          if (!firstErrorField) {
+            firstErrorField = 'duration';
+            console.log('❌ First error: duration');
+          }
+        }
+        if (!values.location) {
+          errors.push('L\'emplacement est requis');
+          if (!firstErrorField) {
+            firstErrorField = 'location';
+            console.log('❌ First error: location');
+          }
+        }
+        if (!values.wilaya) {
+          errors.push('La wilaya est requise');
+          if (!firstErrorField) {
+            firstErrorField = 'wilaya';
+            console.log('❌ First error: wilaya');
+          }
+        }
+
+        if (errors.length > 0) {
+          console.log(`❌ Step 3 validation failed with ${errors.length} errors`);
+          console.log('First error field:', firstErrorField);
+          console.log('All errors:', errors);
+          
+          // Show ONLY the first error message (user-friendly, one at a time)
+          enqueueSnackbar(errors[0], { variant: 'error', autoHideDuration: 5000 });
+          
+          // Scroll to the first error field
+          if (firstErrorField) {
+            console.log(`🚀 Calling scrollToField with: ${firstErrorField}`);
+            scrollToField(firstErrorField);
+          } else {
+            console.warn('⚠️ No firstErrorField found, cannot scroll!');
+          }
+          
+          return false;
+        }
+        console.log('✅ Step 3 validation passed');
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
+  // Helper function to mark fields as touched for validation
+  const markStepFieldsAsTouched = (step: number) => {
+    const touchedFields: any = {};
+    
+    switch (step) {
+      case 0:
+        touchedFields.tenderType = true;
+        break;
+      case 1:
+        touchedFields.auctionType = true;
+        break;
+      case 2:
+        touchedFields.category = true;
+        break;
+      case 3:
+        touchedFields.title = true;
+        touchedFields.description = true;
+        touchedFields.duration = true;
+        touchedFields.location = true;
+        touchedFields.wilaya = true;
+        break;
+    }
+    
+    formik.setTouched(touchedFields);
+  };
 
   // Load categories and handle auth check (reuse from CreateAuction)
   useEffect(() => {
@@ -447,7 +633,18 @@ export default function CreateTender() {
   }, [formik]);
 
   const handleNext = () => {
+    // Validate current step before proceeding
+    const isValid = validateStep(activeStep, formik.values);
+    
+    if (!isValid) {
+      // Mark fields as touched to show validation errors
+      markStepFieldsAsTouched(activeStep);
+      return;
+    }
+
     setActiveStep((prev) => prev + 1);
+    // Scroll to top when moving to next step
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Reset category selection when tender type changes
@@ -462,11 +659,55 @@ export default function CreateTender() {
 
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);
+    // Scroll to top when going back
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async (values: any) => {
+    console.log('=== SUBMIT BUTTON CLICKED (TENDER) ===');
+    console.log('Current step:', activeStep);
+    console.log('Form values:', values);
+    
+    // Validate all steps before submission
+    for (let step = 0; step < steps.length; step++) {
+      console.log(`Validating step ${step}...`);
+      if (!validateStep(step, values)) {
+        console.log(`❌ Validation failed on step ${step}`);
+        setActiveStep(step);
+        markStepFieldsAsTouched(step);
+        
+        // Don't show generic error message - validateStep already showed specific error
+        // Only show message if we're switching steps
+        if (step !== activeStep) {
+          const stepNames = ['le type de produit/service', 'le type d\'appel d\'offres', 'la catégorie', 'les détails'];
+          enqueueSnackbar(`Veuillez compléter ${stepNames[step]}`, { variant: 'warning' });
+        }
+        
+        // If error is on step 0, 1, or 2, scroll to top to show step selector
+        // If error is on step 3 (current step), validateStep already handled scrolling to the field
+        if (step !== 3) {
+          setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }, 100);
+        }
+        return;
+      }
+      console.log(`✅ Step ${step} validated successfully`);
+    }
+
+    // Additional validation for attachments
     if (attachments.length === 0) {
       enqueueSnackbar('Veuillez télécharger au moins une pièce jointe', { variant: 'error' });
+      setActiveStep(3); // Go to details step where files are uploaded
+      // Scroll to attachments section
+      setTimeout(() => {
+        const attachmentsSection = Array.from(document.querySelectorAll('h5')).find(
+          (el) => el.textContent?.includes('Pièces jointes')
+        );
+        if (attachmentsSection) {
+          attachmentsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
       return;
     }
 
@@ -900,9 +1141,11 @@ export default function CreateTender() {
               <Grid item xs={12}>
                 <StyledTextField
                   fullWidth
+                  name="title"
                   label="Titre de l'appel d'offres"
                   value={formik.values.title}
                   onChange={formik.handleChange('title')}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.title && Boolean(formik.errors.title)}
                   helperText={formik.touched.title && formik.errors.title}
                   placeholder="Ex: Recherche fournisseur ordinateurs portables"
@@ -914,9 +1157,11 @@ export default function CreateTender() {
                   fullWidth
                   multiline
                   rows={4}
+                  name="description"
                   label="Description détaillée et cahier des charges"
                   value={formik.values.description}
                   onChange={formik.handleChange('description')}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.description && Boolean(formik.errors.description)}
                   helperText={formik.touched.description && formik.errors.description}
                   placeholder="Décrivez vos besoins, spécifications techniques, délais..."
@@ -937,7 +1182,7 @@ export default function CreateTender() {
 
 
               {/* Duration */}
-              <Grid item xs={12}>
+              <Grid item xs={12} id="tender-duration-section">
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                   Durée de l'appel d'offres
@@ -985,6 +1230,7 @@ export default function CreateTender() {
                 <StyledTextField
                   inputRef={inputRef}
                   fullWidth
+                  name="location"
                   label="Adresse de livraison/intervention"
                   value={formik.values.location}
                   onChange={(e) => {
@@ -997,6 +1243,7 @@ export default function CreateTender() {
                       formik.setFieldValue('wilaya', '');
                     }
                   }}
+                  onBlur={formik.handleBlur}
                   error={formik.touched.location && Boolean(formik.errors.location)}
                   helperText={formik.touched.location && formik.errors.location}
                   placeholder="Ex: 123 Rue de la Liberté, Alger, Algérie"
@@ -1007,6 +1254,7 @@ export default function CreateTender() {
                 <StyledTextField
                   fullWidth
                   select
+                  name="wilaya"
                   label="Wilaya"
                   key={forceUpdate}
                   value={detectedWilaya || formik.values.wilaya || ''}
@@ -1017,6 +1265,7 @@ export default function CreateTender() {
                       setDetectedWilaya(selectedValue);
                     }
                   }}
+                  onBlur={formik.handleBlur}
                   InputProps={{
                     readOnly: !!detectedWilaya,
                   }}
@@ -1188,9 +1437,14 @@ export default function CreateTender() {
 
               {activeStep === steps.length - 1 ? (
                 <LoadingButton
-                  type="submit"
+                  type="button"
                   variant="contained"
                   loading={isSubmitting}
+                  onClick={async () => {
+                    console.log('🔘 Créer l\'appel d\'offres button clicked');
+                    // Use our custom handleSubmit instead of Formik's
+                    await handleSubmit(formik.values);
+                  }}
                   endIcon={<Iconify icon="eva:checkmark-fill" />}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
@@ -1198,6 +1452,7 @@ export default function CreateTender() {
                 </LoadingButton>
               ) : (
                 <Button
+                  type="button"
                   variant="contained"
                   onClick={handleNext}
                   endIcon={<Iconify icon="eva:arrow-forward-fill" />}

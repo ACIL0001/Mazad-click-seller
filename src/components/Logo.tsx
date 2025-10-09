@@ -32,8 +32,9 @@ export default function Logo({ disabledLink = false, sx }) {
                 e.currentTarget.style.display = 'none';
             }}
             sx={{ 
-                height: 120, 
-                borderRadius: 5, 
+                height: 100, 
+                width: 150,
+                borderRadius: 2, 
                 marginLeft: 5,
                 ...sx 
             }} 

@@ -14,14 +14,17 @@ import {
   Switch, 
   FormControlLabel,
   Chip,
-  Badge
+  Badge,
+  Button
 } from '@mui/material';
 // components
 import MenuPopover from '../../components/MenuPopover';
+import Iconify from '../../components/Iconify';
 // ----------------------------------------------------------------------
 import useAuth from '@/hooks/useAuth';
 import { ACCOUNT_TYPE } from '@/types/User';
 import { useLanguage } from '@/contexts/LanguageContext';
+import app from '@/config';
 
 // ----------------------------------------------------------------------
 
@@ -67,7 +70,7 @@ export default function AccountPopover() {
   }, []);
 
   // Handle switch to buyer functionality
-  const handleSwitchToBuyer = () => {
+  const handleSwitchToBuyer = async () => {
     if (switchToBuyer) {
       setSwitchToBuyer(false);
       if (windowRef.current) {
@@ -75,9 +78,51 @@ export default function AccountPopover() {
       }
       window.localStorage.removeItem('switch');
     } else {
-      setSwitchToBuyer(true);
-      window.localStorage.setItem('switch', '1');
-      windowRef.current = window.open(import.meta.env.VITE_BUYER_URL || 'https://mazadclick-server.onrender.com');
+      try {
+        setSwitchToBuyer(true);
+        window.localStorage.setItem('switch', '1');
+        
+        console.log('🔄 Switching to buyer mode from dropdown...');
+        
+        // Call the mark-as-buyer API
+        const response = await fetch(`${app.baseURL.replace(/\/$/, '')}/auth/mark-as-buyer`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${auth.tokens.accessToken}`,
+            'x-access-key': app.apiKey,
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        });
+
+        const data = await response.json();
+        console.log('✅ Mark as buyer response:', data);
+
+        if (data.success && data.buyerUrl) {
+          // Redirect to buyer app with tokens
+          const buyerAppUrl = new URL(data.buyerUrl);
+          buyerAppUrl.searchParams.append('token', auth.tokens.accessToken);
+          buyerAppUrl.searchParams.append('refreshToken', auth.tokens.refreshToken);
+          buyerAppUrl.searchParams.append('from', 'seller');
+          
+          console.log('🔄 Redirecting to buyer app:', buyerAppUrl.toString());
+          
+          // Clear seller session before redirecting
+          clear();
+          
+          // Redirect to buyer app
+          window.location.href = buyerAppUrl.toString();
+        } else {
+          throw new Error(data.message || 'Failed to mark user as buyer');
+        }
+      } catch (error) {
+        console.error('❌ Error switching to buyer mode:', error);
+        setSwitchToBuyer(false);
+        window.localStorage.removeItem('switch');
+        
+        // Show error message to user
+        alert('Failed to switch to buyer mode. Please try again.');
+      }
     }
   };
 
@@ -95,6 +140,24 @@ export default function AccountPopover() {
 
   return (
     <>
+      {/* Mobile: clear, labeled account button; Desktop: avatar icon button */}
+      <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
+        <Button
+          onClick={handleOpen}
+          startIcon={<Iconify icon="mdi:account-circle" />}
+          variant="contained"
+          color="primary"
+          size="medium"
+          sx={{
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 700
+          }}
+        >
+          {t('userDropdown.account') || 'Account'}
+        </Button>
+      </Box>
+
       <IconButton
         ref={anchorRef}
         onClick={handleOpen}
@@ -102,6 +165,7 @@ export default function AccountPopover() {
           p: 0,
           position: 'relative',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: { xs: 'none', sm: 'inline-flex' },
           '&:hover': {
             transform: 'scale(1.05)',
             boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
@@ -154,14 +218,16 @@ export default function AccountPopover() {
         >
           <Avatar 
             src={auth.user?.avatar?.path!} 
-            alt="photoURL"
+            alt={auth.user?.firstName || 'User'}
             sx={{
               width: 40,
               height: 40,
               border: '2px solid rgba(255, 255, 255, 0.8)',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             }}
-          />
+          >
+            {(auth.user?.firstName || 'U')?.charAt(0)}
+          </Avatar>
         </Badge>
       </IconButton>
 

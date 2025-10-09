@@ -167,17 +167,22 @@ export default function DashboardNavbar({ onOpenSidebar, onOpenRightSidebar }) {
                     <Iconify icon="eva:menu-2-fill" sx={{}} />
                 </IconButton>
                 {/* <Searchbar /> */}
+                {/* Mobile-only user dropdown (left-aligned on phones) */}
+                <Box sx={{ display: { xs: 'flex', sm: 'none' }, ml: 1 }}>
+                    <AccountPopover />
+                </Box>
                 <Box sx={{ flexGrow: 1 }} />
 
+                {/* Desktop/Tablet navbar items */}
                 <Box
                     sx={{
-                        display: 'flex',
+                        display: { xs: 'none', sm: 'flex' },
                         alignItems: 'center',
-                        gap: { xs: 0.5, sm: 1, md: 1.2, lg: 1.5 },
+                        gap: { sm: 1, md: 1.2, lg: 1.5 },
                         flexDirection: isRTL ? 'row-reverse' : 'row',
                         width: '100%',
                         justifyContent: isRTL ? 'flex-start' : 'flex-end',
-                        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                        flexWrap: { sm: 'nowrap' },
                         '& > *': {
                             flexShrink: 0,
                         }
@@ -188,10 +193,7 @@ export default function DashboardNavbar({ onOpenSidebar, onOpenRightSidebar }) {
                             key={index} 
                             sx={{ 
                                 order: item.order,
-                                display: { 
-                                    xs: item.type === 'button' ? 'none' : 'flex', 
-                                    sm: 'flex' 
-                                }
+                                display: 'flex'
                             }}
                         >
                             {item.component}

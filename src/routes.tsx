@@ -44,6 +44,7 @@ import NotificationsPage from './pages/Notifications/NotificationsPage';
 import IdentityVerification from './pages/IdentityVerification';
 import WaitingForVerification from './pages/WaitingForVerification';
 import SubscriptionPlans from './pages/SubscriptionPlans';
+import PostLogin from './pages/PostLogin';
 // import PaymentMethodSelection from './pages/PaymentMethodSelection';
 // import PaymentSuccess from './pages/PaymentSuccess';
 import { PaymentMethodSelection, SuccessPage as PaymentSuccess } from './pages/PaymentPages';
@@ -103,9 +104,9 @@ function RootRedirect() {
             });
             
             if (isVerified && hasIdentity) {
-                // User is fully verified and has identity, redirect to dashboard
-                console.log('✅ RootRedirect - User is fully verified with identity, redirecting to dashboard');
-                setRedirectPath('/dashboard/app');
+                // User is fully verified and has identity, redirect to post-login to choose role
+                console.log('✅ RootRedirect - User is fully verified with identity, redirecting to post-login');
+                setRedirectPath('/post-login');
             } else if (isVerified && !hasIdentity) {
                 // User is OTP verified but hasn't completed identity verification
                 console.log('📋 RootRedirect - User OTP verified but needs identity verification, redirecting to identity page');
@@ -141,6 +142,7 @@ export default function Router() {
                 { path: '/', element: <RootRedirect /> },
                 { path: 'login', element: <Login /> },
                 { path: 'register', element: <Register /> },
+                { path: 'post-login', element: <PostLogin /> },
                 { path: 'otp-verification', element: <OtpVerification /> },
                 { path: 'reset-password', element: <ResetPassword /> },
                 { path: 'identity-verification', element: <IdentityVerification /> },
