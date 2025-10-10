@@ -215,6 +215,16 @@ const AxiosInterceptor = ({ children }: any) => {
       if (error.response?.status === 500) {
         console.error('🚨 Internal Server Error:', error.response.data);
         enqueueSnackbar('Erreur interne du serveur. Veuillez réessayer plus tard.', { variant: 'error' });
+      } else if (error.response?.status === 404) {
+        // Check if it's a terms endpoint - these are expected to return 404 when no terms exist
+        const isTermsEndpoint = originalRequest?.url?.includes('/terms/');
+        if (!isTermsEndpoint) {
+          const errorMessage = error.response?.data?.message || 
+                              error.message || 
+                              'Ressource non trouvée';
+          enqueueSnackbar(errorMessage, { variant: 'error' });
+        }
+        // For terms endpoints, silently handle 404 (no terms exist yet)
       } else if (error.response?.status !== 401) {
         const errorMessage = error.response?.data?.message || 
                             error.message || 

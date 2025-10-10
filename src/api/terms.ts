@@ -14,11 +14,18 @@ export const TermsAPI = {
     
     try {
       return await requests.get('terms/public');
-    } catch (error) {
+    } catch (error: any) {
+      // Handle 404 as a valid "no terms found" response
+      if (error.response?.status === 404) {
+        return [];
+      }
+      
       // Silently handle network errors
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
         return [];
       }
+      
+      // Only log unexpected errors
       console.error('Failed to fetch public terms:', error);
       return [];
     }
@@ -40,11 +47,18 @@ export const TermsAPI = {
         return null;
       }
       return response;
-    } catch (error) {
+    } catch (error: any) {
+      // Handle 404 as a valid "no terms found" response
+      if (error.response?.status === 404) {
+        return null;
+      }
+      
       // Silently handle network errors
       if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
         return null;
       }
+      
+      // Only log unexpected errors
       console.error('Failed to fetch latest terms:', error);
       return null;
     }
