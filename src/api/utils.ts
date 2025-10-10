@@ -28,7 +28,7 @@ instance.interceptors.request.use(
       tokenPreview: auth?.tokens?.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none'
     });
     
-    // Public endpoints that don't need auth
+    // Public endpoints that don't need auth (match using pathname only)
     const publicEndpoints = [
       '/auth/signin',
       '/auth/signup',
@@ -38,14 +38,24 @@ instance.interceptors.request.use(
       '/auth/reset-password',
       '/otp/confirm-phone',
       '/otp/resend/confirm-phone',
-      '/tender', // public tenders listing
-      '/terms/public', // public terms endpoint
-      '/terms/latest', // latest terms endpoint
+      '/tender',
+      '/terms/public',
+      '/terms/latest',
     ];
-    
-    const isPublicEndpoint = publicEndpoints.some((endpoint) => 
-      config.url?.includes(endpoint)
-    );
+
+    // Normalize URL to pathname for robust matching regardless of baseURL or absolute/relative usage
+    const getPathname = (u?: string) => {
+      if (!u) return '';
+      try {
+        // If it's a full URL, URL() will parse it; otherwise, fall back to building with baseURL
+        const full = u.startsWith('http') ? new URL(u) : new URL(u, app.baseURL);
+        return full.pathname;
+      } catch {
+        return u; // best effort fallback
+      }
+    };
+    const pathname = getPathname(config.url);
+    const isPublicEndpoint = publicEndpoints.some((endpoint) => pathname === endpoint || pathname.startsWith(endpoint + '/'));
     
     // Add API key for ALL requests (required by SellerGuard)
     if (app.apiKey) {
@@ -125,11 +135,27 @@ const AxiosInterceptor = ({ children }: any) => {
 
       // Only log non-network errors to reduce console spam
       if (error.code !== 'ERR_NETWORK') {
-        console.error('❌ Response error:', {
-          url: originalRequest?.url,
-          status: error.response?.status,
-          message: error.message
-        });
+        const reqUrl = originalRequest?.url as string | undefined;
+        const getPathname = (u?: string) => {
+          if (!u) return '';
+          try {
+            const full = u.startsWith('http') ? new URL(u) : new URL(u, app.baseURL);
+            return full.pathname;
+          } catch {
+            return u;
+          }
+        };
+        const pathname = getPathname(reqUrl);
+        const isTermsEndpoint = pathname.startsWith('/terms/');
+        const is404 = error.response?.status === 404;
+        // Suppress console error for expected 404 on public terms endpoints
+        if (!(isTermsEndpoint && is404)) {
+          console.error('❌ Response error:', {
+            url: reqUrl,
+            status: error.response?.status,
+            message: error.message
+          });
+        }
       }
 
       // Handle 401 Unauthorized - token refresh
