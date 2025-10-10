@@ -701,7 +701,7 @@ export const SuccessPage = () => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          navigate('/login', { replace: true });
+          navigate('/waiting-for-verification', { replace: true });
           return 0;
         }
         return prev - 1;
@@ -713,11 +713,11 @@ export const SuccessPage = () => {
 
   const handleClosePopup = () => {
     setOpenPopup(false);
-    navigate('/login', { replace: true });
+    navigate('/waiting-for-verification', { replace: true });
   };
 
   const handleGoToLogin = () => {
-    navigate('/login', { replace: true });
+    navigate('/waiting-for-verification', { replace: true });
   };
 
   const getMethodDetails = () => {
@@ -953,7 +953,7 @@ export const SuccessPage = () => {
                 }}
                 startIcon={<CheckCircleOutlineIcon />}
               >
-                Accéder à mon compte
+                Vérifier mon statut
               </Button>
               <Button
                 variant="outlined"

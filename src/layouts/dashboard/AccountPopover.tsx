@@ -39,7 +39,7 @@ export default function AccountPopover() {
     {
       label: t('userDropdown.home'),
       icon: '🏠',
-      linkTo: '/',
+      linkTo: '/dashboard/app',
     },
   ];
 
@@ -84,37 +84,17 @@ export default function AccountPopover() {
         
         console.log('🔄 Switching to buyer mode from dropdown...');
         
-        // Call the mark-as-buyer API
-        const response = await fetch(`${app.baseURL.replace(/\/$/, '')}/auth/mark-as-buyer`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${auth.tokens.accessToken}`,
-            'x-access-key': app.apiKey,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
-
-        const data = await response.json();
-        console.log('✅ Mark as buyer response:', data);
-
-        if (data.success && data.buyerUrl) {
-          // Redirect to buyer app with tokens
-          const buyerAppUrl = new URL(data.buyerUrl);
-          buyerAppUrl.searchParams.append('token', auth.tokens.accessToken);
-          buyerAppUrl.searchParams.append('refreshToken', auth.tokens.refreshToken);
-          buyerAppUrl.searchParams.append('from', 'seller');
-          
-          console.log('🔄 Redirecting to buyer app:', buyerAppUrl.toString());
-          
-          // Clear seller session before redirecting
-          clear();
-          
-          // Redirect to buyer app
-          window.location.href = buyerAppUrl.toString();
-        } else {
-          throw new Error(data.message || 'Failed to mark user as buyer');
-        }
+        // Store buyer switch data for the loading page
+        const buyerSwitchData = {
+          accessToken: auth.tokens.accessToken,
+          refreshToken: auth.tokens.refreshToken,
+          timestamp: Date.now()
+        };
+        sessionStorage.setItem('buyerSwitchData', JSON.stringify(buyerSwitchData));
+        
+        // Navigate to loading page instead of direct redirect
+        navigate('/switching-to-buyer');
+        
       } catch (error) {
         console.error('❌ Error switching to buyer mode:', error);
         setSwitchToBuyer(false);

@@ -340,14 +340,13 @@ export default function CreateTender() {
           // For duration section, highlight the entire section briefly
           setTimeout(() => {
             console.log('Highlighting duration section');
-            const htmlElement = element as HTMLElement;
-            htmlElement.style.transition = 'all 0.5s ease';
-            htmlElement.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
-            htmlElement.style.borderRadius = '12px';
-            htmlElement.style.padding = '16px';
+            element.style.transition = 'all 0.5s ease';
+            element.style.backgroundColor = 'rgba(255, 0, 0, 0.08)';
+            element.style.borderRadius = '12px';
+            element.style.padding = '16px';
             setTimeout(() => {
-              htmlElement.style.backgroundColor = '';
-              htmlElement.style.padding = '';
+              element.style.backgroundColor = '';
+              element.style.padding = '';
             }, 2500);
           }, 400);
         }

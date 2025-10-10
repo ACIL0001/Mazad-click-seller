@@ -31,10 +31,9 @@ const ImageSection = styled('div')(({ theme }) => ({
     flex: 'none',
   },
   '& img': {
-    maxWidth: '100%',
-    height: 'auto',
-    maxHeight: '80vh',
-    objectFit: 'contain',
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
     borderRadius: theme.spacing(1),
     boxShadow: theme.customShadows.card,
   },
@@ -79,7 +78,7 @@ export default function Login() {
           {navigator.onLine && (
             <img 
               alt="login" 
-              src="/static/logo/mazadclick-cover.png" 
+              src="/static/logo/mazadclick-cover.jpg" 
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}

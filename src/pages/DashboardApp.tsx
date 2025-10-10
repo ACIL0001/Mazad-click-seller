@@ -163,27 +163,22 @@ useEffect(() => {
   if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) { 
     console.log('✅ Dashboard: Professional user with identity - setting up dashboard');
     setIsProfessionalSubscriber(true);
-    // Fetch seller stats for professional users with a delay to prevent rapid calls
-    const timeoutId = setTimeout(() => {
-      console.log('📊 Dashboard: Fetching seller stats for professional user');
-      fetchSellerStats();
-    }, 1500);
-    // Fetch tenders counts from database
-    const t2 = setTimeout(() => {
-      TendersAPI.getAllTenders()
-        .then((res: any) => {
-          const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
-          const total = list.length;
-          const active = list.filter((t: any) => (t.status || '').toUpperCase() === 'OPEN').length;
-          setTotalTendersCount(total);
-          setActiveTendersCount(active);
-          console.log('📊 Dashboard: Tenders counts', { total, active });
-        })
-        .catch((e: any) => {
-          console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
-        });
-    }, 500);
-    return () => clearTimeout(timeoutId);
+    // Fetch seller stats for professional users immediately
+    console.log('📊 Dashboard: Fetching seller stats for professional user');
+    fetchSellerStats();
+    // Fetch tenders counts from database immediately
+    TendersAPI.getAllTenders()
+      .then((res: any) => {
+        const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const total = list.length;
+        const active = list.filter((t: any) => (t.status || '').toUpperCase() === 'OPEN').length;
+        setTotalTendersCount(total);
+        setActiveTendersCount(active);
+        console.log('📊 Dashboard: Tenders counts', { total, active });
+      })
+      .catch((e: any) => {
+        console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
+      });
   } else {
     // All other cases (clients, professionals without identity, etc.)
     console.log('🚫 Dashboard: User not eligible for full dashboard');
@@ -207,8 +202,7 @@ useEffect(() => {
         hasToken: !!tokens?.accessToken 
       });
       
-      // Add a small delay to prevent rapid successive calls
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // No delay needed - fetch immediately
       
       console.log('📡 Dashboard: Making API call to dashboard overview endpoint...');
       
@@ -891,7 +885,7 @@ useEffect(() => {
   }
 
   return (
-    <Page title={t('navigation.dashboard')}>
+    <Page title="Seller App">
       <Container 
         maxWidth="xl" 
         sx={{ 
@@ -1091,7 +1085,7 @@ useEffect(() => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8 }}
+                  transition={{ duration: 0 }}
                 >
                   {/* Auction & Tender Statistics Section */}
                   <Box sx={{ mb: 4 }}>
@@ -1120,7 +1114,6 @@ useEffect(() => {
                             trend={stat.trend}
                             trendValue={stat.trendValue}
                             onClick={stat.onClick}
-                            delay={index * 100}
               />
             </Grid>
                       ))}
@@ -1154,7 +1147,6 @@ useEffect(() => {
                             trend={stat.trend}
                             trendValue={stat.trendValue}
                             onClick={stat.onClick}
-                            delay={400 + index * 100}
               />
             </Grid>
                       ))}
@@ -1188,7 +1180,6 @@ useEffect(() => {
                             trend={stat.trend}
                             trendValue={stat.trendValue}
                             onClick={() => {}} // Add empty onClick handler
-                            delay={400 + index * 100}
               />
             </Grid>
                       ))}
@@ -1198,7 +1189,7 @@ useEffect(() => {
                   {/* Charts Section with DYNAMIC DATA */}
                   <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }} sx={{ mt: 2 }}>
             <Grid item xs={12} md={6} lg={4} xl={4}>
-                      <Grow in={mounted} timeout={1600}>
+                      <Grow in={mounted} timeout={0}>
                         <Box>
               <AppCurrentVisits
                             title="Category Distribution"
@@ -1224,7 +1215,7 @@ useEffect(() => {
             </Grid>
 
             <Grid item xs={12} md={6} lg={8} xl={8}>
-                      <Grow in={mounted} timeout={1800}>
+                      <Grow in={mounted} timeout={0}>
                         <Box>
               <AppConversionRates
                             title="Performance Metrics"

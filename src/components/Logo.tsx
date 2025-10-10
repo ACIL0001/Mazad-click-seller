@@ -32,25 +32,44 @@ export default function Logo({ disabledLink = false, sx }) {
                 e.currentTarget.style.display = 'none';
             }}
             sx={{ 
-                height: 100, 
-                width: 150,
-                borderRadius: 2, 
-                marginLeft: 5,
+                height: { xs: 60, sm: 80, md: 100, lg: 120 },
+                width: { xs: 90, sm: 120, md: 150, lg: 180 },
+                maxHeight: '120px',
+                maxWidth: '180px',
+                objectFit: 'contain',
+                objectPosition: 'center center',
+                borderRadius: { xs: 1, sm: 1.5, md: 2 },
+                marginLeft: { xs: 2, sm: 3, md: 5 },
+                transition: 'all 0.3s ease',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15))',
+                },
                 ...sx 
             }} 
         />
     ) : (
         <Box 
             sx={{ 
-                height: 120, 
-                borderRadius: 5, 
-                marginLeft: 5,
+                height: { xs: 60, sm: 80, md: 100, lg: 120 },
+                width: { xs: 90, sm: 120, md: 150, lg: 180 },
+                maxHeight: '120px',
+                maxWidth: '180px',
+                borderRadius: { xs: 1, sm: 1.5, md: 2 },
+                marginLeft: { xs: 2, sm: 3, md: 5 },
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: theme.palette.grey[100],
                 color: theme.palette.text.secondary,
-                fontSize: '0.875rem',
+                fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.875rem' },
+                fontWeight: 600,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    backgroundColor: theme.palette.grey[200],
+                },
                 ...sx 
             }} 
         >

@@ -51,7 +51,7 @@ const HeaderStyle = styled('header')(({ theme }) => ({
 const SectionStyle = styled('div')(({ theme }) => ({
   width: '100%',
   maxWidth: 600,
-  height: '100vh',
+  height: '200vh',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -89,7 +89,7 @@ export default function Register() {
       {navigator.onLine && (
         <img 
           alt="register" 
-          src="/static/logo/mazadclick-cover.png" 
+          src="/static/logo/mazadclick-cover.jpg"
           onError={(e) => {
             // Silently hide the image if it fails to load
             e.currentTarget.style.display = 'none';

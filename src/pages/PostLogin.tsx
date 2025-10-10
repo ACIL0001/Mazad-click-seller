@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -26,9 +26,21 @@ import axios from 'axios';
 export default function PostLogin() {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { auth, isLogged } = useAuth();
+  const { auth, isLogged, isReady } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Authentication check - redirect to login if not authenticated
+  useEffect(() => {
+    // Wait for auth to be ready before checking
+    if (!isReady) return;
+
+    // Check if user is not logged in or doesn't have valid auth data
+    if (!isLogged || !auth?.user || !auth?.tokens?.accessToken) {
+      console.log('PostLogin: User not authenticated, redirecting to login');
+      navigate('/login', { replace: true });
+    }
+  }, [isLogged, auth, isReady, navigate]);
 
   const handleContinueAsSeller = () => {
     // User continues as seller - redirect to dashboard
@@ -45,30 +57,17 @@ export default function PostLogin() {
     setError(null);
 
     try {
-      console.log('🔄 Marking user as buyer...');
+      console.log('🔄 Preparing to redirect to buyer app...');
       
-      const url = `${app.baseURL.replace(/\/$/, '')}/auth/mark-as-buyer`;
-      console.log('🔗 API URL:', url);
-      console.log('🔗 Base URL:', app.baseURL);
-      console.log('🔗 API Key:', app.apiKey ? 'Present' : 'Missing');
+      // No API call needed - just redirect to buyer app
+      console.log('✅ Redirecting to buyer app (no backend modification needed)');
+
+      // Simulate the success response structure
+      const mockResponse = { success: true };
       
-      const response = await axios.post(
-        url,
-        {},
-        {
-          headers: {
-            'Authorization': `Bearer ${auth.tokens.accessToken}`,
-            'x-access-key': app.apiKey,
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log('✅ Mark as buyer response:', response.data);
-
-      if (response.data.success) {
-        const buyerUrl = response.data.buyerUrl || 'http://localhost:3001';
+      if (mockResponse.success) {
+        // Use buyer URL from config
+        const buyerUrl = app.buyerURL.replace(/\/$/, ''); // Remove trailing slash
         
         // Show success message
         enqueueSnackbar('Redirection vers l\'application acheteur...', { 
@@ -91,14 +90,14 @@ export default function PostLogin() {
         }, 1000);
         
       } else {
-        throw new Error(response.data.message || 'Failed to mark user as buyer');
+        throw new Error('Failed to redirect to buyer app');
       }
     } catch (error: any) {
-      console.error('❌ Error marking user as buyer:', error);
+      console.error('❌ Error redirecting to buyer app:', error);
       
       const errorMessage = error.response?.data?.message || 
                           error.message || 
-                          'Failed to switch to buyer mode. Please try again.';
+                          'Failed to redirect to buyer app. Please try again.';
       
       setError(errorMessage);
       enqueueSnackbar(errorMessage, { variant: 'error' });
@@ -107,14 +106,18 @@ export default function PostLogin() {
     }
   };
 
-  if (!isLogged || !auth?.user) {
+  // Show loading while auth is being checked
+  if (!isReady) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 8 }}>
-        <Alert severity="error">
-          Vous devez être connecté pour accéder à cette page.
-        </Alert>
+      <Container maxWidth="sm" sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
       </Container>
     );
+  }
+
+  // If not authenticated, don't render anything as we're redirecting
+  if (!isLogged || !auth?.user || !auth?.tokens?.accessToken) {
+    return null;
   }
 
   return (

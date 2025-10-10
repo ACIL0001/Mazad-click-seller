@@ -43,6 +43,7 @@ import TenderBids from './pages/TenderBids';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import IdentityVerification from './pages/IdentityVerification';
 import WaitingForVerification from './pages/WaitingForVerification';
+import SwitchingToBuyer from './pages/SwitchingToBuyer';
 import SubscriptionPlans from './pages/SubscriptionPlans';
 import PostLogin from './pages/PostLogin';
 // import PaymentMethodSelection from './pages/PaymentMethodSelection';
@@ -151,6 +152,7 @@ export default function Router() {
                 { path: 'subscription/payment/success', element: <PaymentSuccess /> },
                 { path: 'payment-success', element: <PaymentSuccess /> },
                 { path: 'waiting-for-verification', element: <WaitingForVerification /> },
+                { path: 'switching-to-buyer', element: <SwitchingToBuyer /> },
                 { path: '404', element: <NotFound /> },
                 { path: '*', element: <Navigate to="/404" /> },
             ],

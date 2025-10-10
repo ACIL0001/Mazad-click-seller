@@ -23,7 +23,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
   isReady: false,
   isLogged: false,
   auth: initialState,
-  set: (auth: Partial<typeof initialState>) => {
+  set: (auth: typeof initialState) => {
     console.log('🔐 AuthStore.set called with:', auth);
 
     // Create a copy to avoid mutating the original object

@@ -16,6 +16,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import SocketProvider from './contexts/SocketContext';
 import { BidsCheck } from './api/checkBids';
 import FloatingAdminChat from './components/FloatingAdminChat';
+import TokenHandler from './components/TokenHandler';
 // i18n
 import './i18n';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -66,10 +67,12 @@ export default function App() {
                             <AxiosInterceptor>
                               <SettingsProvider>
                                 <ThemeProvider>
-                                  <ScrollToTop />
-                                  <BaseOptionChartStyle />
-                                  <Router />
-                                  <FloatingAdminChat />
+                                  <TokenHandler>
+                                    <ScrollToTop />
+                                    <BaseOptionChartStyle />
+                                    <Router />
+                                    <FloatingAdminChat />
+                                  </TokenHandler>
                                 </ThemeProvider>
                               </SettingsProvider>
                             </AxiosInterceptor>

@@ -358,7 +358,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       email: '',
       password: '',
       phone: '',
-      type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL since CLIENT is disabled
+      type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL as requested
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
@@ -376,7 +376,7 @@ export default function RegisterForm(props: RegisterFormProps) {
           email: values.email,
           password: values.password,
           phone: values.phone.replace(/\s/g, ''), // Remove spaces for storage
-          type: values.type === USER_TYPE.CLIENT ? 'CLIENT' : 'PROFESSIONAL',
+          type: 'PROFESSIONAL', // Always send PROFESSIONAL type to backend as requested
         };
         console.log('userData', userData);
 
