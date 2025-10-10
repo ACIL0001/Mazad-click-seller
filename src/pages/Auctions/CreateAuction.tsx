@@ -1061,7 +1061,7 @@ export default function CreateAuction() {
               element.style.boxShadow = '';
             }, 2500);
           }, 400);
-        } else if (fieldName === 'duration') {
+        } else if (fieldName === 'duration' && element instanceof HTMLElement) {
           // For duration section, highlight the entire section briefly
           setTimeout(() => {
             console.log('Highlighting duration section');
@@ -2219,7 +2219,7 @@ export default function CreateAuction() {
 
                 {formik.touched.duration && formik.errors.duration && (
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    {formik.errors.duration}
+                    {typeof formik.errors.duration === 'string' ? formik.errors.duration : 'La durée est requise'}
                   </Alert>
                 )}
 

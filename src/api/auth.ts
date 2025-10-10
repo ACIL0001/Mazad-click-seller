@@ -4,7 +4,7 @@ import User from '../types/User';
 import { requests } from './utils';
 
 export const AuthAPI = {
-  status: (): Promise<any> => requests.get('auth/status'),
+  status: (token?: string): Promise<any> => requests.get('auth/status'),
   validateToken: (): Promise<any> => requests.get('auth/validate-token'),
   exists: (tel: string): Promise<any> => requests.get(`auth/exists/${tel}`),
   getSMS: (tel: string): Promise<any> => requests.get(`auth/2factor/send-sms/${tel}`),

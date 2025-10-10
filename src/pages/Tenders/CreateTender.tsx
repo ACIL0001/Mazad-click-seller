@@ -336,7 +336,7 @@ export default function CreateTender() {
               element.style.boxShadow = '';
             }, 2500);
           }, 400);
-        } else if (fieldName === 'duration') {
+        } else if (fieldName === 'duration' && element instanceof HTMLElement) {
           // For duration section, highlight the entire section briefly
           setTimeout(() => {
             console.log('Highlighting duration section');
