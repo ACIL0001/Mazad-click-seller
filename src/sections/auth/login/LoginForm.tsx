@@ -154,9 +154,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   const { errors, touched, isSubmitting, getFieldProps } = formik;
 
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      formik.handleSubmit();
+    }
+  };
+
   return (
     <FormikProvider value={formik}>
-      <Form autoComplete="off" noValidate>
+      <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
         <Stack spacing={3}>
           {loginError && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -213,7 +220,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             component="button" 
             variant="body2" 
             underline="hover"
-            onClick={() => navigate('/reset-password')}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/reset-password');
+            }}
             sx={{ textAlign: 'left' }}
           >
             Mot de passe oublié?
@@ -237,7 +248,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             <Link 
               variant="subtitle2" 
               component="button"
-              onClick={() => navigate('/register')}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/register');
+              }}
               underline="hover"
             >
               Créer un compte
