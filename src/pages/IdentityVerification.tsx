@@ -625,6 +625,9 @@ export default function IdentityVerification() {
   // NEW REQUIRED FIELDS
   const [registreCommerceCarteAuto, setRegistreCommerceCarteAuto] = useState<File[]>([]);
   const [nifRequired, setNifRequired] = useState<File[]>([]);
+  const [carteFellah, setCarteFellah] = useState<File[]>([]);
+  
+  // OPTIONAL FIELDS (moved from required)
   const [numeroArticle, setNumeroArticle] = useState<File[]>([]);
   const [c20, setC20] = useState<File[]>([]);
   const [misesAJourCnas, setMisesAJourCnas] = useState<File[]>([]);
@@ -662,6 +665,10 @@ export default function IdentityVerification() {
     setNifRequired(acceptedFiles);
   }, []);
 
+  const handleDropCarteFellah = useCallback((acceptedFiles: File[]) => {
+    setCarteFellah(acceptedFiles);
+  }, []);
+
   const handleDropNumeroArticle = useCallback((acceptedFiles: File[]) => {
     setNumeroArticle(acceptedFiles);
   }, []);
@@ -686,13 +693,10 @@ export default function IdentityVerification() {
 
   // Submit handler
   const handleSubmit = async () => {
-    // Validate NEW required fields
+    // Validate required fields (only registre commerce and NIF are mandatory)
     const requiredFieldsValidation = [
-      { files: registreCommerceCarteAuto, name: 'Registre de commerce/carte auto-entrepreneur/agrément/carte d\'artisan' },
+      { files: registreCommerceCarteAuto, name: 'Registre de commerce/carte auto-entrepreneur' },
       { files: nifRequired, name: 'NIF' },
-      { files: numeroArticle, name: 'Numéro d\'article' },
-      { files: c20, name: 'C20' },
-      { files: misesAJourCnas, name: 'Mises à jour CNAS/CASNOS et CACOBAPT' },
     ];
 
     const missingRequired = requiredFieldsValidation.filter(field => !field.files.length);
@@ -715,23 +719,44 @@ export default function IdentityVerification() {
     try {
       const formData = new FormData();
       
-      // OPTIONAL FIELDS ONLY (removed redundant ones)
-      if (nis.length) {
-        nis.forEach(file => formData.append('nis', file));
+      // REQUIRED FIELDS - Only append the first file since backend expects maxCount: 1
+      if (registreCommerceCarteAuto.length > 0) {
+        formData.append('registreCommerceCarteAuto', registreCommerceCarteAuto[0]);
       }
-      if (balanceSheet.length) {
-        balanceSheet.forEach(file => formData.append('last3YearsBalanceSheet', file));
+      if (nifRequired.length > 0) {
+        formData.append('nifRequired', nifRequired[0]);
       }
-      if (certificates.length) {
-        certificates.forEach(file => formData.append('certificates', file));
+      
+      // OPTIONAL FIELD - Carte Fellah (required only for fellah category)
+      if (carteFellah.length > 0) {
+        formData.append('carteFellah', carteFellah[0]);
+      }
+      
+      // OPTIONAL FIELDS - Only append the first file since backend expects maxCount: 1
+      if (numeroArticle.length > 0) {
+        formData.append('numeroArticle', numeroArticle[0]);
+      }
+      if (c20.length > 0) {
+        formData.append('c20', c20[0]);
+      }
+      if (misesAJourCnas.length > 0) {
+        formData.append('misesAJourCnas', misesAJourCnas[0]);
+      }
+      if (nis.length > 0) {
+        formData.append('nis', nis[0]);
+      }
+      if (balanceSheet.length > 0) {
+        formData.append('last3YearsBalanceSheet', balanceSheet[0]);
+      }
+      if (certificates.length > 0) {
+        formData.append('certificates', certificates[0]);
       }
 
-      // NEW REQUIRED FIELDS
-      registreCommerceCarteAuto.forEach(file => formData.append('registreCommerceCarteAuto', file));
-      nifRequired.forEach(file => formData.append('nifRequired', file));
-      numeroArticle.forEach(file => formData.append('numeroArticle', file));
-      c20.forEach(file => formData.append('c20', file));
-      misesAJourCnas.forEach(file => formData.append('misesAJourCnas', file));
+      // Debug: Log what we're sending
+      console.log('📤 Submitting identity documents with fields:');
+      for (let pair of formData.entries()) {
+        console.log(`  - ${pair[0]}: ${pair[1] instanceof File ? pair[1].name : pair[1]}`);
+      }
 
       // Call API to upload professional documents
       const identityResult = await IdentityAPI.create(formData);
@@ -793,19 +818,33 @@ export default function IdentityVerification() {
         navigate('/subscription-plans');
       }, 1000);
     } catch (error: any) {
-      console.error('Error submitting identity documents:', error);
+      console.error('❌ Error submitting identity documents:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
       
       // Handle specific error cases
       let errorMessage = 'Une erreur est survenue lors de la soumission. Veuillez réessayer.';
       
-      if (error?.response?.data?.message) {
+      if (error?.response?.status === 400) {
+        // Bad Request - likely validation error
+        if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error?.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        } else {
+          errorMessage = 'Les documents requis sont manquants ou invalides. Veuillez vérifier que vous avez téléchargé le Registre de commerce/Carte auto-entrepreneur et le NIF.';
+        }
+      } else if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error?.message) {
         errorMessage = error.message;
       }
       
       // If it's a duplicate submission error, redirect to subscription plans
-      if (errorMessage.includes('déjà soumis') || errorMessage.includes('doublon')) {
+      if (errorMessage.includes('déjà soumis') || errorMessage.includes('doublon') || errorMessage.includes('already')) {
         setSubmitStatus({
           type: 'info',
           message: 'Vous avez déjà soumis vos documents d\'identité. Redirection vers le tableau de bord...',
@@ -818,7 +857,8 @@ export default function IdentityVerification() {
       setSubmitStatus({
         type: 'error',
         message: errorMessage,
-      }); 
+      });
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -927,12 +967,13 @@ export default function IdentityVerification() {
             Documents obligatoires à fournir
           </SectionTitle>
           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-            Ces 5 documents sont <strong>obligatoires</strong> pour la vérification professionnelle. Les documents ci-dessous sont optionnels.
+            Le <strong>Registre de commerce/Carte auto-entrepreneur</strong> et le <strong>NIF</strong> sont obligatoires pour tous. 
+            La <strong>Carte Fellah</strong> est obligatoire uniquement pour la catégorie Fellah. Les autres documents sont optionnels.
           </Typography>
         </SectionContainer>
 
         <Grid container spacing={4}>
-          {/* NEW REQUIRED FIELDS */}
+          {/* REQUIRED FIELDS */}
           <Grid item xs={12} sm={6} md={4}>
             <RequiredGlassCard>
               <RequiredCompactCardHeader 
@@ -950,7 +991,7 @@ export default function IdentityVerification() {
               />
               <CompactCardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Registre de commerce, carte auto-entrepreneur, agrément ou carte d'artisan agrément.
+                  Document obligatoire: Registre de commerce, carte auto-entrepreneur, agrément ou carte d'artisan.
                 </Typography>
                 <CompactUploadContainer>
                   <UploadMultiFile
@@ -1004,7 +1045,7 @@ export default function IdentityVerification() {
           <Grid item xs={12} sm={6} md={4}>
             <RequiredGlassCard>
               <RequiredCompactCardHeader 
-                title="Numéro d'article (OBLIGATOIRE)" 
+                title="Carte Fellah (OBLIGATOIRE pour Fellah)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
                   background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
@@ -1013,88 +1054,20 @@ export default function IdentityVerification() {
                   display: 'flex',
                   boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
                 }}>
-                  <Iconify icon="mdi:numeric" width={20} height={20} sx={{ color: 'white' }} />
+                  <Iconify icon="mdi:account-card" width={20} height={20} sx={{ color: 'white' }} />
                 </Box>}
               />
               <CompactCardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Numéro d'article d'imposition.
+                  Document obligatoire uniquement pour la catégorie Fellah.
                 </Typography>
                 <CompactUploadContainer>
                   <UploadMultiFile
                     showPreview
-                    files={numeroArticle}
-                    onDrop={handleDropNumeroArticle}
-                    onRemove={(file) => handleRemove(file, numeroArticle, setNumeroArticle)}
-                    onRemoveAll={() => handleRemoveAll(setNumeroArticle)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
-                  />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </RequiredGlassCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={6}>
-            <RequiredGlassCard>
-              <RequiredCompactCardHeader 
-                title="C20 (OBLIGATOIRE)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
-                }}>
-                  <Iconify icon="mdi:file-certificate" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Certificat C20.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={c20}
-                    onDrop={handleDropC20}
-                    onRemove={(file) => handleRemove(file, c20, setC20)}
-                    onRemoveAll={() => handleRemoveAll(setC20)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
-                  />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </RequiredGlassCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={6}>
-            <RequiredGlassCard>
-              <RequiredCompactCardHeader 
-                title="Mises à jour CNAS/CASNOS et CACOBAPT (OBLIGATOIRE)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
-                }}>
-                  <Iconify icon="mdi:update" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Mises à jour CNAS/CASNOS et CACOBAPT.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={misesAJourCnas}
-                    onDrop={handleDropMisesAJourCnas}
-                    onRemove={(file) => handleRemove(file, misesAJourCnas, setMisesAJourCnas)}
-                    onRemoveAll={() => handleRemoveAll(setMisesAJourCnas)}
+                    files={carteFellah}
+                    onDrop={handleDropCarteFellah}
+                    onRemove={(file) => handleRemove(file, carteFellah, setCarteFellah)}
+                    onRemoveAll={() => handleRemoveAll(setCarteFellah)}
                     accept={{ 'image/*': [], 'application/pdf': [] }}
                     compact
                   />
@@ -1118,7 +1091,7 @@ export default function IdentityVerification() {
           <Grid item xs={12} sm={6} md={4}>
             <GlassCard>
               <CompactCardHeader 
-                title="NIS (Optionnel)" 
+                title="Numéro d'article (Optionnel)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
                   background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
@@ -1126,6 +1099,108 @@ export default function IdentityVerification() {
                   p: 1, 
                   display: 'flex',
                   boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)',
+                }}>
+                  <Iconify icon="mdi:numeric" width={20} height={20} sx={{ color: 'white' }} />
+                </Box>}
+              />
+              <CompactCardContent>
+                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  Document optionnel: Numéro d'article d'imposition.
+                </Typography>
+                <CompactUploadContainer>
+                  <UploadMultiFile
+                    showPreview
+                    files={numeroArticle}
+                    onDrop={handleDropNumeroArticle}
+                    onRemove={(file) => handleRemove(file, numeroArticle, setNumeroArticle)}
+                    onRemoveAll={() => handleRemoveAll(setNumeroArticle)}
+                    accept={{ 'image/*': [], 'application/pdf': [] }}
+                    compact
+                  />
+                </CompactUploadContainer>
+              </CompactCardContent>
+            </GlassCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <GlassCard>
+              <CompactCardHeader 
+                title="C20 (Optionnel)" 
+                titleTypographyProps={{ variant: 'subtitle2' }}
+                avatar={<Box sx={{ 
+                  background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                  borderRadius: '12px', 
+                  p: 1, 
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+                }}>
+                  <Iconify icon="mdi:file-certificate" width={20} height={20} sx={{ color: 'white' }} />
+                </Box>}
+              />
+              <CompactCardContent>
+                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  Document optionnel: Certificat C20.
+                </Typography>
+                <CompactUploadContainer>
+                  <UploadMultiFile
+                    showPreview
+                    files={c20}
+                    onDrop={handleDropC20}
+                    onRemove={(file) => handleRemove(file, c20, setC20)}
+                    onRemoveAll={() => handleRemoveAll(setC20)}
+                    accept={{ 'image/*': [], 'application/pdf': [] }}
+                    compact
+                  />
+                </CompactUploadContainer>
+              </CompactCardContent>
+            </GlassCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <GlassCard>
+              <CompactCardHeader 
+                title="Mises à jour CNAS/CASNOS et CACOBAPT (Optionnel)" 
+                titleTypographyProps={{ variant: 'subtitle2' }}
+                avatar={<Box sx={{ 
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  borderRadius: '12px', 
+                  p: 1, 
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)',
+                }}>
+                  <Iconify icon="mdi:update" width={20} height={20} sx={{ color: 'white' }} />
+                </Box>}
+              />
+              <CompactCardContent>
+                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  Document optionnel: Mises à jour CNAS/CASNOS et CACOBAPT.
+                </Typography>
+                <CompactUploadContainer>
+                  <UploadMultiFile
+                    showPreview
+                    files={misesAJourCnas}
+                    onDrop={handleDropMisesAJourCnas}
+                    onRemove={(file) => handleRemove(file, misesAJourCnas, setMisesAJourCnas)}
+                    onRemoveAll={() => handleRemoveAll(setMisesAJourCnas)}
+                    accept={{ 'image/*': [], 'application/pdf': [] }}
+                    compact
+                  />
+                </CompactUploadContainer>
+              </CompactCardContent>
+            </GlassCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <GlassCard>
+              <CompactCardHeader 
+                title="NIS (Optionnel)" 
+                titleTypographyProps={{ variant: 'subtitle2' }}
+                avatar={<Box sx={{ 
+                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                  borderRadius: '12px', 
+                  p: 1, 
+                  display: 'flex',
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
                 }}>
                   <Iconify icon="mdi:card-bulleted" width={20} height={20} sx={{ color: 'white' }} />
                 </Box>}
@@ -1155,11 +1230,11 @@ export default function IdentityVerification() {
                 title="Bilans des 3 dernières années (Optionnel)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                  background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
                   borderRadius: '12px', 
                   p: 1, 
                   display: 'flex',
-                  boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+                  boxShadow: '0 4px 12px rgba(0, 188, 212, 0.3)',
                 }}>
                   <Iconify icon="mdi:file-chart" width={20} height={20} sx={{ color: 'white' }} />
                 </Box>}
@@ -1189,11 +1264,11 @@ export default function IdentityVerification() {
                 title="Certificats (Optionnel)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
                   borderRadius: '12px', 
                   p: 1, 
                   display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)',
+                  boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
                 }}>
                   <Iconify icon="mdi:certificate" width={20} height={20} sx={{ color: 'white' }} />
                 </Box>}

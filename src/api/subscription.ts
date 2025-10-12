@@ -9,6 +9,7 @@ export interface SubscriptionPlan {
   duration: number; // in months
   isActive: boolean;
   role: 'PROFESSIONAL' | 'RESELLER';
+  benefits?: string[];
 }
 
 // Subscription interface - matching the provided backend Subscription schema

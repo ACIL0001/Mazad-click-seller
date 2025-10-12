@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Paper, Grid, Card, CardContent, Button,
   Divider, CircularProgress, Alert, Chip, List, ListItem, ListItemIcon, ListItemText, CardActions,
-  Fade, Slide, useTheme, alpha, IconButton, Stack
+  Fade, Slide, useTheme, alpha, IconButton, Stack, Dialog, DialogContent, DialogActions
 } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
 import { LoadingButton } from '@mui/lab';
 import { useNavigate } from 'react-router-dom';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import StarIcon from '@mui/icons-material/Star';
 import BusinessIcon from '@mui/icons-material/Business';
 import StoreIcon from '@mui/icons-material/Store';
@@ -22,6 +23,25 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import SpeedIcon from '@mui/icons-material/Speed';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import GavelIcon from '@mui/icons-material/Gavel';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import GroupIcon from '@mui/icons-material/Group';
+import SearchIcon from '@mui/icons-material/Search';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { SubscriptionAPI, SubscriptionPlan } from '../api/subscription';
 import { authStore } from '../contexts/authStore';
 
@@ -50,6 +70,28 @@ const gradientShift = keyframes`
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+`;
+
+const bounceIn = keyframes`
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+`;
+
+const fadeInUp = keyframes`
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+`;
+
+const checkmarkDraw = keyframes`
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+`;
+
+const ripple = keyframes`
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
 `;
 
 // Background subscription icons animation
@@ -292,6 +334,105 @@ const PrimaryButton = styled(ModernButton)(({ theme }) => ({
   },
 }));
 
+// Success Dialog Styles - Modern & Well-Spaced
+const SuccessDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiBackdrop-root': {
+    background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%)',
+    backdropFilter: 'blur(12px)',
+  },
+  '& .MuiDialog-paper': {
+    borderRadius: 28,
+    padding: 0,
+    maxWidth: 560,
+    width: '90%',
+    overflow: 'hidden',
+    background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
+    boxShadow: '0 32px 64px rgba(0, 0, 0, 0.24), 0 0 100px rgba(76, 175, 80, 0.2)',
+    position: 'relative',
+  }
+}));
+
+const SuccessHeader = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  padding: theme.spacing(5, 3, 4),
+  background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)',
+  overflow: 'hidden',
+  textAlign: 'center',
+  minHeight: '240px',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-60%',
+    right: '-15%',
+    width: '350px',
+    height: '350px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+    animation: `${ripple} 4s ease-out infinite`,
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: '-40%',
+    left: '-15%',
+    width: '300px',
+    height: '300px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
+    animation: `${ripple} 4s ease-out 1.5s infinite`,
+  }
+}));
+
+const SuccessIconWrapper = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  width: 96,
+  height: 96,
+  margin: '0 auto',
+  marginBottom: theme.spacing(2.5),
+  zIndex: 2,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '150%',
+    height: '150%',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%)',
+    animation: `${ripple} 3s ease-out infinite`,
+  },
+}));
+
+const SuccessIcon = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 1,
+  width: 96,
+  height: 96,
+  borderRadius: '50%',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2), inset 0 2px 8px rgba(255, 255, 255, 0.9)',
+  animation: `${bounceIn} 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)`,
+  border: '4px solid rgba(255, 255, 255, 0.3)',
+  '& svg': {
+    fontSize: 56,
+    color: '#4caf50',
+    filter: 'drop-shadow(0 2px 4px rgba(76, 175, 80, 0.3))',
+  }
+}));
+
+const CelebrationIcon = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  fontSize: '2.5rem',
+  animation: `${floatAnimation} 3s ease-in-out infinite`,
+  opacity: 0.85,
+  zIndex: 1,
+  textShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+}));
+
 const getPlanIcon = (planRole: string) => {
   const iconProps = { sx: { fontSize: 36, color: '#1976d2' } };
   
@@ -304,6 +445,145 @@ const getPlanIcon = (planRole: string) => {
   return <DiamondIcon {...iconProps} />;
 };
 
+// Smart icon matching function
+const getBenefitIcon = (benefitText: string) => {
+  const text = benefitText.toLowerCase();
+  const iconProps = { sx: { fontSize: 18 } };
+  
+  // Support & Service
+  if (text.includes('support') || text.includes('assistance') || text.includes('aide') || text.includes('service client')) {
+    return <SupportAgentIcon {...iconProps} />;
+  }
+  
+  // Priority & Speed
+  if (text.includes('prioritaire') || text.includes('priority') || text.includes('rapide') || text.includes('fast') || text.includes('instant')) {
+    return <FlashOnIcon {...iconProps} />;
+  }
+  
+  // Unlimited & Infinite
+  if (text.includes('illimité') || text.includes('unlimited') || text.includes('infini') || text.includes('infinite')) {
+    return <AllInclusiveIcon {...iconProps} />;
+  }
+  
+  // Listings & Products
+  if (text.includes('listing') || text.includes('annonce') || text.includes('produit') || text.includes('product')) {
+    return <ListAltIcon {...iconProps} />;
+  }
+  
+  // Analytics & Statistics & Reports
+  if (text.includes('analytics') || text.includes('analyse') || text.includes('statistique') || text.includes('rapport') || text.includes('report') || text.includes('données') || text.includes('data')) {
+    return <AnalyticsIcon {...iconProps} />;
+  }
+  
+  // Charts & Market
+  if (text.includes('marché') || text.includes('market') || text.includes('chart') || text.includes('graphique')) {
+    return <BarChartIcon {...iconProps} />;
+  }
+  
+  // Search & Discovery
+  if (text.includes('recherche') || text.includes('search') || text.includes('trouver') || text.includes('find') || text.includes('découvrir')) {
+    return <SearchIcon {...iconProps} />;
+  }
+  
+  // Network & Professional & Community
+  if (text.includes('réseau') || text.includes('network') || text.includes('professionnel') || text.includes('professional') || text.includes('communauté') || text.includes('community')) {
+    return <GroupIcon {...iconProps} />;
+  }
+  
+  // Auction & Bidding
+  if (text.includes('enchère') || text.includes('auction') || text.includes('bid') || text.includes('offre')) {
+    return <GavelIcon {...iconProps} />;
+  }
+  
+  // Exclusive & Premium & VIP
+  if (text.includes('exclusif') || text.includes('exclusive') || text.includes('premium') || text.includes('vip') || text.includes('privilège')) {
+    return <EmojiEventsIcon {...iconProps} />;
+  }
+  
+  // Access & Unlock
+  if (text.includes('accès') || text.includes('access') || text.includes('débloque') || text.includes('unlock')) {
+    return <LockOpenIcon {...iconProps} />;
+  }
+  
+  // Security & Verified & Trust
+  if (text.includes('sécurit') || text.includes('security') || text.includes('vérifié') || text.includes('verified') || text.includes('confiance') || text.includes('trust')) {
+    return <VerifiedIcon {...iconProps} />;
+  }
+  
+  // Tools & Features
+  if (text.includes('outil') || text.includes('tool') || text.includes('fonctionnalit') || text.includes('feature') || text.includes('avancé') || text.includes('advanced')) {
+    return <AutoAwesomeIcon {...iconProps} />;
+  }
+  
+  // Profit & Revenue & Money
+  if (text.includes('profit') || text.includes('revenu') || text.includes('revenue') || text.includes('gain') || text.includes('monétis')) {
+    return <AttachMoneyIcon {...iconProps} />;
+  }
+  
+  // Resale & Reseller
+  if (text.includes('revente') || text.includes('resale') || text.includes('revendeur') || text.includes('reseller')) {
+    return <StoreIcon {...iconProps} />;
+  }
+  
+  // Inventory & Stock
+  if (text.includes('inventaire') || text.includes('inventory') || text.includes('stock')) {
+    return <InventoryIcon {...iconProps} />;
+  }
+  
+  // Notifications & Alerts
+  if (text.includes('notification') || text.includes('alerte') || text.includes('alert') || text.includes('avis')) {
+    return <NotificationsActiveIcon {...iconProps} />;
+  }
+  
+  // Visibility & Featured & Promotion
+  if (text.includes('visibilité') || text.includes('visibility') || text.includes('mis en avant') || text.includes('featured') || text.includes('promotion')) {
+    return <VisibilityIcon {...iconProps} />;
+  }
+  
+  // Discount & Offer & Deal
+  if (text.includes('réduction') || text.includes('discount') || text.includes('offre spéciale') || text.includes('deal') || text.includes('promo')) {
+    return <LocalOfferIcon {...iconProps} />;
+  }
+  
+  // Shipping & Delivery & Logistics
+  if (text.includes('livraison') || text.includes('shipping') || text.includes('delivery') || text.includes('logistique') || text.includes('transport')) {
+    return <LocalShippingIcon {...iconProps} />;
+  }
+  
+  // Business & Company & Enterprise
+  if (text.includes('entreprise') || text.includes('business') || text.includes('company') || text.includes('société')) {
+    return <BusinessIcon {...iconProps} />;
+  }
+  
+  // Performance & Speed Metrics
+  if (text.includes('performance') || text.includes('vitesse') || text.includes('speed') || text.includes('rapidité')) {
+    return <SpeedIcon {...iconProps} />;
+  }
+  
+  // Assessment & Evaluation
+  if (text.includes('évaluation') || text.includes('assessment') || text.includes('analyse de profitabilité')) {
+    return <AssessmentIcon {...iconProps} />;
+  }
+  
+  // Documents & Reports & Files
+  if (text.includes('document') || text.includes('fichier') || text.includes('file') || text.includes('certificat')) {
+    return <DescriptionIcon {...iconProps} />;
+  }
+  
+  // Premium & Quality
+  if (text.includes('premium') || text.includes('qualité') || text.includes('quality') || text.includes('excellence')) {
+    return <WorkspacePremiumIcon {...iconProps} />;
+  }
+  
+  // Growth & Trending
+  if (text.includes('croissance') || text.includes('growth') || text.includes('développement') || text.includes('development') || text.includes('augment')) {
+    return <TrendingUpIcon {...iconProps} />;
+  }
+  
+  // Default: checkmark for anything else
+  return <CheckCircleOutlineIcon {...iconProps} />;
+};
+
 const SubscriptionPlans = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -312,6 +592,8 @@ const SubscriptionPlans = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [countdown, setCountdown] = useState(5);
   const [userRole, setUserRole] = useState<string>('PROFESSIONAL');
 
   useEffect(() => {
@@ -371,27 +653,49 @@ const SubscriptionPlans = () => {
       return;
     }
     
-    navigate('/payment-method-selection', {
-      state: { selectedPlan }
-    });
+    // Show success dialog instead of navigating to payment
+    setShowSuccessDialog(true);
+    setProcessingPayment(false);
   };
 
-  const PlanFeatureList = ({ role }: { role: string }) => {
+  // Countdown and redirect effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (showSuccessDialog && countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (showSuccessDialog && countdown === 0) {
+      navigate('/waiting-for-verification', { replace: true });
+    }
+    return () => clearTimeout(timer);
+  }, [showSuccessDialog, countdown, navigate]);
+
+  const PlanFeatureList = ({ plan }: { plan: SubscriptionPlan }) => {
+    // Use benefits from API if available, otherwise fall back to default features
     let features = [];
-    if (role === 'PROFESSIONAL') {
-      features = [
-        { text: 'Accès à un réseau de professionnels', icon: <BusinessIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Fonctionnalités avancées de recherche', icon: <TrendingUpIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Statistiques de marché', icon: <TrendingUpIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Support technique prioritaire', icon: <SupportAgentIcon sx={{ fontSize: 18 }} /> }
-      ];
-    } else if (role === 'RESELLER') {
-      features = [
-        { text: 'Outils avancés de revente', icon: <StoreIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Accès aux listes d\'enchères exclusives', icon: <SecurityIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Rapports d\'analyse de profitabilité', icon: <TrendingUpIcon sx={{ fontSize: 18 }} /> },
-        { text: 'Support dédié aux revendeurs', icon: <SupportAgentIcon sx={{ fontSize: 18 }} /> }
-      ];
+    
+    if (plan.benefits && plan.benefits.length > 0) {
+      // Display benefits from the API with smart icon matching
+      features = plan.benefits.map(benefit => ({
+        text: benefit,
+        icon: getBenefitIcon(benefit)
+      }));
+    } else {
+      // Fallback to default features if no benefits provided (with smart icons)
+      if (plan.role === 'PROFESSIONAL') {
+        features = [
+          { text: 'Accès à un réseau de professionnels', icon: getBenefitIcon('Accès à un réseau de professionnels') },
+          { text: 'Fonctionnalités avancées de recherche', icon: getBenefitIcon('Fonctionnalités avancées de recherche') },
+          { text: 'Statistiques de marché', icon: getBenefitIcon('Statistiques de marché') },
+          { text: 'Support technique prioritaire', icon: getBenefitIcon('Support technique prioritaire') }
+        ];
+      } else if (plan.role === 'RESELLER') {
+        features = [
+          { text: 'Outils avancés de revente', icon: getBenefitIcon('Outils avancés de revente') },
+          { text: 'Accès aux listes d\'enchères exclusives', icon: getBenefitIcon('Accès aux listes d\'enchères exclusives') },
+          { text: 'Rapports d\'analyse de profitabilité', icon: getBenefitIcon('Rapports d\'analyse de profitabilité') },
+          { text: 'Support dédié aux revendeurs', icon: getBenefitIcon('Support dédié aux revendeurs') }
+        ];
+      }
     }
 
     return (
@@ -672,7 +976,7 @@ const SubscriptionPlans = () => {
                           }} 
                         />
                         
-                        <PlanFeatureList role={plan.role} />
+                        <PlanFeatureList plan={plan} />
                       </CardContent>
                       
                       <CardActions sx={{ justifyContent: 'center', p: 3, pt: 0 }}>
@@ -816,6 +1120,243 @@ const SubscriptionPlans = () => {
             )}
           </Container>
         </Container>
+
+        {/* Success Dialog - Redesigned */}
+        <SuccessDialog
+          open={showSuccessDialog}
+          onClose={() => {}}
+          disableEscapeKeyDown
+          aria-labelledby="success-dialog-title"
+        >
+          {/* Green Header with Success Icon */}
+          <SuccessHeader>
+            {/* Floating Celebration Emojis */}
+            <CelebrationIcon sx={{ top: '15%', left: '10%', animationDelay: '0s' }}>
+              🎉
+            </CelebrationIcon>
+            <CelebrationIcon sx={{ top: '25%', right: '12%', animationDelay: '0.5s' }}>
+              ✨
+            </CelebrationIcon>
+            <CelebrationIcon sx={{ bottom: '20%', left: '15%', animationDelay: '1s' }}>
+              🎊
+            </CelebrationIcon>
+            <CelebrationIcon sx={{ bottom: '15%', right: '8%', animationDelay: '1.5s' }}>
+              🌟
+            </CelebrationIcon>
+
+            {/* Success Icon */}
+            <SuccessIconWrapper>
+              <SuccessIcon>
+                <CheckCircleOutlineIcon />
+              </SuccessIcon>
+            </SuccessIconWrapper>
+
+            {/* Title - Felicitations */}
+            <Typography 
+              sx={{ 
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+                fontWeight: 800,
+                color: '#ffffff',
+                textAlign: 'center',
+                textShadow: '0 2px 20px rgba(0, 0, 0, 0.15)',
+                letterSpacing: '-0.5px',
+                position: 'relative',
+                zIndex: 2,
+                animation: `${fadeInUp} 0.6s ease-out 0.2s both`,
+                mb: 2
+              }}
+            >
+              Félicitations ! 🎉
+            </Typography>
+
+            {/* Subtitle */}
+            <Typography 
+              sx={{ 
+                fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
+                color: 'rgba(255, 255, 255, 0.95)',
+                textAlign: 'center',
+                fontWeight: 400,
+                position: 'relative',
+                zIndex: 2,
+                animation: `${fadeInUp} 0.6s ease-out 0.3s both`,
+                lineHeight: 1.6,
+                px: { xs: 2, sm: 3, md: 4 },
+                maxWidth: '100%',
+                wordWrap: 'break-word'
+              }}
+            >
+              Vous êtes à quelques heures seulement de devenir un membre professionnel MazadClick
+            </Typography>
+          </SuccessHeader>
+
+          {/* White Content Area - Better Spacing */}
+          <DialogContent sx={{ p: 5 }}>
+            {/* Plan Selected Badge */}
+            <Box 
+              sx={{ 
+                textAlign: 'center',
+                mb: 4,
+                animation: `${fadeInUp} 0.6s ease-out 0.4s both`
+              }}
+            >
+              <Chip
+                icon={<DiamondIcon />}
+                label={`Plan ${selectedPlan?.name}`}
+                sx={{
+                  px: 3,
+                  py: 3,
+                  height: 'auto',
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                  border: 'none',
+                  color: '#1565c0',
+                  boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)',
+                  '& .MuiChip-icon': {
+                    fontSize: '1.3rem',
+                    color: '#1976d2',
+                  },
+                  '& .MuiChip-label': {
+                    px: 1.5,
+                  }
+                }}
+              />
+            </Box>
+
+            {/* Verification Notice - Well Spaced */}
+            <Box 
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 3,
+                p: 3,
+                borderRadius: 4,
+                background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+                border: 'none',
+                mb: 4,
+                boxShadow: '0 4px 16px rgba(255, 152, 0, 0.12)',
+                animation: `${fadeInUp} 0.6s ease-out 0.5s both`
+              }}
+            >
+              <Box 
+                sx={{ 
+                  width: 64,
+                  height: 64,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 8px 20px rgba(255, 152, 0, 0.3)',
+                }}
+              >
+                <AccessTimeIcon sx={{ color: '#fff', fontSize: 32 }} />
+              </Box>
+              <Box flex={1}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#e65100', mb: 0.5 }}>
+                  Vérification en cours
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, fontSize: '0.95rem' }}>
+                  Vos documents seront vérifiés sous <strong>24 à 48 heures</strong>
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Countdown Badge - Better Spacing */}
+            <Box 
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 2,
+                p: 3,
+                borderRadius: 4,
+                background: countdown <= 3 
+                  ? 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)'
+                  : 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                border: 'none',
+                mb: 4,
+                boxShadow: countdown <= 3 
+                  ? '0 4px 16px rgba(244, 67, 54, 0.15)'
+                  : '0 4px 16px rgba(33, 150, 243, 0.15)',
+                animation: `${fadeInUp} 0.6s ease-out 0.6s both`
+              }}
+            >
+              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>
+                Redirection dans
+              </Typography>
+              <Box
+                sx={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: '50%',
+                  background: countdown <= 3 
+                    ? 'linear-gradient(135deg, #f44336 0%, #e57373 100%)'
+                    : 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 800,
+                  fontSize: '1.5rem',
+                  color: '#fff',
+                  boxShadow: countdown <= 3 
+                    ? '0 6px 20px rgba(244, 67, 54, 0.4)'
+                    : '0 6px 20px rgba(25, 118, 210, 0.4)',
+                  animation: countdown <= 3 ? `${pulseAnimation} 0.6s ease-in-out infinite` : 'none',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {countdown}
+              </Box>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>
+                {countdown === 1 ? 'seconde' : 'secondes'}
+              </Typography>
+            </Box>
+
+            {/* Action Button - Well Spaced */}
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={() => navigate('/waiting-for-verification', { replace: true })}
+              startIcon={<VerifiedIcon />}
+              sx={{
+                py: 2.5,
+                borderRadius: 4,
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '1.1rem',
+                background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+                boxShadow: '0 8px 24px rgba(76, 175, 80, 0.3)',
+                animation: `${fadeInUp} 0.6s ease-out 0.7s both`,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #388e3c 0%, #4caf50 100%)',
+                  boxShadow: '0 12px 32px rgba(76, 175, 80, 0.4)',
+                  transform: 'translateY(-3px)',
+                },
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Voir mon statut de vérification
+            </Button>
+
+            {/* Footer Note - Better Spacing */}
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                display: 'block',
+                textAlign: 'center',
+                color: 'text.secondary',
+                mt: 3,
+                fontSize: '0.9rem',
+                animation: `${fadeInUp} 0.6s ease-out 0.8s both`
+              }}
+            >
+              📧 Un email de confirmation vous sera envoyé
+            </Typography>
+          </DialogContent>
+        </SuccessDialog>
       </MainContainer>
     </Page>
   );
