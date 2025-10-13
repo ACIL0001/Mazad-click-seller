@@ -693,19 +693,14 @@ export default function IdentityVerification() {
 
   // Submit handler
   const handleSubmit = async () => {
-    // Validate required fields (only registre commerce and NIF are mandatory)
-    const requiredFieldsValidation = [
-      { files: registreCommerceCarteAuto, name: 'Registre de commerce/carte auto-entrepreneur' },
-      { files: nifRequired, name: 'NIF' },
-    ];
-
-    const missingRequired = requiredFieldsValidation.filter(field => !field.files.length);
+    // Validate required fields: Either (RC + NIF) OR (Carte Fellah only)
+    const hasRcAndNif = registreCommerceCarteAuto.length > 0 && nifRequired.length > 0;
+    const hasCarteFellah = carteFellah.length > 0;
     
-    if (missingRequired.length > 0) {
-      const missingNames = missingRequired.map(field => field.name).join(', ');
+    if (!hasRcAndNif && !hasCarteFellah) {
       setSubmitStatus({
         type: 'error',
-        message: `Les documents suivants sont requis: ${missingNames}`,
+        message: 'Vous devez fournir soit (RC/autres + NIF/N° articles) soit (Carte Fellah uniquement).',
       });
       return;
     }
@@ -967,8 +962,8 @@ export default function IdentityVerification() {
             Documents obligatoires à fournir
           </SectionTitle>
           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-            Le <strong>Registre de commerce/Carte auto-entrepreneur</strong> et le <strong>NIF</strong> sont obligatoires pour tous. 
-            La <strong>Carte Fellah</strong> est obligatoire uniquement pour la catégorie Fellah. Les autres documents sont optionnels.
+            Vous devez fournir soit <strong>(RC/autres + NIF/N° articles)</strong> soit <strong>(Carte Fellah uniquement)</strong>. 
+            Les autres documents sont optionnels mais peuvent accélérer votre processus de vérification.
           </Typography>
         </SectionContainer>
 
@@ -977,7 +972,7 @@ export default function IdentityVerification() {
           <Grid item xs={12} sm={6} md={4}>
             <RequiredGlassCard>
               <RequiredCompactCardHeader 
-                title="Registre de commerce/Carte auto-entrepreneur (OBLIGATOIRE)" 
+                title="RC/autres (OBLIGATOIRE)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
                   background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
@@ -1011,7 +1006,7 @@ export default function IdentityVerification() {
           <Grid item xs={12} sm={6} md={4}>
             <RequiredGlassCard>
               <RequiredCompactCardHeader 
-                title="NIF (OBLIGATOIRE)" 
+                title="NIF/N° articles (OBLIGATOIRE)" 
                 titleTypographyProps={{ variant: 'subtitle2' }}
                 avatar={<Box sx={{ 
                   background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
@@ -1025,7 +1020,7 @@ export default function IdentityVerification() {
               />
               <CompactCardContent>
                 <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Numéro d'identification fiscale (NIF).
+                  Document obligatoire: Numéro d'identification fiscale (NIF) ou Numéro d'articles.
                 </Typography>
                 <CompactUploadContainer>
                   <UploadMultiFile

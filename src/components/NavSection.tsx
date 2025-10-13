@@ -547,17 +547,17 @@ export default function NavSection({ navConfig, ...other }) {
       icon: getIcon('mdi:hand-coin'),
     },
     {
-      title: 'Appels d\'Offres',
+      title: 'Soumissions',
       path: '/dashboard/tenders',
       icon: getIcon('mdi:file-document-multiple'),
       children: [
         {
-          title: 'Mes Appels d\'Offres',
+          title: 'Mes Soumission',
           path: '/dashboard/tenders',
           icon: getIcon('mdi:file-document-multiple-outline'),
         },
         {
-          title: 'Nouvel Appel d\'Offres',
+          title: 'Nouvel Soumission',
           path: '/dashboard/tenders/create',
           icon: getIcon('mdi:file-document-plus'),
         },
@@ -605,8 +605,6 @@ export default function NavSection({ navConfig, ...other }) {
     messageNotificationCount,
     chatIcon: getIcon('material-symbols:chat', messageNotificationCount > 0 ? messageNotificationCount : null)
   });
-
-
 
   // Hide specific entries from the dashboard navigation
   const hiddenPaths = new Set<string>([

@@ -142,7 +142,7 @@ const SubscriptionIcon = styled(Box)(({ theme }) => ({
 const HeroSection = styled(Box)(({ theme }) => ({
   position: 'relative',
   textAlign: 'center',
-  padding: theme.spacing(6, 0, 4),
+  padding: theme.spacing(3, 0, 2),
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -190,6 +190,16 @@ const FloatingElement = styled(Box)(({ theme }) => ({
   border: '1px solid rgba(59, 130, 246, 0.08)',
 }));
 
+const cardPulse = keyframes`
+  0%, 100% { box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(59, 130, 246, 0.05); }
+  50% { box-shadow: 0 16px 32px -6px rgba(59, 130, 246, 0.12), 0 0 0 2px rgba(59, 130, 246, 0.1); }
+`;
+
+const cardPulseSelected = keyframes`
+  0%, 100% { box-shadow: 0 24px 48px -8px rgba(59, 130, 246, 0.2), 0 0 0 2px rgba(59, 130, 246, 0.1); }
+  50% { box-shadow: 0 28px 56px -8px rgba(59, 130, 246, 0.3), 0 0 0 3px rgba(59, 130, 246, 0.15); }
+`;
+
 const PlanCard = styled(Card)<{ selected?: boolean; popular?: boolean }>(({ theme, selected, popular }) => ({
   height: '100%',
   display: 'flex',
@@ -219,10 +229,11 @@ const PlanCard = styled(Card)<{ selected?: boolean; popular?: boolean }>(({ them
       `,
   transform: selected ? 'translateY(-12px) scale(1.03)' : 'translateY(0) scale(1)',
   transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+  animation: selected ? `${cardPulseSelected} 3s ease-in-out infinite` : `${cardPulse} 3s ease-in-out infinite`,
   cursor: 'pointer',
   overflow: 'hidden',
   '&:hover': {
-    transform: selected ? 'translateY(-12px) scale(1.03)' : 'translateY(-6px) scale(1.01)',
+    transform: selected ? 'translateY(-12px) scale(1.05)' : 'translateY(-6px) scale(1.02)',
     boxShadow: selected
       ? `
           0 32px 64px -8px rgba(59, 130, 246, 0.25),
@@ -265,8 +276,8 @@ const PlanCard = styled(Card)<{ selected?: boolean; popular?: boolean }>(({ them
 }));
 
 const PlanIcon = styled(Box)(({ theme }) => ({
-  width: 72,
-  height: 72,
+  width: 56,
+  height: 56,
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
@@ -278,7 +289,7 @@ const PlanIcon = styled(Box)(({ theme }) => ({
       rgba(219, 234, 254, 0.2) 100%)
   `,
   border: `2px solid rgba(59, 130, 246, 0.1)`,
-  marginBottom: theme.spacing(2),
+  marginBottom: theme.spacing(1.5),
   position: 'relative',
   backdropFilter: 'blur(8px)',
 }));
@@ -434,7 +445,7 @@ const CelebrationIcon = styled(Box)(({ theme }) => ({
 }));
 
 const getPlanIcon = (planRole: string) => {
-  const iconProps = { sx: { fontSize: 36, color: '#1976d2' } };
+  const iconProps = { sx: { fontSize: 30, color: '#1976d2' } };
   
   if (planRole === 'PROFESSIONAL') {
     return <WorkspacePremiumIcon {...iconProps} />;
@@ -674,8 +685,8 @@ const SubscriptionPlans = () => {
     let features = [];
     
     if (plan.benefits && plan.benefits.length > 0) {
-      // Display benefits from the API with smart icon matching
-      features = plan.benefits.map(benefit => ({
+      // Display benefits from the API with smart icon matching (limit to 4 for space)
+      features = plan.benefits.slice(0, 4).map(benefit => ({
         text: benefit,
         icon: getBenefitIcon(benefit)
       }));
@@ -683,27 +694,27 @@ const SubscriptionPlans = () => {
       // Fallback to default features if no benefits provided (with smart icons)
       if (plan.role === 'PROFESSIONAL') {
         features = [
-          { text: 'Accès à un réseau de professionnels', icon: getBenefitIcon('Accès à un réseau de professionnels') },
-          { text: 'Fonctionnalités avancées de recherche', icon: getBenefitIcon('Fonctionnalités avancées de recherche') },
+          { text: 'Accès réseau professionnels', icon: getBenefitIcon('Accès à un réseau de professionnels') },
+          { text: 'Recherche avancée', icon: getBenefitIcon('Fonctionnalités avancées de recherche') },
           { text: 'Statistiques de marché', icon: getBenefitIcon('Statistiques de marché') },
-          { text: 'Support technique prioritaire', icon: getBenefitIcon('Support technique prioritaire') }
+          { text: 'Support prioritaire', icon: getBenefitIcon('Support technique prioritaire') }
         ];
       } else if (plan.role === 'RESELLER') {
         features = [
-          { text: 'Outils avancés de revente', icon: getBenefitIcon('Outils avancés de revente') },
-          { text: 'Accès aux listes d\'enchères exclusives', icon: getBenefitIcon('Accès aux listes d\'enchères exclusives') },
-          { text: 'Rapports d\'analyse de profitabilité', icon: getBenefitIcon('Rapports d\'analyse de profitabilité') },
-          { text: 'Support dédié aux revendeurs', icon: getBenefitIcon('Support dédié aux revendeurs') }
+          { text: 'Outils de revente', icon: getBenefitIcon('Outils avancés de revente') },
+          { text: 'Enchères exclusives', icon: getBenefitIcon('Accès aux listes d\'enchères exclusives') },
+          { text: 'Analyse profitabilité', icon: getBenefitIcon('Rapports d\'analyse de profitabilité') },
+          { text: 'Support dédié', icon: getBenefitIcon('Support dédié aux revendeurs') }
         ];
       }
     }
 
     return (
-      <List dense sx={{ mt: 2 }}>
+      <List dense sx={{ mt: 1 }}>
         {features.map((feature, index) => (
           <FeatureItem key={index} disableGutters>
             <ListItemIcon sx={{ 
-              minWidth: 32, 
+              minWidth: 28, 
               color: '#1976d2',
               '& .MuiSvgIcon-root': {
                 filter: 'drop-shadow(0 1px 2px rgba(25, 118, 210, 0.15))'
@@ -714,7 +725,7 @@ const SubscriptionPlans = () => {
             <ListItemText 
               primary={feature.text} 
               primaryTypographyProps={{ 
-                fontSize: '0.9rem', 
+                fontSize: '0.8rem', 
                 fontWeight: 500,
                 color: 'text.primary'
               }} 
@@ -854,9 +865,9 @@ const SubscriptionPlans = () => {
                 <TitleGradient 
                   variant="h1" 
                   sx={{ 
-                    fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
-                    lineHeight: 0.9,
-                    mb: 2,
+                    fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                    lineHeight: 1,
+                    mb: 1,
                     textShadow: '0 3px 15px rgba(25, 118, 210, 0.15)'
                   }}
                 >
@@ -868,8 +879,8 @@ const SubscriptionPlans = () => {
                   sx={{ 
                     color: '#424242',
                     fontWeight: 300,
-                    fontSize: { xs: '1.1rem', md: '1.4rem' },
-                    mb: 1,
+                    fontSize: { xs: '0.95rem', md: '1.1rem' },
+                    mb: 0.5,
                     opacity: 0.8
                   }}
                 >
@@ -883,27 +894,27 @@ const SubscriptionPlans = () => {
                     fontWeight: 400,
                     maxWidth: '500px',
                     mx: 'auto',
-                    lineHeight: 1.5,
-                    fontSize: '1rem'
+                    lineHeight: 1.4,
+                    fontSize: '0.9rem'
                   }}
                 >
-                  Choisissez le plan qui correspond à vos besoins et commencez dès aujourd'hui.
+                  Choisissez le plan qui correspond à vos besoins
                 </Typography>
               </Box>
             </Fade>
           </HeroSection>
 
-          <Container maxWidth="md" sx={{ pb: 6 }}>
-            <Grid container spacing={3} justifyContent="center" alignItems="stretch">
+          <Container maxWidth="md" sx={{ pb: 3 }}>
+            <Grid container spacing={2.5} justifyContent="center" alignItems="stretch">
               {plans.map((plan, index) => (
-                <Grid item xs={12} sm={6} md={4} key={plan.id || index}>
+                <Grid item xs={12} sm={6} md={4.5} key={plan.id || index}>
                   <Slide in timeout={600 + index * 150} direction="up">
                     <PlanCard
                       selected={selectedPlan?.id === plan.id}
                       popular={index === 1}
                       onClick={() => setSelectedPlan(plan)}
                     >
-                      <CardContent sx={{ flexGrow: 1, p: 3, textAlign: 'center' }}>
+                      <CardContent sx={{ flexGrow: 1, p: 2, textAlign: 'center' }}>
                         <PlanIcon>
                           {getPlanIcon(plan.role)}
                         </PlanIcon>
@@ -914,7 +925,7 @@ const SubscriptionPlans = () => {
                           sx={{ 
                             fontWeight: 700,
                             mb: 1.5,
-                            fontSize: '1.5rem',
+                            fontSize: '1.3rem',
                             background: `linear-gradient(135deg, #1565c0, #1976d2)`,
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
@@ -924,33 +935,62 @@ const SubscriptionPlans = () => {
                           {plan.name}
                         </Typography>
                         
-                        <Box sx={{ mb: 2 }}>
+                        <Box 
+                          sx={{ 
+                            mb: 2,
+                            p: 1.5,
+                            borderRadius: 2.5,
+                            background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 152, 0, 0.12) 100%)',
+                            border: '2px solid rgba(255, 193, 7, 0.3)',
+                            boxShadow: '0 4px 20px rgba(255, 193, 7, 0.15)',
+                          }}
+                        >
                           <Typography 
-                            variant="h3" 
+                            variant="h2" 
                             sx={{ 
-                              fontWeight: 800,
-                              fontSize: '2rem',
-                              lineHeight: 1,
-                              background: `linear-gradient(135deg, #1565c0, #2196f3)`,
+                              fontWeight: 900,
+                              fontSize: '2.5rem',
+                              lineHeight: 1.1,
+                              background: `linear-gradient(135deg, #f57c00 0%, #ff9800 50%, #ffa726 100%)`,
                               backgroundClip: 'text',
                               WebkitBackgroundClip: 'text',
                               WebkitTextFillColor: 'transparent',
-                              textShadow: '0 2px 10px rgba(25, 118, 210, 0.1)'
+                              textShadow: '0 3px 15px rgba(255, 152, 0, 0.2)',
+                              mb: 0.25
                             }}
                           >
                             {plan.price.toLocaleString('fr-DZ')}
                             <Typography 
                               component="span" 
-                              variant="h6" 
+                              variant="h5" 
                               sx={{ 
-                                ml: 0.5, 
-                                color: '#666',
-                                fontWeight: 400,
-                                fontSize: '1rem'
+                                ml: 1, 
+                                background: `linear-gradient(135deg, #f57c00, #ff9800)`,
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                fontWeight: 700,
+                                fontSize: '1.1rem'
                               }}
                             >
                               DZD
                             </Typography>
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              color: '#f57c00',
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                              mt: 0.25,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 0.5
+                            }}
+                          >
+                            <AccessTimeIcon sx={{ fontSize: 18 }} />
+                            {plan.duration} mois
                           </Typography>
                         </Box>
                         
@@ -958,9 +998,9 @@ const SubscriptionPlans = () => {
                           variant="body2" 
                           sx={{ 
                             color: '#666',
-                            fontSize: '0.9rem',
-                            lineHeight: 1.4,
-                            mb: 2,
+                            fontSize: '0.85rem',
+                            lineHeight: 1.3,
+                            mb: 1.5,
                             px: 0.5
                           }}
                         >
@@ -969,7 +1009,7 @@ const SubscriptionPlans = () => {
                         
                         <Divider 
                           sx={{ 
-                            my: 2, 
+                            my: 1.5, 
                             background: `linear-gradient(90deg, transparent, rgba(25, 118, 210, 0.2), transparent)`,
                             height: 1.5,
                             border: 'none'
@@ -979,7 +1019,7 @@ const SubscriptionPlans = () => {
                         <PlanFeatureList plan={plan} />
                       </CardContent>
                       
-                      <CardActions sx={{ justifyContent: 'center', p: 3, pt: 0 }}>
+                      <CardActions sx={{ justifyContent: 'center', p: 2, pt: 0 }}>
                         {selectedPlan?.id === plan.id ? (
                           <PrimaryButton
                             fullWidth
@@ -1018,7 +1058,7 @@ const SubscriptionPlans = () => {
 
             {selectedPlan && (
               <Slide in timeout={800} direction="up">
-                <Box sx={{ mt: 5 }}>
+                <Box sx={{ mt: 2 }}>
                   <Paper 
                     elevation={0} 
                     sx={{ 
@@ -1026,53 +1066,51 @@ const SubscriptionPlans = () => {
                       backdropFilter: 'blur(10px)',
                       borderRadius: 3,
                       border: '1px solid rgba(0, 0, 0, 0.05)',
-                      p: 4,
-                      maxWidth: '600px',
+                      p: 2.5,
+                      maxWidth: '480px',
                       mx: 'auto'
                     }}
                   >
-                    {/* Simple Header */}
-                    <Box textAlign="center" mb={4}>
+                    {/* Compact Header */}
+                    <Box textAlign="center" mb={2}>
                       <Typography 
-                        variant="h5" 
+                        variant="h6" 
                         sx={{ 
                           fontWeight: 600,
                           color: '#333',
-                          mb: 1
+                          fontSize: '1.1rem'
                         }}
                       >
                         Résumé de commande
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Vérifiez votre sélection avant de continuer
-                      </Typography>
                     </Box>
                     
-                    {/* Plan Summary */}
+                    {/* Compact Plan Summary */}
                     <Box 
                       sx={{ 
-                        p: 3, 
+                        p: 2, 
                         borderRadius: 2, 
                         background: '#f8f9fa',
                         border: '1px solid rgba(0, 0, 0, 0.05)',
-                        mb: 3
+                        mb: 2
                       }}
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.25, fontSize: '0.95rem' }}>
                             {selectedPlan.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {selectedPlan.description}
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                            {selectedPlan.duration} mois
                           </Typography>
                         </Box>
                         <Box textAlign="right">
                           <Typography 
-                            variant="h5" 
+                            variant="h6" 
                             sx={{ 
                               fontWeight: 700,
-                              color: '#1976d2'
+                              color: '#1976d2',
+                              fontSize: '1.3rem'
                             }}
                           >
                             {selectedPlan.price.toLocaleString('fr-DZ')} DZD
@@ -1081,7 +1119,7 @@ const SubscriptionPlans = () => {
                       </Stack>
                     </Box>
                     
-                    {/* Payment Button */}
+                    {/* Compact Payment Button */}
                     <LoadingButton
                       onClick={handleProceedToPayment}
                       loading={processingPayment}
@@ -1089,8 +1127,8 @@ const SubscriptionPlans = () => {
                       size="large"
                       fullWidth
                       sx={{
-                        py: 2,
-                        fontSize: '1rem',
+                        py: 1.5,
+                        fontSize: '0.95rem',
                         fontWeight: 600,
                         textTransform: 'none',
                         borderRadius: 2,
@@ -1103,15 +1141,15 @@ const SubscriptionPlans = () => {
                       {processingPayment ? 'Traitement...' : 'Continuer vers le paiement'}
                     </LoadingButton>
 
-                    {/* Simple Trust Line */}
+                    {/* Compact Trust Line */}
                     <Box sx={{ 
-                      mt: 3, 
-                      pt: 2, 
+                      mt: 1.5, 
+                      pt: 1.5, 
                       borderTop: '1px solid rgba(0, 0, 0, 0.05)',
                       textAlign: 'center'
                     }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Paiement sécurisé • Support 24/7 • Activation immédiate
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        🔒 Paiement sécurisé • ⚡ Activation immédiate
                       </Typography>
                     </Box>
                   </Paper>
