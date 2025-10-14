@@ -15,15 +15,15 @@ const app = {
   domain: 'www.mazadclick.com',
   
   // Updated to use production server URL
-  socket: import.meta.env.VITE_SOCKET_URL || 'https://mazadclick-server.onrender.com/',
-  route: import.meta.env.VITE_STATIC_URL || "https://mazadclick-server.onrender.com/static/",
-  baseURL: import.meta.env.VITE_API_URL || "https://mazadclick-server.onrender.com/",
+  // socket: import.meta.env.VITE_SOCKET_URL || 'https://mazadclick-server.onrender.com/',
+  // route: import.meta.env.VITE_STATIC_URL || "https://mazadclick-server.onrender.com/static/",
+  // baseURL: import.meta.env.VITE_API_URL || "https://mazadclick-server.onrender.com/",
   buyerURL: import.meta.env.VITE_BUYER_URL || "https://buyer-mazad.vercel.app/",
 
   // Development URLs (commented out)
-  // socket: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/',
-  // route: import.meta.env.VITE_STATIC_URL || "http://localhost:3000/static/",
-  // baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
+  socket: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/',
+  route: import.meta.env.VITE_STATIC_URL || "http://localhost:3000/static/",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
 
   apiKey: '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
   googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyAUCeSWuTshwbTAfmZzk7D3qLdhr-0wRZ4',

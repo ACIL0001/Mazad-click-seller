@@ -79,17 +79,17 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Appels d\'Offres',
+      title: 'Soumission',
       path: '/dashboard/tenders',
       icon: getIcon('mdi:file-document-multiple'),
       children: [
         {
-          title: 'Mes Appels d\'Offres',
+          title: 'Mes Soumissions',
           path: '/dashboard/tenders',
           icon: getIcon('mdi:file-document-multiple-outline'),
         },
         {
-          title: 'Nouvel Appel d\'Offres',
+          title: 'Nouvel Soumission',
           path: '/dashboard/tenders/create',
           icon: getIcon('mdi:file-document-plus'),
         },

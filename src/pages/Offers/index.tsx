@@ -14,6 +14,9 @@ import {
   Chip,
   Alert,
   Box,
+  Tabs,
+  Tab,
+  Card,
 } from '@mui/material';
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 // components
@@ -76,6 +79,7 @@ export default function Offers() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [filterTab, setFilterTab] = useState<'received' | 'my'>('received');
 
   useEffect(() => {
     // Debug auth state
@@ -246,6 +250,24 @@ export default function Offers() {
     return <Chip label={t('pending')} size="small" color="warning" variant="outlined" />;
   };
 
+  // Filter offers based on current tab
+  const getFilteredOffers = () => {
+    if (!offers || offers.length === 0) return [];
+    
+    const currentUserId = auth?.user?._id;
+    if (!currentUserId) return [];
+    
+    if (filterTab === 'received') {
+      // Show offers made by other users (received offers)
+      return offers.filter(offer => offer.user._id !== currentUserId);
+    } else {
+      // Show offers made by current user (my offers)
+      return offers.filter(offer => offer.user._id === currentUserId);
+    }
+  };
+
+  const filteredOffers = getFilteredOffers();
+
   const TableBodyComponent = ({ data = [] }) => {
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
@@ -299,15 +321,6 @@ export default function Offers() {
               
               <TableCell align="right">
                 <Stack direction="row" spacing={1}>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDeleteOffer(_id)}
-                    disabled={loading}
-                  >
-                    Supprimer
-                  </Button>
                   {bid?._id && (
                     <Button
                       component={RouterLink}
@@ -320,25 +333,52 @@ export default function Offers() {
                     </Button>
                   )}
                   
-                  {(row.status || 'PENDING') === 'PENDING' && (
+                  {filterTab === 'received' ? (
+                    // Actions for received offers (offers made by others)
+                    <>
+                      {(row.status || 'PENDING') === 'PENDING' && (
+                        <>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            onClick={() => handleAcceptOffer(_id)}
+                            disabled={loading}
+                          >
+                            Accepter
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleRejectOffer(_id)}
+                            disabled={loading}
+                          >
+                            Refuser
+                          </Button>
+                        </>
+                      )}
+                      
+                      {(row.status || 'PENDING') !== 'PENDING' && (
+                        <Chip
+                          label={(row.status || 'PENDING') === 'ACCEPTED' ? 'Acceptée' : 'Refusée'}
+                          color={(row.status || 'PENDING') === 'ACCEPTED' ? 'success' : 'error'}
+                          variant="outlined"
+                          size="small"
+                        />
+                      )}
+                    </>
+                  ) : (
+                    // Actions for my offers (offers made by current user)
                     <Button
                       size="small"
-                      variant="contained"
-                      color="success"
-                      onClick={() => handleAcceptOffer(_id)}
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDeleteOffer(_id)}
                       disabled={loading}
                     >
-                      Accepter
+                      Supprimer
                     </Button>
-                  )}
-                  
-                  {(row.status || 'PENDING') !== 'PENDING' && (
-                    <Chip
-                      label={(row.status || 'PENDING') === 'ACCEPTED' ? 'Acceptée' : 'Refusée'}
-                      color={(row.status || 'PENDING') === 'ACCEPTED' ? 'success' : 'error'}
-                      variant="outlined"
-                      size="small"
-                    />
                   )}
                 </Stack>
               </TableCell>
@@ -394,9 +434,24 @@ export default function Offers() {
       );
     }
 
+    if (filteredOffers.length === 0) {
+      return (
+        <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            {filterTab === 'received' ? 'Aucune offre reçue' : 'Aucune offre faite'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            {filterTab === 'received' 
+              ? 'Vous n\'avez reçu aucune offre pour le moment.' 
+              : 'Vous n\'avez fait aucune offre pour le moment.'}
+          </Typography>
+        </Stack>
+      );
+    }
+
     return (
       <MuiTable
-        data={offers}
+        data={filteredOffers}
         columns={COLUMNS}
         page={page}
         setPage={setPage}
@@ -439,8 +494,10 @@ export default function Offers() {
             spacing={{ xs: 2, sm: 2 }}
           >
             <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2}>
-              <Typography variant="h4" sx={{ m: 0 }}>{t('offers.myOffers')}</Typography>
-              {selected.length > 0 && (
+              <Typography variant="h4" sx={{ m: 0 }}>
+                {filterTab === 'received' ? 'Offres reçues' : 'Mes offres'}
+              </Typography>
+              {selected.length > 0 && filterTab === 'my' && (
                 <Button
                   variant="outlined"
                   color="error"
@@ -478,6 +535,39 @@ export default function Offers() {
         <Stack mb={3}>
           <Breadcrumb />
         </Stack>
+
+        {/* Filter Tabs */}
+        <Card sx={{ mb: 3, borderRadius: 2 }}>
+          <Tabs
+            value={filterTab}
+            onChange={(event, newValue) => {
+              setFilterTab(newValue);
+              setPage(0); // Reset to first page when switching tabs
+              setSelected([]); // Clear selection when switching tabs
+            }}
+            sx={{
+              '& .MuiTab-root': {
+                minHeight: 48,
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '16px',
+              },
+              '& .Mui-selected': {
+                color: theme.palette.primary.main,
+              },
+            }}
+          >
+            <Tab 
+              label={`Offre reçue (${offers.filter(offer => offer.user._id !== auth?.user?._id).length})`} 
+              value="received" 
+            />
+            <Tab 
+              label={`Mon offre (${offers.filter(offer => offer.user._id === auth?.user?._id).length})`} 
+              value="my" 
+            />
+          </Tabs>
+        </Card>
+
         {renderContent()}
       </Container>
     </Page>
