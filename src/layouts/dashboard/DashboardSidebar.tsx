@@ -11,8 +11,6 @@ import {
   Typography, 
   Avatar, 
   Stack, 
-  Fade,
-  Slide,
   Chip
 } from '@mui/material';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -54,26 +52,6 @@ const AccountStyle = styled('div')(({ theme }) => ({
   borderRadius: Number(theme.shape.borderRadius) * 2,
   background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: '-100%',
-    width: '100%',
-    height: '100%',
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.1)}, transparent)`,
-    transition: 'left 0.6s ease',
-  },
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
-    '&::before': {
-      left: '100%',
-    },
-  },
 }));
 
 const StyledChip = styled(Chip)(({ theme }) => ({
@@ -101,13 +79,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
   const { isRTL } = useLanguage();
   const { t } = useTranslation();
   const navConfig = useNavConfig();
-  const [mounted, setMounted] = useState(false);
 
   const isDesktop = useResponsive('up', 'lg');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (isOpenSidebar) {
@@ -138,40 +111,58 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
         },
       }}
     >
-      {/* Logo Section with Animation */}
-      <Fade in={mounted} timeout={800}>
+      {/* Logo Section */}
+      <Link component={RouterLink} to="/dashboard/app" underline="none">
         <Box sx={{ 
           px: 2.5, 
           py: 3, 
           display: 'inline-flex',
-          transition: 'transform 0.3s ease',
-          '&:hover': {
-            transform: 'scale(1.05)',
-          }
+          cursor: 'pointer'
         }}>
           <Logo />
         </Box>
-      </Fade>
+      </Link>
 
-      {/* Account Section with Enhanced Styling */}
-      <Slide direction="right" in={mounted} timeout={1000}>
-        <Box sx={{ mb: 5, mx: 2.5 }}>
+      {/* Account Section */}
+      <Box sx={{ mb: 5, mx: 2.5 }}>
           <Link underline="none" component={RouterLink} to="#">
             <AccountStyle className="account-style">
               <Box sx={{ position: 'relative' }}>
                 {isLogged && !!auth.user?.avatar ? (
                   <Avatar 
-                    src={app.route + auth.user?.avatar.filename} 
+                    src={((): string => {
+                      const avatar = auth.user?.avatar as any;
+                      if (!avatar) return '';
+                      
+                      // Try fullUrl first
+                      if (avatar.fullUrl) {
+                        return avatar.fullUrl.replace('http://localhost:3000', 'https://api.mazad.click');
+                      }
+                      
+                      // Try url
+                      if (avatar.url) {
+                        if (avatar.url.startsWith('http')) {
+                          return avatar.url.replace('http://localhost:3000', 'https://api.mazad.click');
+                        }
+                        return app.baseURL + (avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`);
+                      }
+                      
+                      // Try filename
+                      if (avatar.filename) {
+                        return app.baseURL + '/static/' + avatar.filename;
+                      }
+                      
+                      return '';
+                    })()}
                     alt="photoURL"
                     sx={{
                       width: 48,
                       height: 48,
                       border: (theme) => `3px solid ${theme.palette.primary.main}`,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'scale(1.1)',
-                        boxShadow: (theme) => `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`,
-                      }
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = '';
                     }}
                   />
                 ) : (
@@ -252,18 +243,14 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
             <AccountPopover />
           </Box>
         </Box>
-      </Slide>
 
       {/* Navigation Section */}
-      <Slide direction="up" in={mounted} timeout={1200}>
-        <Box sx={{ flexGrow: 1 }}>
-          <NavSection navConfig={navConfig} />
-        </Box>
-      </Slide>
+      <Box sx={{ flexGrow: 1 }}>
+        <NavSection navConfig={navConfig} />
+      </Box>
 
-      {/* Footer Section with Modern Design */}
-      <Fade in={mounted} timeout={1500}>
-        <Box sx={{ px: 2.5, pb: 3, mt: 2 }}>
+      {/* Footer Section */}
+      <Box sx={{ px: 2.5, pb: 3, mt: 2 }}>
           <Stack 
             alignItems="center" 
             spacing={2} 
@@ -305,7 +292,6 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
             </Box>
           </Stack>
         </Box>
-      </Fade>
     </Scrollbar>
   );
 

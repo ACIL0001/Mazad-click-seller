@@ -16,6 +16,15 @@ export const IdentityAPI = {
   
   // Get current user's identity
   getMy: (): Promise<any> => requests.get('/identities/me'),
+  getMyIdentity: (): Promise<any> => requests.get('/identities/me'),
+  
+  // Update document
+  updateDocument: (identityId: string, fieldKey: string, file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('field', fieldKey); // Backend expects 'field' not 'fieldKey'
+    return requests.put(`/identities/${identityId}/update-document`, formData);
+  },
   
   // Get identity by ID (admin only)
   getById: (id: string): Promise<any> => requests.get(`/identities/${id}`),

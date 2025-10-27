@@ -105,7 +105,7 @@ export default function DashboardApp() {
     const testApiConnection = async () => {
       try {
         console.log('🧪 Testing API connection...');
-        const response = await fetch('https://mazadclick-server.onrender.com/seller-stats/quick-summary', {
+        const response = await fetch('http://localhost:3000/seller-stats/quick-summary', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens?.accessToken || 'test-token'}`,
@@ -369,7 +369,7 @@ useEffect(() => {
   // Statistics data for modern widgets using REAL BACKEND DATA
   const auctionStatsData = sellerStats ? [
     {
-      title: t('dashboard.totalAuctions') || 'Total Auctions',
+      title: t('totalAuctions') || 'Total Auctions',
       total: sellerStats.totalAuctions || 0,
       icon: 'mdi:gavel',
       color: 'primary',
@@ -378,7 +378,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: t('dashboard.activeAuctions') || 'Active Auctions',
+      title: t('activeAuctions') || 'Active Auctions',
       total: sellerStats.activeAuctions || 0,
       icon: 'mdi:timer-sand',
       color: 'success',
@@ -408,7 +408,7 @@ useEffect(() => {
 
   const offersStatsData = sellerStats ? [
     {
-      title: t('dashboard.totalOffers') || 'Total Offers',
+      title: t('totalOffers') || 'Total Offers',
       total: sellerStats.totalOffers || 0,
       icon: 'mdi:hand-coin',
       color: 'info',
@@ -417,7 +417,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: t('dashboard.pendingOffers') || 'Pending Offers',
+      title: t('pendingOffers') || 'Pending Offers',
       total: sellerStats.pendingOffers || 0,
       icon: 'mdi:clock-alert',
       color: 'warning',
@@ -448,7 +448,7 @@ useEffect(() => {
 
   const financialStatsData = sellerStats ? [
     {
-      title: t('dashboard.totalEarnings') || 'Total Earnings',
+      title: t('totalEarnings') || 'Total Earnings',
       total: `${(sellerStats.totalEarnings || 0).toLocaleString()} DA`,
       icon: 'mdi:cash-multiple',
       color: 'success',
@@ -456,7 +456,7 @@ useEffect(() => {
       trendValue: sellerStats.totalEarnings > 0 ? '+' + Math.floor(Math.random() * 30 + 10) + '%' : '0%',
     },
     {
-      title: t('dashboard.averagePrice') || 'Average Price',
+      title: t('averagePrice') || 'Average Price',
       total: `${(sellerStats.averagePrice || 0).toLocaleString()} DA`,
       icon: 'mdi:chart-line',
       color: 'primary',
@@ -464,7 +464,7 @@ useEffect(() => {
       trendValue: sellerStats.averagePrice > 0 ? '+' + Math.floor(Math.random() * 10 + 2) + '%' : '0%',
     },
     {
-      title: t('dashboard.totalViews') || 'Total Views',
+      title: t('totalViews') || 'Total Views',
       total: sellerStats.viewsTotal || 0,
       icon: 'mdi:eye',
       color: 'info',
@@ -472,7 +472,7 @@ useEffect(() => {
       trendValue: sellerStats.viewsTotal > 0 ? '+' + Math.floor(Math.random() * 20 + 5) + '%' : '0%',
     },
     {
-      title: t('dashboard.conversionRate') || 'Conversion Rate',
+      title: t('conversionRate') || 'Conversion Rate',
       total: `${(sellerStats.conversionRate || 0).toFixed(1)}%`,
       icon: 'mdi:trending-up',
       color: 'secondary',
@@ -927,8 +927,8 @@ useEffect(() => {
                 }}
               >
                 {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true
-                  ? t('dashboard.professionalWelcome') || 'Professional - Full Access'
-                  : t('dashboard.basicWelcome') || 'Basic - Limited Access'
+                  ? t('professional Welcome') || 'Professional - Full Access'
+                  : t('dashboard.basic Welcome') || 'Basic - Limited Access'
                 }
               </Typography>
             </Box>

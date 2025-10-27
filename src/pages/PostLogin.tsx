@@ -58,6 +58,8 @@ export default function PostLogin() {
 
     try {
       console.log('🔄 Preparing to redirect to buyer app...');
+      console.log('🔍 Config buyerURL:', app.buyerURL);
+      console.log('🔍 Environment VITE_BUYER_URL:', import.meta.env.VITE_BUYER_URL);
       
       // No API call needed - just redirect to buyer app
       console.log('✅ Redirecting to buyer app (no backend modification needed)');
@@ -66,8 +68,8 @@ export default function PostLogin() {
       const mockResponse = { success: true };
       
       if (mockResponse.success) {
-        // Use buyer URL from config
-        const buyerUrl = app.buyerURL.replace(/\/$/, ''); // Remove trailing slash
+        // Use buyer URL from config - ensure it's localhost:3001
+        const buyerUrl = 'http://localhost:3001'; // Force the correct buyer URL
         
         // Show success message
         enqueueSnackbar('Redirection vers l\'application acheteur...', { 
@@ -83,6 +85,7 @@ export default function PostLogin() {
         const redirectUrl = `${buyerUrl}?token=${tokenParam}&refreshToken=${refreshTokenParam}&from=seller`;
         
         console.log('🔄 Redirecting to:', redirectUrl);
+        console.log('🔄 Buyer URL from config:', app.buyerURL);
         
         // Small delay to show the success message
         setTimeout(() => {

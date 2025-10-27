@@ -638,6 +638,10 @@ export default function IdentityVerification() {
     message: '',
   });
 
+  // Step management
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isStep1Valid, setIsStep1Valid] = useState(false);
+
   const handleLogout = () => {
     authStore.getState().clear();
     navigate('/login');
@@ -691,8 +695,43 @@ export default function IdentityVerification() {
     setter(filteredFiles);
   };
 
+  // Step validation and navigation
+  const validateStep1 = () => {
+    const hasRcAndNif = registreCommerceCarteAuto.length > 0 && nifRequired.length > 0;
+    const hasCarteFellah = carteFellah.length > 0;
+    return hasRcAndNif || hasCarteFellah;
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1) {
+      const isValid = validateStep1();
+      if (!isValid) {
+        setSubmitStatus({
+          type: 'error',
+          message: 'Vous devez fournir soit (RC/autres + NIF/N° articles) soit (Carte Fellah uniquement).',
+        });
+        return;
+      }
+      setIsStep1Valid(true);
+      setCurrentStep(2);
+      setSubmitStatus({ type: null, message: '' });
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+      setSubmitStatus({ type: null, message: '' });
+    }
+  };
+
   // Submit handler
   const handleSubmit = async () => {
+    // Only submit from step 2, step 1 validation is handled in handleNextStep
+    if (currentStep !== 2) {
+      return;
+    }
+
     // Validate required fields: Either (RC + NIF) OR (Carte Fellah only)
     const hasRcAndNif = registreCommerceCarteAuto.length > 0 && nifRequired.length > 0;
     const hasCarteFellah = carteFellah.length > 0;
@@ -912,15 +951,15 @@ export default function IdentityVerification() {
         </HeaderSection>
 
         {/* Progress Stepper */}
-        <ProgressStepper activeStep={0} alternativeLabel>
+        <ProgressStepper activeStep={currentStep - 1} alternativeLabel>
           <Step>
             <StepLabel>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main', fontSize: '0.9rem' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: currentStep >= 1 ? 'primary.main' : 'text.secondary', fontSize: '0.9rem' }}>
                   Étape 1
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
-                  Vérification d'identité
+                  Documents obligatoires
                 </Typography>
               </Box>
             </StepLabel>
@@ -928,11 +967,11 @@ export default function IdentityVerification() {
           <Step>
             <StepLabel>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.9rem' }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: currentStep >= 2 ? 'primary.main' : 'text.secondary', fontSize: '0.9rem' }}>
                   Étape 2
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
-                  Choix d'abonnement
+                  Documents optionnels
                 </Typography>
               </Box>
             </StepLabel>
@@ -944,7 +983,7 @@ export default function IdentityVerification() {
                   Étape 3
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
-                  Paiement
+                  Choix d'abonnement
                 </Typography>
               </Box>
             </StepLabel>
@@ -957,367 +996,416 @@ export default function IdentityVerification() {
           </StyledAlert>
         )}
 
-        <SectionContainer>
-          <SectionTitle variant="h6">
-            Documents obligatoires à fournir
-          </SectionTitle>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-            Vous devez fournir soit <strong>(RC/autres + NIF/N° articles)</strong> soit <strong>(Carte Fellah uniquement)</strong>. 
-            Les autres documents sont optionnels mais peuvent accélérer votre processus de vérification.
-          </Typography>
-        </SectionContainer>
+        {currentStep === 1 && (
+          <SectionContainer>
+            <SectionTitle variant="h6">
+              Documents obligatoires à fournir
+            </SectionTitle>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Vous devez fournir soit <strong>(RC/autres + NIF/N° articles)</strong> soit <strong>(Carte Fellah uniquement)</strong>. 
+              Les autres documents sont optionnels mais peuvent accélérer votre processus de vérification.
+            </Typography>
+          </SectionContainer>
+        )}
+
+        {currentStep === 2 && (
+          <OptionalSectionContainer>
+            <SectionTitle variant="h6">
+              Documents optionnels
+            </SectionTitle>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Ces documents ne sont pas obligatoires mais peuvent accélérer votre processus de vérification.
+            </Typography>
+          </OptionalSectionContainer>
+        )}
 
         <Grid container spacing={4}>
-          {/* REQUIRED FIELDS */}
-          <Grid item xs={12} sm={6} md={4}>
-            <RequiredGlassCard>
-              <RequiredCompactCardHeader 
-                title="RC/autres (OBLIGATOIRE)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
-                }}>
-                  <Iconify icon="mdi:file-document" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Registre de commerce, carte auto-entrepreneur, agrément ou carte d'artisan.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={registreCommerceCarteAuto}
-                    onDrop={handleDropRegistreCommerceCarteAuto}
-                    onRemove={(file) => handleRemove(file, registreCommerceCarteAuto, setRegistreCommerceCarteAuto)}
-                    onRemoveAll={() => handleRemoveAll(setRegistreCommerceCarteAuto)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+          {/* STEP 1: REQUIRED FIELDS */}
+          {currentStep === 1 && (
+            <>
+              <Grid item xs={12} sm={6} md={4}>
+                <RequiredGlassCard>
+                  <RequiredCompactCardHeader 
+                    title="RC/autres (OBLIGATOIRE)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:file-document" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </RequiredGlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document obligatoire: Registre de commerce, carte auto-entrepreneur, agrément ou carte d'artisan.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={registreCommerceCarteAuto}
+                        onDrop={handleDropRegistreCommerceCarteAuto}
+                        onRemove={(file) => handleRemove(file, registreCommerceCarteAuto, setRegistreCommerceCarteAuto)}
+                        onRemoveAll={() => handleRemoveAll(setRegistreCommerceCarteAuto)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </RequiredGlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <RequiredGlassCard>
-              <RequiredCompactCardHeader 
-                title="NIF/N° articles (OBLIGATOIRE)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
-                }}>
-                  <Iconify icon="mdi:card-account-details" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire: Numéro d'identification fiscale (NIF) ou Numéro d'articles.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={nifRequired}
-                    onDrop={handleDropNifRequired}
-                    onRemove={(file) => handleRemove(file, nifRequired, setNifRequired)}
-                    onRemoveAll={() => handleRemoveAll(setNifRequired)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <RequiredGlassCard>
+                  <RequiredCompactCardHeader 
+                    title="NIF/N° articles (OBLIGATOIRE)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:card-account-details" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </RequiredGlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document obligatoire: Numéro d'identification fiscale (NIF) ou Numéro d'articles.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={nifRequired}
+                        onDrop={handleDropNifRequired}
+                        onRemove={(file) => handleRemove(file, nifRequired, setNifRequired)}
+                        onRemoveAll={() => handleRemoveAll(setNifRequired)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </RequiredGlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <RequiredGlassCard>
-              <RequiredCompactCardHeader 
-                title="Carte Fellah (OBLIGATOIRE pour Fellah)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
-                }}>
-                  <Iconify icon="mdi:account-card" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document obligatoire uniquement pour la catégorie Fellah.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={carteFellah}
-                    onDrop={handleDropCarteFellah}
-                    onRemove={(file) => handleRemove(file, carteFellah, setCarteFellah)}
-                    onRemoveAll={() => handleRemoveAll(setCarteFellah)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <RequiredGlassCard>
+                  <RequiredCompactCardHeader 
+                    title="Carte Fellah (OBLIGATOIRE pour Fellah)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #ff6b6b 0%, #d63384 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:account-card" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </RequiredGlassCard>
-          </Grid>
-        </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: '#d63384', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document obligatoire uniquement pour la catégorie Fellah.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={carteFellah}
+                        onDrop={handleDropCarteFellah}
+                        onRemove={(file) => handleRemove(file, carteFellah, setCarteFellah)}
+                        onRemoveAll={() => handleRemoveAll(setCarteFellah)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </RequiredGlassCard>
+              </Grid>
+            </>
+          )}
 
-        {/* OPTIONAL FIELDS SECTION */}
-        <OptionalSectionContainer>
-          <SectionTitle variant="h6">
-            Documents optionnels
-          </SectionTitle>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-            Ces documents ne sont pas obligatoires mais peuvent accélérer votre processus de vérification.
-          </Typography>
-        </OptionalSectionContainer>
-
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="Numéro d'article (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)',
-                }}>
-                  <Iconify icon="mdi:numeric" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Numéro d'article d'imposition.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={numeroArticle}
-                    onDrop={handleDropNumeroArticle}
-                    onRemove={(file) => handleRemove(file, numeroArticle, setNumeroArticle)}
-                    onRemoveAll={() => handleRemoveAll(setNumeroArticle)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+          {/* STEP 2: OPTIONAL FIELDS */}
+          {currentStep === 2 && (
+            <>
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="Numéro d'article (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:numeric" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Numéro d'article d'imposition.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={numeroArticle}
+                        onDrop={handleDropNumeroArticle}
+                        onRemove={(file) => handleRemove(file, numeroArticle, setNumeroArticle)}
+                        onRemoveAll={() => handleRemoveAll(setNumeroArticle)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="C20 (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
-                }}>
-                  <Iconify icon="mdi:file-certificate" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Certificat C20.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={c20}
-                    onDrop={handleDropC20}
-                    onRemove={(file) => handleRemove(file, c20, setC20)}
-                    onRemoveAll={() => handleRemoveAll(setC20)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="C20 (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:file-certificate" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Certificat C20.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={c20}
+                        onDrop={handleDropC20}
+                        onRemove={(file) => handleRemove(file, c20, setC20)}
+                        onRemoveAll={() => handleRemoveAll(setC20)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="Mises à jour CNAS/CASNOS et CACOBAPT (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)',
-                }}>
-                  <Iconify icon="mdi:update" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Mises à jour CNAS/CASNOS et CACOBAPT.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={misesAJourCnas}
-                    onDrop={handleDropMisesAJourCnas}
-                    onRemove={(file) => handleRemove(file, misesAJourCnas, setMisesAJourCnas)}
-                    onRemoveAll={() => handleRemoveAll(setMisesAJourCnas)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="Mises à jour CNAS/CASNOS et CACOBAPT (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:update" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Mises à jour CNAS/CASNOS et CACOBAPT.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={misesAJourCnas}
+                        onDrop={handleDropMisesAJourCnas}
+                        onRemove={(file) => handleRemove(file, misesAJourCnas, setMisesAJourCnas)}
+                        onRemoveAll={() => handleRemoveAll(setMisesAJourCnas)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="NIS (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
-                }}>
-                  <Iconify icon="mdi:card-bulleted" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Certificat NIS.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={nis}
-                    onDrop={handleDropNis}
-                    onRemove={(file) => handleRemove(file, nis, setNis)}
-                    onRemoveAll={() => handleRemoveAll(setNis)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="NIS (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:card-bulleted" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Certificat NIS.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={nis}
+                        onDrop={handleDropNis}
+                        onRemove={(file) => handleRemove(file, nis, setNis)}
+                        onRemoveAll={() => handleRemoveAll(setNis)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="Bilans des 3 dernières années (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(0, 188, 212, 0.3)',
-                }}>
-                  <Iconify icon="mdi:file-chart" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Bilans financiers des 3 dernières années.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={balanceSheet}
-                    onDrop={handleDropBalanceSheet}
-                    onRemove={(file) => handleRemove(file, balanceSheet, setBalanceSheet)}
-                    onRemoveAll={() => handleRemoveAll(setBalanceSheet)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="Bilans des 3 dernières années (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(0, 188, 212, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:file-chart" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Bilans financiers des 3 dernières années.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={balanceSheet}
+                        onDrop={handleDropBalanceSheet}
+                        onRemove={(file) => handleRemove(file, balanceSheet, setBalanceSheet)}
+                        onRemoveAll={() => handleRemoveAll(setBalanceSheet)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
-            <GlassCard>
-              <CompactCardHeader 
-                title="Certificats (Optionnel)" 
-                titleTypographyProps={{ variant: 'subtitle2' }}
-                avatar={<Box sx={{ 
-                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                  borderRadius: '12px', 
-                  p: 1, 
-                  display: 'flex',
-                  boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
-                }}>
-                  <Iconify icon="mdi:certificate" width={20} height={20} sx={{ color: 'white' }} />
-                </Box>}
-              />
-              <CompactCardContent>
-                <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Document optionnel: Certificats professionnels pertinents.
-                </Typography>
-                <CompactUploadContainer>
-                  <UploadMultiFile
-                    showPreview
-                    files={certificates}
-                    onDrop={handleDropCertificates}
-                    onRemove={(file) => handleRemove(file, certificates, setCertificates)}
-                    onRemoveAll={() => handleRemoveAll(setCertificates)}
-                    accept={{ 'image/*': [], 'application/pdf': [] }}
-                    compact
+              <Grid item xs={12} sm={6} md={4}>
+                <GlassCard>
+                  <CompactCardHeader 
+                    title="Certificats (Optionnel)" 
+                    titleTypographyProps={{ variant: 'subtitle2' }}
+                    avatar={<Box sx={{ 
+                      background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                      borderRadius: '12px', 
+                      p: 1, 
+                      display: 'flex',
+                      boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
+                    }}>
+                      <Iconify icon="mdi:certificate" width={20} height={20} sx={{ color: 'white' }} />
+                    </Box>}
                   />
-                </CompactUploadContainer>
-              </CompactCardContent>
-            </GlassCard>
-          </Grid>
+                  <CompactCardContent>
+                    <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', lineHeight: 1.5 }}>
+                      Document optionnel: Certificats professionnels pertinents.
+                    </Typography>
+                    <CompactUploadContainer>
+                      <UploadMultiFile
+                        showPreview
+                        files={certificates}
+                        onDrop={handleDropCertificates}
+                        onRemove={(file) => handleRemove(file, certificates, setCertificates)}
+                        onRemoveAll={() => handleRemoveAll(setCertificates)}
+                        accept={{ 'image/*': [], 'application/pdf': [] }}
+                        compact
+                      />
+                    </CompactUploadContainer>
+                  </CompactCardContent>
+                </GlassCard>
+              </Grid>
+            </>
+          )}
         </Grid>
 
         <ActionContainer>
-          <Stack direction="row" spacing={3} justifyContent="flex-end">
-            <ActionButton 
-              variant="outlined" 
-              color="inherit" 
-              onClick={handleCancel}
-              sx={{ 
-                color: 'text.secondary',
-                backgroundColor: alpha('#000', 0.02),
-                '&:hover': {
-                  backgroundColor: alpha('#000', 0.08),
-                }
-              }}
-            >
-              Annuler
-            </ActionButton>
-            <ActionLoadingButton 
-              variant="contained" 
-              onClick={handleSubmit} 
-              loading={isSubmitting}
-              startIcon={<Iconify icon="eva:cloud-upload-fill" />}
-              sx={{
-                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                }
-              }}
-            >
-              Soumettre les documents
-            </ActionLoadingButton>
+          <Stack direction="row" spacing={3} justifyContent="space-between">
+            <Box>
+              {currentStep === 2 && (
+                <ActionButton 
+                  variant="outlined" 
+                  color="inherit" 
+                  onClick={handlePreviousStep}
+                  startIcon={<Iconify icon="eva:arrow-back-fill" />}
+                  sx={{ 
+                    color: 'text.secondary',
+                    backgroundColor: alpha('#000', 0.02),
+                    '&:hover': {
+                      backgroundColor: alpha('#000', 0.08),
+                    }
+                  }}
+                >
+                  Précédent
+                </ActionButton>
+              )}
+            </Box>
+            
+            <Stack direction="row" spacing={3}>
+              <ActionButton 
+                variant="outlined" 
+                color="inherit" 
+                onClick={handleCancel}
+                sx={{ 
+                  color: 'text.secondary',
+                  backgroundColor: alpha('#000', 0.02),
+                  '&:hover': {
+                    backgroundColor: alpha('#000', 0.08),
+                  }
+                }}
+              >
+                Annuler
+              </ActionButton>
+              
+              {currentStep === 1 ? (
+                <ActionButton 
+                  variant="contained" 
+                  onClick={handleNextStep}
+                  endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    }
+                  }}
+                >
+                  Suivant
+                </ActionButton>
+              ) : (
+                <ActionLoadingButton 
+                  variant="contained" 
+                  onClick={handleSubmit} 
+                  loading={isSubmitting}
+                  startIcon={<Iconify icon="eva:cloud-upload-fill" />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    }
+                  }}
+                >
+                  Soumettre les documents
+                </ActionLoadingButton>
+              )}
+            </Stack>
           </Stack>
         </ActionContainer>
       </Container>

@@ -4,6 +4,7 @@ import { useFormik, Form, FormikProvider } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { AuthAPI } from '../../../api/auth';
 import { TermsAPI } from '../../../api/terms';
+import { CategoryAPI } from '../../../api/category';
 import { authStore } from '../../../contexts/authStore';
 import { styled, useTheme } from '@mui/material/styles';
 // material
@@ -29,6 +30,10 @@ import {
   DialogActions,
   Button,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // component
@@ -322,6 +327,8 @@ export default function RegisterForm(props: RegisterFormProps) {
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [hasTerms, setHasTerms] = useState<boolean>(false);
   const [retryCount, setRetryCount] = useState<number>(0);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const theme = useTheme();
 
   const RegisterSchema = Yup.object().shape({
@@ -349,6 +356,20 @@ export default function RegisterForm(props: RegisterFormProps) {
     type: Yup.string()
       .required('Le type de vendeur est requis')
       .oneOf(Object.values(USER_TYPE), 'Le type d\'utilisateur doit être l\'une des valeurs suivantes'),
+    secteur: Yup.string()
+      .when('type', {
+        is: USER_TYPE.PROFESSIONAL,
+        then: (schema) => schema.required('Le secteur est requis pour les professionnels'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    entreprise: Yup.string()
+      .when('type', {
+        is: USER_TYPE.PROFESSIONAL,
+        then: (schema) => schema
+          .required('Le nom de l\'entreprise est requis pour les professionnels')
+          .min(2, 'Le nom de l\'entreprise doit contenir au moins 2 caractères'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
   });
 
   const formik = useFormik({
@@ -359,6 +380,8 @@ export default function RegisterForm(props: RegisterFormProps) {
       password: '',
       phone: '',
       type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL as requested
+      secteur: '',
+      entreprise: '',
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
@@ -377,6 +400,8 @@ export default function RegisterForm(props: RegisterFormProps) {
           password: values.password,
           phone: values.phone.replace(/\s/g, ''), // Remove spaces for storage
           type: 'PROFESSIONAL', // Always send PROFESSIONAL type to backend as requested
+          secteur: values.secteur,
+          entreprise: values.entreprise,
         };
         console.log('userData', userData);
 
@@ -488,6 +513,23 @@ export default function RegisterForm(props: RegisterFormProps) {
     setFieldValue('phone', formattedValue);
   };
 
+  // Fetch categories for secteur dropdown
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    try {
+      const result = await CategoryAPI.getCategories();
+      if (result && result.data) {
+        setCategories(result.data);
+      } else if (Array.isArray(result)) {
+        setCategories(result);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
   const handleOpenTerms = async () => {
     setTermsModalOpen(true);
     
@@ -570,6 +612,11 @@ export default function RegisterForm(props: RegisterFormProps) {
 
     checkTermsAvailability();
   }, [hasTerms, termsContent, retryCount]);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   // Terms section will show when hasTerms is true
 
@@ -927,6 +974,78 @@ export default function RegisterForm(props: RegisterFormProps) {
                 />
               </Grid>
             </Grid>
+
+            {/* Professional-specific fields */}
+            {values.type === USER_TYPE.PROFESSIONAL && (
+              <>
+                <FormControl 
+                  fullWidth 
+                  error={Boolean(touched.secteur && errors.secteur)}
+                  sx={{ mb: 2 }}
+                >
+                  <InputLabel id="secteur-label">Secteur d'activité</InputLabel>
+                  <Select
+                    labelId="secteur-label"
+                    id="secteur"
+                    value={values.secteur}
+                    label="Secteur d'activité"
+                    onChange={(event) => setFieldValue('secteur', event.target.value)}
+                    disabled={loadingCategories}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) {
+                        return <Box sx={{ color: 'text.secondary' }}>Choisir votre secteur d'activité</Box>;
+                      }
+                      return selected;
+                    }}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <Iconify icon="eva:briefcase-fill" width={20} height={20} />
+                      </InputAdornment>
+                    }
+                  >
+                    {loadingCategories ? (
+                      <MenuItem disabled>
+                        <CircularProgress size={20} sx={{ mr: 1 }} />
+                        Chargement des secteurs...
+                      </MenuItem>
+                    ) : categories.length > 0 ? (
+                      categories.map((category) => (
+                        <MenuItem key={category._id} value={category.name}>
+                          {category.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>
+                        Aucun secteur disponible
+                      </MenuItem>
+                    )}
+                  </Select>
+                  {touched.secteur && errors.secteur && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                      {errors.secteur}
+                    </Typography>
+                  )}
+                </FormControl>
+
+                <TextField
+                  fullWidth
+                  label="Nom de l'entreprise"
+                  placeholder="Entrez le nom de votre entreprise"
+                  {...getFieldProps('entreprise')}
+                  error={Boolean(touched.entreprise && errors.entreprise)}
+                  helperText={touched.entreprise && errors.entreprise}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Iconify icon="eva:home-fill" width={20} height={20} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: 2 }}
+                />
+              </>
+            )}
 
             <TextField
               fullWidth

@@ -41,6 +41,11 @@ export default function AccountPopover() {
       icon: 'eva:home-fill',
       linkTo: '/dashboard/app',
     },
+    {
+      label: t('userDropdown.profile'),
+      icon: 'eva:person-fill',
+      linkTo: '/dashboard/profile',
+    },
   ];
 
   const [open, setOpen] = useState(null);

@@ -20,7 +20,7 @@ export const uploadPaymentProof = async (identityId: string, file: File): Promis
     }
     
     console.log('🔍 Access token found, making request...');
-    const apiUrl = `${import.meta.env.VITE_API_URL || 'https://mazadclick-server.onrender.com'}/identities/${identityId}/payment-proof`;
+    const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/identities/${identityId}/payment-proof`;
     console.log('🔍 API URL:', apiUrl);
     
     const response = await fetch(apiUrl, {

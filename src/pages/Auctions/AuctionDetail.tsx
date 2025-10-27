@@ -33,6 +33,7 @@ import Slide from '@mui/material/Slide';
 import { useCreateSocket } from '@/contexts/SocketContext';
 import { ChatAPI } from '@/api/Chat';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import app from '@/config';
 
 interface AuctionWithUser extends Auction {
   user?: User;
@@ -443,7 +444,8 @@ export default function AuctionDetail() {
                       }}
                       onClick={() => {
                         if (participant.user?._id) {
-                          window.open(`https://mazadclick-server.onrender.com/users/${participant.user._id}`, '_blank');
+                          const buyerUserUrl = `${app.buyerURL}users/${participant.user._id}`;
+                          window.open(buyerUserUrl, '_blank');
                         }
                       }}
                     >

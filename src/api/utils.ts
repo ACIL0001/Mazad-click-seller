@@ -133,20 +133,38 @@ const AxiosInterceptor = ({ children }: any) => {
       setLoading(false);
       const originalRequest = error.config;
 
+      // === START FIX: Define pathname and public endpoints at the top ===
+      const reqUrl = originalRequest?.url as string | undefined;
+      const getPathname = (u?: string) => {
+        if (!u) return '';
+        try {
+          const full = u.startsWith('http') ? new URL(u) : new URL(u, app.baseURL);
+          return full.pathname;
+        } catch {
+          return u;
+        }
+      };
+      const pathname = getPathname(reqUrl);
+      
+      const publicEndpoints = [
+        '/auth/signin',
+        '/auth/signup',
+        '/auth/refresh',
+        '/auth/exists',
+        '/auth/2factor',
+        '/auth/reset-password',
+        '/otp/confirm-phone',
+        '/otp/resend/confirm-phone',
+        '/tender',
+        '/terms/public',
+        '/terms/latest',
+      ];
+      const isPublicEndpoint = publicEndpoints.some((endpoint) => pathname === endpoint || pathname.startsWith(endpoint + '/'));
+      // === END FIX ===
+
       // Only log non-network errors to reduce console spam
       if (error.code !== 'ERR_NETWORK') {
-        const reqUrl = originalRequest?.url as string | undefined;
-        const getPathname = (u?: string) => {
-          if (!u) return '';
-          try {
-            const full = u.startsWith('http') ? new URL(u) : new URL(u, app.baseURL);
-            return full.pathname;
-          } catch {
-            return u;
-          }
-        };
-        const pathname = getPathname(reqUrl);
-        const isTermsEndpoint = pathname.startsWith('/terms/');
+        const isTermsEndpoint = pathname.startsWith('/terms/'); // Use pathname from above
         const is404 = error.response?.status === 404;
         // Suppress console error for expected 404 on public terms endpoints
         if (!(isTermsEndpoint && is404)) {
@@ -158,8 +176,11 @@ const AxiosInterceptor = ({ children }: any) => {
         }
       }
 
+      // === START FIX: Modified 401 check ===
       // Handle 401 Unauthorized - token refresh
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // Only retry if it's 401, not already retried, AND not a public endpoint
+      if (error.response?.status === 401 && !originalRequest._retry && !isPublicEndpoint) {
+      // === END FIX ===
         originalRequest._retry = true;
 
         if (!isRefreshing) {
@@ -243,7 +264,7 @@ const AxiosInterceptor = ({ children }: any) => {
         enqueueSnackbar('Erreur interne du serveur. Veuillez réessayer plus tard.', { variant: 'error' });
       } else if (error.response?.status === 404) {
         // Check if it's a terms endpoint - these are expected to return 404 when no terms exist
-        const isTermsEndpoint = originalRequest?.url?.includes('/terms/');
+        const isTermsEndpoint = pathname.startsWith('/terms/'); // Use pathname from above
         if (!isTermsEndpoint) {
           const errorMessage = error.response?.data?.message || 
                               error.message || 
@@ -258,23 +279,9 @@ const AxiosInterceptor = ({ children }: any) => {
         enqueueSnackbar(errorMessage, { variant: 'error' });
       } else if (error.code === 'ERR_NETWORK') {
         // Only show network error snackbar for non-public endpoints
-        const publicEndpoints = [
-          '/auth/signin',
-          '/auth/signup',
-          '/auth/refresh',
-          '/auth/exists',
-          '/auth/2factor',
-          '/auth/reset-password',
-          '/otp/confirm-phone',
-          '/otp/resend/confirm-phone',
-          '/tender',
-          '/terms/public',
-          '/terms/latest',
-        ];
-        const isPublicEndpoint = publicEndpoints.some((endpoint) => 
-          originalRequest?.url?.includes(endpoint)
-        );
+        // === START FIX: Use isPublicEndpoint from above ===
         if (!isPublicEndpoint) {
+        // === END FIX ===
           enqueueSnackbar('Impossible de se connecter au serveur. Vérifiez votre connexion.', { variant: 'error' });
         }
       }
