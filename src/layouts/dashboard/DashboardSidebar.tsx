@@ -161,8 +161,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
                       border: (theme) => `3px solid ${theme.palette.primary.main}`,
                     }}
                     onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = '';
+                      const target = e.target as HTMLImageElement;
+                      target.onerror = null;
+                      target.src = '';
                     }}
                   />
                 ) : (
