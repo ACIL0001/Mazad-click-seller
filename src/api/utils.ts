@@ -23,24 +23,25 @@ instance.interceptors.request.use(
     
     console.log('🔍 Request Interceptor:', {
       url: config.url,
+      method: config.method,
       isLogged,
       hasToken: !!auth?.tokens?.accessToken,
       tokenPreview: auth?.tokens?.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none'
     });
     
-    // Public endpoints that don't need auth (match using pathname only)
+    // Public endpoints that don't need auth (with specific HTTP methods)
     const publicEndpoints = [
-      '/auth/signin',
-      '/auth/signup',
-      '/auth/refresh',
-      '/auth/exists',
-      '/auth/2factor',
-      '/auth/reset-password',
-      '/otp/confirm-phone',
-      '/otp/resend/confirm-phone',
-      '/tender',
-      '/terms/public',
-      '/terms/latest',
+      { path: '/auth/signin', methods: ['POST'] },
+      { path: '/auth/signup', methods: ['POST'] },
+      { path: '/auth/refresh', methods: ['PUT'] },
+      { path: '/auth/exists', methods: ['GET'] },
+      { path: '/auth/2factor', methods: ['GET', 'POST'] },
+      { path: '/auth/reset-password', methods: ['POST'] },
+      { path: '/otp/confirm-phone', methods: ['POST'] },
+      { path: '/otp/resend/confirm-phone', methods: ['POST'] },
+      { path: '/tender', methods: ['GET'] }, // Only GET is public for browsing tenders
+      { path: '/terms/public', methods: ['GET'] },
+      { path: '/terms/latest', methods: ['GET'] },
     ];
 
     // Normalize URL to pathname for robust matching regardless of baseURL or absolute/relative usage
@@ -55,7 +56,11 @@ instance.interceptors.request.use(
       }
     };
     const pathname = getPathname(config.url);
-    const isPublicEndpoint = publicEndpoints.some((endpoint) => pathname === endpoint || pathname.startsWith(endpoint + '/'));
+    const method = config.method?.toUpperCase();
+    const isPublicEndpoint = publicEndpoints.some((endpoint) => 
+      pathname === endpoint.path && 
+      endpoint.methods.includes(method || 'GET')
+    );
     
     // Add API key for ALL requests (required by SellerGuard)
     if (app.apiKey) {
@@ -133,7 +138,7 @@ const AxiosInterceptor = ({ children }: any) => {
       setLoading(false);
       const originalRequest = error.config;
 
-      // === START FIX: Define pathname and public endpoints at the top ===
+      // === START FIX: Define pathname and public endpoints with methods ===
       const reqUrl = originalRequest?.url as string | undefined;
       const getPathname = (u?: string) => {
         if (!u) return '';
@@ -145,21 +150,25 @@ const AxiosInterceptor = ({ children }: any) => {
         }
       };
       const pathname = getPathname(reqUrl);
+      const method = originalRequest?.method?.toUpperCase();
       
       const publicEndpoints = [
-        '/auth/signin',
-        '/auth/signup',
-        '/auth/refresh',
-        '/auth/exists',
-        '/auth/2factor',
-        '/auth/reset-password',
-        '/otp/confirm-phone',
-        '/otp/resend/confirm-phone',
-        '/tender',
-        '/terms/public',
-        '/terms/latest',
+        { path: '/auth/signin', methods: ['POST'] },
+        { path: '/auth/signup', methods: ['POST'] },
+        { path: '/auth/refresh', methods: ['PUT'] },
+        { path: '/auth/exists', methods: ['GET'] },
+        { path: '/auth/2factor', methods: ['GET', 'POST'] },
+        { path: '/auth/reset-password', methods: ['POST'] },
+        { path: '/otp/confirm-phone', methods: ['POST'] },
+        { path: '/otp/resend/confirm-phone', methods: ['POST'] },
+        { path: '/tender', methods: ['GET'] }, // Only GET is public for browsing tenders
+        { path: '/terms/public', methods: ['GET'] },
+        { path: '/terms/latest', methods: ['GET'] },
       ];
-      const isPublicEndpoint = publicEndpoints.some((endpoint) => pathname === endpoint || pathname.startsWith(endpoint + '/'));
+      const isPublicEndpoint = publicEndpoints.some((endpoint) => 
+        pathname === endpoint.path && 
+        endpoint.methods.includes(method || 'GET')
+      );
       // === END FIX ===
 
       // Only log non-network errors to reduce console spam
@@ -176,7 +185,7 @@ const AxiosInterceptor = ({ children }: any) => {
         }
       }
 
-      // === START FIX: Modified 401 check ===
+      // === START FIX: Modified 401 check with method-aware public endpoints ===
       // Handle 401 Unauthorized - token refresh
       // Only retry if it's 401, not already retried, AND not a public endpoint
       if (error.response?.status === 401 && !originalRequest._retry && !isPublicEndpoint) {
