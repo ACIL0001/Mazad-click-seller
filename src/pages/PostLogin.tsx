@@ -68,8 +68,8 @@ export default function PostLogin() {
       const mockResponse = { success: true };
       
       if (mockResponse.success) {
-        // Use buyer URL from config - ensure it's localhost:3001
-        const buyerUrl = 'http://localhost:3001'; // Force the correct buyer URL
+        // Use buyer URL from config (defaults to https://mazadclick.vercel.app/)
+        const buyerUrl = app.buyerURL;
         
         // Show success message
         enqueueSnackbar('Redirection vers l\'application acheteur...', { 

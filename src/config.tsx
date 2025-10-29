@@ -18,7 +18,7 @@ const app = {
   socket: import.meta.env.VITE_SOCKET_URL || 'https://mazadclick-server.onrender.com/',
   route: import.meta.env.VITE_STATIC_URL || "https://mazadclick-server.onrender.com/static/",
   baseURL: import.meta.env.VITE_API_URL || "https://mazadclick-server.onrender.com/",
-  buyerURL: import.meta.env.VITE_BUYER_URL || "https://buyer-mazad.vercel.app/",
+  buyerURL: import.meta.env.VITE_BUYER_URL || "https://mazadclick.vercel.app/",
 
   // Development URLs (commented out)
   // socket: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/',
