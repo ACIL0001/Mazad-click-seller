@@ -50,10 +50,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         console.log('🔐 API base URL:', app.baseURL);
         console.log('🔐 API key:', app.apiKey ? 'Present' : 'Missing');
         
+        // ▼▼▼ CORRECTION HERE ▼▼▼
+        // Trim whitespace from inputs before sending
         const response = await AuthAPI.login({
-          login: values.login,
-          password: values.password,
+          login: values.login.trim(),
+          password: values.password.trim(),
         });
+        // ▲▲▲ CORRECTION ENDS ▲▲▲
 
         console.log('🔐 Login response:', response);
         console.log('🔐 Response type:', typeof response);
