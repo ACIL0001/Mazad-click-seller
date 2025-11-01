@@ -370,6 +370,12 @@ export default function RegisterForm(props: RegisterFormProps) {
           .min(2, 'Le nom de l\'entreprise doit contenir au moins 2 caractères'),
         otherwise: (schema) => schema.notRequired(),
       }),
+    postOccupé: Yup.string()
+      .when('type', {
+        is: USER_TYPE.PROFESSIONAL,
+        then: (schema) => schema.notRequired(),
+        otherwise: (schema) => schema.notRequired(),
+      }),
   });
 
   const formik = useFormik({
@@ -382,6 +388,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL as requested
       secteur: '',
       entreprise: '',
+      postOccupé: '',
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
@@ -402,6 +409,7 @@ export default function RegisterForm(props: RegisterFormProps) {
           type: 'PROFESSIONAL', // Always send PROFESSIONAL type to backend as requested
           secteur: values.secteur,
           entreprise: values.entreprise,
+          postOccupé: values.postOccupé,
         };
         console.log('userData', userData);
 
@@ -1039,6 +1047,23 @@ export default function RegisterForm(props: RegisterFormProps) {
                     startAdornment: (
                       <InputAdornment position="start">
                         <Iconify icon="eva:home-fill" width={20} height={20} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ mb: 2 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Post occupé"
+                  placeholder="Entrez votre poste (optionnel)"
+                  {...getFieldProps('postOccupé')}
+                  error={Boolean(touched.postOccupé && errors.postOccupé)}
+                  helperText={touched.postOccupé && errors.postOccupé || "Optionnel"}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Iconify icon="eva:briefcase-fill" width={20} height={20} />
                       </InputAdornment>
                     ),
                   }}

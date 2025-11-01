@@ -22,7 +22,7 @@ import Page from '../components/Page';
 // sections
 import { RegisterForm } from '../sections/auth/register';
 import useAuth from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -80,6 +80,7 @@ const ContentStyle = styled('div')(({ theme }) => ({
 export default function Register() {
   const { t } = useTranslation();
   const { isLogged } = useAuth();
+  const navigate = useNavigate();
 
   const smUp = useResponsive('up', 'sm');
   const mdUp = useResponsive('up', 'md');
@@ -138,6 +139,9 @@ export default function Register() {
       <RootStyle>
         <HeaderStyle>
           <Logo />
+          <Link component={RouterLink} to="#" onClick={(e) => { e.preventDefault(); navigate(-1); }} underline="none" sx={{ mr: 'auto', ml: 2, fontWeight: 600 }}>
+            ← Retour
+          </Link>
           {smUp && (
             <Typography variant="body2" sx={{ mt: { md: -2 } }}>
               {t('pages.register.alreadyHaveAccount')} &nbsp;

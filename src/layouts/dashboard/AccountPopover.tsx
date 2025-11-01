@@ -235,7 +235,22 @@ export default function AccountPopover() {
           }
         >
           <Avatar 
-            src={auth.user?.avatar?.path!} 
+            src={(() => {
+              const avatar: any = auth.user?.avatar;
+              const base = (app.baseURL || '').replace(/\/$/, '');
+              if (!avatar) return '';
+              // Prefer fullUrl
+              const raw = avatar.fullUrl || avatar.url || avatar.path || avatar.filename || '';
+              if (!raw) return '';
+              if (/^https?:\/\//i.test(raw)) {
+                return raw.replace(/^https?:\/\/[^\/]+/, base).replace('http://localhost:3000', base);
+              }
+              // Normalize leading slash
+              const path = raw.startsWith('/') ? raw : `/${raw}`;
+              // Ensure /static prefix if missing
+              const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+              return `${base}${finalPath}`;
+            })()} 
             alt={auth.user?.firstName || 'User'}
             sx={{
               width: 44,
@@ -333,7 +348,19 @@ export default function AccountPopover() {
           }}>
             <Box sx={{ position: 'relative' }}>
           <Avatar 
-            src={auth.user?.avatar?.path!} 
+            src={(() => {
+              const avatar: any = auth.user?.avatar;
+              const base = (app.baseURL || '').replace(/\/$/, '');
+              if (!avatar) return '';
+              const raw = avatar.fullUrl || avatar.url || avatar.path || avatar.filename || '';
+              if (!raw) return '';
+              if (/^https?:\/\//i.test(raw)) {
+                return raw.replace(/^https?:\/\/[^\/]+/, base).replace('http://localhost:3000', base);
+              }
+              const path = raw.startsWith('/') ? raw : `/${raw}`;
+              const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+              return `${base}${finalPath}`;
+            })()} 
                 alt={auth.user?.firstName || 'User'}
                 sx={{
                   width: 48,

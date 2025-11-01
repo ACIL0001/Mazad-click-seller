@@ -859,6 +859,37 @@ const SubscriptionPlans = () => {
         <FloatingElement sx={{ bottom: '20%', left: '5%', width: 70, height: 70, animationDelay: '3s' }} />
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
+            <Button 
+              variant="text" 
+              onClick={() => {
+                // Set flag to indicate we're coming from subscription-plans
+                // Use both sessionStorage and location.state for maximum reliability
+                sessionStorage.setItem('fromSubscriptionPlans', 'true');
+                // Also set a flag to prevent any post-login redirects
+                sessionStorage.setItem('allowIdentityVerificationAccess', 'true');
+                // Set flag to indicate we should go to step 2 (optional documents)
+                sessionStorage.setItem('goToStep2', 'true');
+                
+                const user = authStore.getState().auth?.user;
+                console.log('SubscriptionPlans - Navigating back to identity-verification, step 2', { user });
+                
+                navigate('/identity-verification', { 
+                  replace: false, // Use normal navigation, not replace
+                  state: { 
+                    user: user,
+                    fromSubscriptionPlans: true,
+                    allowAccess: true,
+                    goToStep2: true
+                  } 
+                });
+              }} 
+              sx={{ fontWeight: 600 }}
+              startIcon={<Box component="span" sx={{ fontSize: '1.2rem' }}>←</Box>}
+            >
+              Retour
+            </Button>
+          </Box>
           <HeroSection>
             <Fade in timeout={800}>
               <Box>

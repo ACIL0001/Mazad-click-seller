@@ -138,7 +138,7 @@
   align-items: center;
 }
 
-.hero-content {
+.modern-profile-page .hero-content {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -166,7 +166,7 @@
 }
 
 /* Hero Avatar Card */
-.hero-avatar-card {
+.modern-profile-page .hero-avatar-card {
   background: var(--glass-bg);
   backdrop-filter: var(--backdrop-blur);
   border: 1px solid var(--glass-border);
@@ -819,14 +819,14 @@
     font-size: clamp(1rem, 2.5vw, 1.1rem);
   }
   
-  .hero-content {
+  .modern-profile-page .hero-content {
     flex-direction: column;
     text-align: center;
     gap: clamp(1.5rem, 4vw, 2rem);
     align-items: center;
   }
   
-  .hero-avatar-card {
+  .modern-profile-page .hero-avatar-card {
     width: 100%;
     padding: clamp(1.5rem, 4vw, 2rem);
   }
@@ -864,7 +864,7 @@
     min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
   
-  .hero-avatar-card {
+  .modern-profile-page .hero-avatar-card {
     width: 100%;
     padding: clamp(1.25rem, 4vw, 1.5rem);
     border-radius: clamp(16px, 4vw, 20px);
@@ -940,11 +940,11 @@
     padding: clamp(1.25rem, 4vw, 1.75rem);
   }
   
-  .hero-text h1 {
+.modern-profile-page .hero-text h1 {
     font-size: clamp(1.75rem, 6vw, 2.5rem);
   }
   
-  .hero-text p {
+.modern-profile-page .hero-text p {
     font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   }
 }
@@ -955,7 +955,7 @@
     padding: clamp(0.5rem, 2vw, 0.75rem);
   }
   
-  .hero-avatar-card {
+  .modern-profile-page .hero-avatar-card {
     padding: clamp(1rem, 3vw, 1.25rem);
   }
   
@@ -1052,12 +1052,12 @@
     padding: 1rem;
   }
   
-  .hero-content {
+  .modern-profile-page .hero-content {
     flex-direction: row;
     gap: 2rem;
   }
   
-  .hero-avatar-card {
+  .modern-profile-page .hero-avatar-card {
     width: 100%;
   }
   
@@ -1081,7 +1081,7 @@
 /* High DPI Displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .modern-section-card,
-  .hero-avatar-card {
+  .modern-profile-page .hero-avatar-card {
     box-shadow: var(--shadow-medium);
   }
   

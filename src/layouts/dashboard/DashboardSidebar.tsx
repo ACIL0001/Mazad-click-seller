@@ -128,58 +128,113 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
           <Link underline="none" component={RouterLink} to="#">
             <AccountStyle className="account-style">
               <Box sx={{ position: 'relative' }}>
-                {isLogged && !!auth.user?.avatar ? (
-                  <Avatar 
-                    src={((): string => {
-                      const avatar = auth.user?.avatar as any;
-                      if (!avatar) return '';
-                      
+                {(() => {
+                  // Helper to get avatar URL - check photoURL first, then avatar object
+                  const getAvatarUrl = (): string => {
+                    const user = auth.user;
+                    if (!user) return '';
+
+                    // Priority 1: photoURL (most reliable)
+                    const photoURL = (user as any).photoURL;
+                    if (photoURL && photoURL.trim() !== '') {
+                      // Fix malformed query strings
+                      let url = photoURL.trim();
+                      if (url.includes('&') && !url.includes('?')) {
+                        url = url.replace('&', '?');
+                      }
+                      // Normalize localhost URLs
+                      // if (url.startsWith('http://localhost:3000')) {
+                      //   return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                      if (url.startsWith('http://localhost:3000') || url.startsWith('https://mazadclick-server.onrender.com')) {
+                        return url.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
+                      }
+                      if (url.startsWith('http://localhost/')) {
+                        return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+                      }
+                      if (url.startsWith('/static/')) {
+                        return `${app.baseURL.replace(/\/$/, '')}${url}`;
+                      }
+                      if (url.startsWith('/')) {
+                        return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
+                      }
+                      if (!url.startsWith('http')) {
+                        return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
+                      }
+                      return url;
+                    }
+
+                    // Priority 2: avatar object
+                    const avatar = user.avatar as any;
+                    if (avatar) {
                       // Try fullUrl first
                       if (avatar.fullUrl) {
-                        return avatar.fullUrl.replace('http://localhost:3000', 'https://api.mazad.click');
+                        let fullUrl = avatar.fullUrl;
+                        // if (fullUrl.startsWith('http://localhost:3000')) {
+                        //   fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                        if (fullUrl.startsWith('http://localhost:3000') || fullUrl.startsWith('https://mazadclick-server.onrender.com')) {
+                          fullUrl = fullUrl.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
+                        }
+                        return fullUrl;
                       }
                       
                       // Try url
                       if (avatar.url) {
                         if (avatar.url.startsWith('http')) {
-                          return avatar.url.replace('http://localhost:3000', 'https://api.mazad.click');
+                          return avatar.url.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
                         }
-                        return app.baseURL + (avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`);
+                        const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
+                        const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+                        return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
                       }
                       
                       // Try filename
                       if (avatar.filename) {
-                        return app.baseURL + '/static/' + avatar.filename;
+                        return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
                       }
-                      
-                      return '';
-                    })()}
-                    alt="photoURL"
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      border: (theme) => `3px solid ${theme.palette.primary.main}`,
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null;
-                      target.src = '';
-                    }}
-                  />
-                ) : (
-                  <Avatar
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      bgcolor: 'primary.main',
-                      fontSize: '1.5rem',
-                      fontWeight: 600,
-                      border: (theme) => `3px solid ${theme.palette.primary.light}`,
-                    }}
-                  >
-                    {auth?.user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </Avatar>
-                )}
+                    }
+
+                    return '';
+                  };
+
+                  const avatarUrl = getAvatarUrl();
+                  
+                  if (isLogged && avatarUrl) {
+                    return (
+                      <Avatar 
+                        src={avatarUrl}
+                        alt={auth.user?.firstName || 'User'}
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          border: (theme) => `3px solid ${theme.palette.primary.main}`,
+                          objectFit: 'cover',
+                        }}
+                        onError={(e) => {
+                          console.warn('Avatar image failed to load:', avatarUrl);
+                          e.currentTarget.onerror = null;
+                          if (e.currentTarget instanceof HTMLImageElement) {
+                            e.currentTarget.src = '';
+                          }
+                        }}
+                      />
+                    );
+                  }
+                  
+                  return (
+                    <Avatar
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        bgcolor: 'primary.main',
+                        fontSize: '1.5rem',
+                        fontWeight: 600,
+                        border: (theme) => `3px solid ${theme.palette.primary.light}`,
+                      }}
+                    >
+                      {auth?.user?.email?.charAt(0)?.toUpperCase() || auth?.user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                    </Avatar>
+                  );
+                })()}
                 {/* Online Status Indicator */}
                 <Box
                   sx={{
@@ -249,50 +304,6 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
       <Box sx={{ flexGrow: 1 }}>
         <NavSection navConfig={navConfig} />
       </Box>
-
-      {/* Footer Section */}
-      <Box sx={{ px: 2.5, pb: 3, mt: 2 }}>
-          <Stack 
-            alignItems="center" 
-            spacing={2} 
-            sx={{ 
-              pt: 3, 
-              pb: 2,
-              borderRadius: 3, 
-              position: 'relative',
-              background: `linear-gradient(135deg, ${alpha('#6366f1', 0.1)} 0%, ${alpha('#8b5cf6', 0.1)} 100%)`,
-              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              overflow: 'hidden',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: `linear-gradient(90deg, ${alpha('#6366f1', 0.8)}, ${alpha('#8b5cf6', 0.8)})`,
-              }
-            }}
-          >
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography gutterBottom variant="subtitle1" sx={{ 
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-                {app.name} Dashboard
-              </Typography>
-              <Typography variant="caption" sx={{ 
-                color: 'text.secondary',
-                opacity: 0.8
-              }}>
-                {t('common.manageBusiness')}
-              </Typography>
-            </Box>
-          </Stack>
-        </Box>
     </Scrollbar>
   );
 

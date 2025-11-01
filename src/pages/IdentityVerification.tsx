@@ -548,24 +548,86 @@ export default function IdentityVerification() {
   const { enqueueSnackbar } = useSnackbar();
   const { refreshUserData } = useAuth();
   
+  // Check if we're coming from subscription-plans FIRST, before any other checks
+  // This must be done outside useEffect to prevent any redirects from happening
+  const fromSubscriptionPlans = React.useMemo(() => {
+    // Check if we're coming from OTP (normal navigation) - if so, clear any goToStep2 flag
+    const fromOtp = location.state?.fromOtp !== false && !location.state?.fromSubscriptionPlans && !location.state?.goToStep2;
+    if (fromOtp && sessionStorage.getItem('goToStep2') === 'true') {
+      console.log('IdentityVerification - Coming from OTP, clearing goToStep2 flag');
+      sessionStorage.removeItem('goToStep2');
+      sessionStorage.removeItem('fromSubscriptionPlans');
+    }
+    
+    const fromState = location.state?.fromSubscriptionPlans === true || location.state?.allowAccess === true;
+    const fromStorage = sessionStorage.getItem('fromSubscriptionPlans') === 'true' ||
+                       sessionStorage.getItem('allowIdentityVerificationAccess') === 'true';
+    const result = fromState || fromStorage;
+    
+    if (result) {
+      console.log('IdentityVerification - Detected navigation from subscription-plans', {
+        fromState,
+        fromStorage,
+        locationState: location.state,
+        pathname: window.location.pathname,
+        href: window.location.href
+      });
+      
+      // Prevent any navigation away from this page if we're coming from subscription-plans
+      // Set a flag that other parts of the code can check
+      sessionStorage.setItem('blockRedirectsFromIdentityVerification', 'true');
+    }
+    
+    return result;
+  }, [location.state]);
+
   // Add authentication check and identity status check
   useEffect(() => {
+    // Double-check the flag at the start of useEffect
+    const checkFlagAgain = location.state?.fromSubscriptionPlans === true || 
+                          location.state?.allowAccess === true ||
+                          sessionStorage.getItem('fromSubscriptionPlans') === 'true' ||
+                          sessionStorage.getItem('allowIdentityVerificationAccess') === 'true' ||
+                          sessionStorage.getItem('blockRedirectsFromIdentityVerification') === 'true';
+    
     const { tokens, user: authUser } = authStore.getState().auth;
     if (!tokens || !tokens.accessToken) {
-      navigate('/login');
+      if (!checkFlagAgain) {
+        navigate('/login');
+      }
       return;
     }
 
     // Check if user is verified (has completed OTP validation)
     if (!authUser?.isVerified) {
-      enqueueSnackbar('Veuillez d\'abord valider votre numéro de téléphone', { 
-        variant: 'warning',
-        anchorOrigin: {
-          vertical: 'top',
-          horizontal: 'center'
-        }
-      });
-      navigate('/login');
+      if (!checkFlagAgain) {
+        enqueueSnackbar('Veuillez d\'abord valider votre numéro de téléphone', { 
+          variant: 'warning',
+          anchorOrigin: {
+            vertical: 'top',
+            horizontal: 'center'
+          }
+        });
+        navigate('/login');
+      }
+      return;
+    }
+
+    // Check if we're coming from subscription-plans (back button clicked)
+    // If so, skip the redirect check and allow user to view/edit the form
+    if (fromSubscriptionPlans || checkFlagAgain) {
+      // Clear the flags
+      sessionStorage.removeItem('fromSubscriptionPlans');
+      sessionStorage.removeItem('allowIdentityVerificationAccess');
+      sessionStorage.removeItem('blockRedirectsFromIdentityVerification');
+      sessionStorage.removeItem('goToStep2');
+      // Allow user to view the form even if they already have documents
+      console.log('IdentityVerification - Coming from subscription-plans, allowing access to form');
+      console.log('IdentityVerification - Skipping identity redirect check');
+      console.log('IdentityVerification - User has identity:', authUser?.isHasIdentity);
+      console.log('IdentityVerification - Current pathname:', window.location.pathname);
+      console.log('IdentityVerification - Current step:', currentStep);
+      // Skip the identity check that would redirect away
       return;
     }
 
@@ -639,8 +701,34 @@ export default function IdentityVerification() {
   });
 
   // Step management
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isStep1Valid, setIsStep1Valid] = useState(false);
+  // Initialize step based on whether we're coming from subscription-plans
+  // If coming from subscription-plans with goToStep2 flag, start at step 2 (optional documents)
+  // Otherwise (from OTP or normal navigation), start at step 1 (required documents)
+  const initialStep = React.useMemo(() => {
+    // Ensure goToStep2 flag is cleared if coming from OTP (normal navigation)
+    const isFromOtp = !location.state?.fromSubscriptionPlans && !location.state?.goToStep2;
+    if (isFromOtp && sessionStorage.getItem('goToStep2') === 'true') {
+      sessionStorage.removeItem('goToStep2');
+      console.log('IdentityVerification - Coming from OTP, cleared goToStep2 flag, starting at step 1');
+      return 1;
+    }
+    
+    // Only check for goToStep2 flag - this is explicitly set when coming from subscription-plans
+    const goToStep2 = location.state?.goToStep2 === true ||
+                      sessionStorage.getItem('goToStep2') === 'true';
+    
+    if (goToStep2) {
+      console.log('IdentityVerification - Initializing at step 2 (optional documents) - coming from subscription-plans');
+      return 2;
+    }
+    
+    // Default: start at step 1 (required documents) when coming from OTP or normal navigation
+    console.log('IdentityVerification - Initializing at step 1 (required documents) - normal navigation from OTP');
+    return 1;
+  }, [location.state]);
+  
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [isStep1Valid, setIsStep1Valid] = useState(initialStep === 2);
 
   const handleLogout = () => {
     authStore.getState().clear();
@@ -718,10 +806,164 @@ export default function IdentityVerification() {
     }
   };
 
-  const handlePreviousStep = () => {
+  const handlePreviousStep = (e?: React.MouseEvent) => {
+    // Prevent event propagation in case there are nested buttons
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    console.log('IdentityVerification - handlePreviousStep called, currentStep:', currentStep);
+    
     if (currentStep === 2) {
+      console.log('IdentityVerification - Going back from step 2 to step 1');
+      // Set a flag to prevent any navigation during step change
+      sessionStorage.setItem('changingStep', 'true');
+      // Change step
       setCurrentStep(1);
       setSubmitStatus({ type: null, message: '' });
+      // Clear the flag after a short delay
+      setTimeout(() => {
+        sessionStorage.removeItem('changingStep');
+      }, 100);
+    } else {
+      console.log('IdentityVerification - handlePreviousStep called but currentStep is not 2:', currentStep);
+    }
+    
+    // Explicitly return false to prevent any default behavior
+    return false;
+  };
+
+  const handleFinishStep1 = async () => {
+    const isValid = validateStep1();
+    if (!isValid) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Vous devez fournir soit (RC/autres + NIF/N° articles) soit (Carte Fellah uniquement).',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus({
+      type: 'info',
+      message: 'Soumission des documents en cours...',
+    });
+
+    try {
+      const formData = new FormData();
+      
+      // REQUIRED FIELDS - Only append the first file since backend expects maxCount: 1
+      if (registreCommerceCarteAuto.length > 0) {
+        formData.append('registreCommerceCarteAuto', registreCommerceCarteAuto[0]);
+      }
+      if (nifRequired.length > 0) {
+        formData.append('nifRequired', nifRequired[0]);
+      }
+      
+      // OPTIONAL FIELD - Carte Fellah (required only for fellah category)
+      if (carteFellah.length > 0) {
+        formData.append('carteFellah', carteFellah[0]);
+      }
+
+      // Debug: Log what we're sending
+      console.log('📤 Submitting required documents (step 1) with fields:');
+      for (let pair of formData.entries()) {
+        console.log(`  - ${pair[0]}: ${pair[1] instanceof File ? pair[1].name : pair[1]}`);
+      }
+
+      // Call API to upload professional documents
+      const identityResult = await IdentityAPI.create(formData);
+      
+      // Upload payment proof if it exists
+      console.log('🔍 Checking for stored payment proof...');
+      const storedPaymentProof = getStoredPaymentProof();
+      console.log('🔍 Stored payment proof:', storedPaymentProof);
+      
+      if (storedPaymentProof && storedPaymentProof.file && identityResult?._id) {
+        console.log('✅ Found stored payment proof, uploading to identity:', identityResult._id);
+        console.log('🔍 Payment proof file details:', {
+          name: storedPaymentProof.fileName,
+          type: storedPaymentProof.fileType,
+          size: storedPaymentProof.file.size
+        });
+        
+        try {
+          const paymentProofUploaded = await uploadPaymentProof(identityResult._id, storedPaymentProof.file);
+          if (paymentProofUploaded) {
+            console.log('✅ Payment proof uploaded successfully');
+            clearStoredPaymentProof(); // Clear from session storage after successful upload
+          } else {
+            console.error('❌ Failed to upload payment proof');
+          }
+        } catch (paymentError) {
+          console.error('❌ Error uploading payment proof:', paymentError);
+          // Don't fail the entire process if payment proof upload fails
+        }
+      } else {
+        console.log('❌ No stored payment proof found or no identity ID');
+        console.log('🔍 Debug info:', {
+          hasStoredProof: !!storedPaymentProof,
+          hasFile: !!(storedPaymentProof && storedPaymentProof.file),
+          hasIdentityId: !!identityResult?._id,
+          identityId: identityResult?._id
+        });
+      }
+      
+      // Refresh user data to get updated isHasIdentity status
+      const updatedUser = await refreshUserData();
+      
+      console.log('IdentityVerification - User data after upload (step 1):', updatedUser);
+      console.log('IdentityVerification - isHasIdentity status:', updatedUser?.isHasIdentity);
+      
+      // Set flags to indicate documents have been submitted in this session
+      localStorage.setItem('identityJustSubmitted', 'true');
+      sessionStorage.setItem('identityMessageShown', 'true');
+      
+      setSubmitStatus({
+        type: 'success',
+        message: 'Documents soumis avec succès! Redirection vers les plans d\'abonnement...',
+      });
+      enqueueSnackbar('Documents soumis avec succès', { variant: 'success' });
+      
+      // Add a small delay to ensure state updates are processed
+      setTimeout(() => {
+        // Navigate to subscription plans
+        navigate('/subscription-plans');
+      }, 1000);
+    } catch (error: any) {
+      console.error('❌ Error submitting identity documents (step 1):', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
+      
+      // Handle specific error cases
+      let errorMessage = 'Une erreur est survenue lors de la soumission. Veuillez réessayer.';
+      
+      if (error?.response?.status === 400) {
+        // Bad Request - likely validation error
+        if (error?.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error?.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        } else {
+          errorMessage = 'Les documents requis sont manquants ou invalides. Veuillez vérifier que vous avez téléchargé le Registre de commerce/Carte auto-entrepreneur et le NIF.';
+        }
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      setSubmitStatus({
+        type: 'error',
+        message: errorMessage,
+      });
+      enqueueSnackbar(errorMessage, { variant: 'error' });
+      
+      setIsSubmitting(false);
     }
   };
 
@@ -848,7 +1090,7 @@ export default function IdentityVerification() {
       
       // Add a small delay to ensure state updates are processed
       setTimeout(() => {
-        // Navigate to dashboard to show the updated status (Documents Under Review page)
+        // Navigate to subscription plans
         navigate('/subscription-plans');
       }, 1000);
     } catch (error: any) {
@@ -924,10 +1166,21 @@ export default function IdentityVerification() {
           <Button
             variant="outlined"
             color="primary"
-            component={RouterLink}
-            to="/login"
             startIcon={<Iconify icon="eva:arrow-back-fill" />}
-            onClick={handleLogout}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // If we're on step 2, go back to step 1 instead of OTP
+              if (currentStep === 2) {
+                console.log('IdentityVerification - Header back button clicked in step 2, going to step 1');
+                setCurrentStep(1);
+                setSubmitStatus({ type: null, message: '' });
+              } else {
+                // Only navigate to OTP if we're on step 1
+                console.log('IdentityVerification - Header back button clicked in step 1, going to OTP');
+                navigate('/otp-verification', { state: { user, phone: user?.phone } });
+              }
+            }}
             sx={{ 
               height: 48, 
               borderRadius: 3,
@@ -946,7 +1199,7 @@ export default function IdentityVerification() {
               }
             }}
           >
-            Retour à la connexion
+            ← Retour
           </Button>
         </HeaderSection>
 
@@ -1343,18 +1596,34 @@ export default function IdentityVerification() {
               {currentStep === 2 && (
                 <ActionButton 
                   variant="outlined" 
-                  color="inherit" 
-                  onClick={handlePreviousStep}
+                  color="primary"
+                  onClick={(e) => {
+                    console.log('IdentityVerification - Précédent button clicked in step 2');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Ensure we're on step 2 before proceeding
+                    if (currentStep === 2) {
+                      // Directly change step without navigation
+                      console.log('IdentityVerification - Changing step from 2 to 1 directly');
+                      setCurrentStep(1);
+                      setSubmitStatus({ type: null, message: '' });
+                    }
+                  }}
+                  type="button"
                   startIcon={<Iconify icon="eva:arrow-back-fill" />}
                   sx={{ 
-                    color: 'text.secondary',
-                    backgroundColor: alpha('#000', 0.02),
+                    color: 'primary.main',
+                    borderColor: 'primary.main',
+                    backgroundColor: alpha('#1976d2', 0.05),
+                    zIndex: 10,
+                    position: 'relative',
                     '&:hover': {
-                      backgroundColor: alpha('#000', 0.08),
+                      backgroundColor: alpha('#1976d2', 0.12),
+                      borderColor: 'primary.dark',
                     }
                   }}
                 >
-                  Précédent
+                  Précédent (Documents obligatoires)
                 </ActionButton>
               )}
             </Box>
@@ -1376,33 +1645,53 @@ export default function IdentityVerification() {
               </ActionButton>
               
               {currentStep === 1 ? (
-                <ActionButton 
-                  variant="contained" 
-                  onClick={handleNextStep}
-                  endIcon={<Iconify icon="eva:arrow-forward-fill" />}
-                  sx={{
-                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                    }
-                  }}
-                >
-                  Suivant
-                </ActionButton>
+                <>
+                  <ActionButton 
+                    variant="contained" 
+                    onClick={handleFinishStep1}
+                    disabled={isSubmitting}
+                    startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+                    sx={{
+                      background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)',
+                      },
+                      '&:disabled': {
+                        background: 'rgba(0, 0, 0, 0.12)',
+                        color: 'rgba(0, 0, 0, 0.26)',
+                      }
+                    }}
+                  >
+                    {isSubmitting ? 'Soumission en cours...' : 'Terminer'}
+                  </ActionButton>
+                  <ActionButton 
+                    variant="contained" 
+                    onClick={handleNextStep}
+                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                    sx={{
+                      background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                      }
+                    }}
+                  >
+                    Suivant
+                  </ActionButton>
+                </>
               ) : (
                 <ActionLoadingButton 
                   variant="contained" 
                   onClick={handleSubmit} 
                   loading={isSubmitting}
-                  startIcon={<Iconify icon="eva:cloud-upload-fill" />}
+                  startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
                   sx={{
-                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                      background: 'linear-gradient(135deg, #388e3c 0%, #2e7d32 100%)',
                     }
                   }}
                 >
-                  Soumettre les documents
+                  Terminer
                 </ActionLoadingButton>
               )}
             </Stack>

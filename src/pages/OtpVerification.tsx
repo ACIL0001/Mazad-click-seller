@@ -306,6 +306,9 @@ export default function OtpVerification() {
       <RootStyle>
         <HeaderStyle>
           <Logo />
+          <Button size="small" variant="text" onClick={() => navigate('/register', { state: { user, phone } })} sx={{ ml: 2, fontWeight: 600 }}>
+            ← Retour
+          </Button>
           {smUp && (
             <Typography variant="body2" sx={{ mt: { md: -2 } }}>
               {t('backTo')} {''}

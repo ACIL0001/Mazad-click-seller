@@ -143,16 +143,38 @@ export default function SwitchingToBuyer() {
         // Clear session data
         sessionStorage.removeItem('buyerSwitchData');
         
-        // Use buyer URL from config
-        const buyerAppUrl = new URL(app.buyerURL);
-        buyerAppUrl.searchParams.append('token', accessToken);
-        buyerAppUrl.searchParams.append('refreshToken', refreshToken);
-        buyerAppUrl.searchParams.append('from', 'seller');
-        
-        console.log('🔄 Redirecting to buyer app:', buyerAppUrl.toString());
-        
-        // Redirect to buyer app
-        window.location.href = buyerAppUrl.toString();
+        // Build buyer URL robustly and log each step
+        let configured = app.buyerURL;
+        console.log('[SwitchingToBuyer] Configured buyerURL:', configured);
+        if (!configured || !/^https?:\/\//i.test(configured)) {
+          // configured = 'http://localhost:3001/';
+          configured = 'https://mazadclick.vercel.app/';
+          console.log('[SwitchingToBuyer] buyerURL missing/invalid. Using default:', configured);
+        }
+        try {
+          const tmp = new URL(configured);
+          if (tmp.hostname === 'localhost' && tmp.port === '3002') {
+            console.log('[SwitchingToBuyer] Detected localhost:3002. Normalizing to 3001');
+            tmp.port = '3001';
+          }
+          // Ensure no trailing slash mishaps
+          const base = tmp.toString();
+          const buyerAppUrl = new URL(base);
+          buyerAppUrl.searchParams.append('token', accessToken);
+          buyerAppUrl.searchParams.append('refreshToken', refreshToken);
+          buyerAppUrl.searchParams.append('from', 'seller');
+          console.log('[SwitchingToBuyer] Final redirect URL:', buyerAppUrl.toString());
+          window.location.href = buyerAppUrl.toString();
+        } catch (e) {
+          console.error('[SwitchingToBuyer] Failed to build buyer URL from', configured, e);
+          // const fallback = new URL('http://localhost:3001/');
+          const fallback = new URL('https://mazadclick.vercel.app/');
+          fallback.searchParams.append('token', accessToken);
+          fallback.searchParams.append('refreshToken', refreshToken);
+          fallback.searchParams.append('from', 'seller');
+          console.log('[SwitchingToBuyer] Using fallback URL:', fallback.toString());
+          window.location.href = fallback.toString();
+        }
 
       } catch (err) {
         console.error('❌ Error switching to buyer mode:', err);
