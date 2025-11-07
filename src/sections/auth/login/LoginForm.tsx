@@ -10,6 +10,7 @@ import {
   Typography,
   Alert,
   Link,
+  styled,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
@@ -18,6 +19,70 @@ import { authStore } from '../../../contexts/authStore';
 import app from '../../../config';
 
 // ----------------------------------------------------------------------
+
+// Helper function to create alpha color
+function alpha(color: string, value: number) {
+  return `rgba(${hexToRgb(color)}, ${value})`;
+}
+
+// Helper function to convert hex to RGB
+function hexToRgb(hex: string) {
+  hex = hex.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
+// Styled TextField with glassmorphism
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 12,
+    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+    backdropFilter: 'blur(10px)',
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    fontSize: '1rem',
+    
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.background.paper, 0.8),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+    },
+    '&.Mui-focused': {
+      backgroundColor: alpha(theme.palette.background.paper, 0.9),
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
+      transform: 'translateY(-2px)',
+    },
+    '& fieldset': {
+      border: 'none',
+    },
+    
+    // Responsive font sizes
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.95rem',
+      '& input': {
+        fontSize: '0.95rem',
+      },
+    },
+  },
+  
+  '& .MuiInputLabel-root': {
+    fontSize: '1rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+    },
+  },
+  
+  '& .MuiFormHelperText-root': {
+    fontSize: '0.75rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.7rem',
+    },
+  },
+}));
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -167,14 +232,23 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Stack spacing={3}>
+        <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
           {loginError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2,
+                borderRadius: 2,
+                background: `linear-gradient(135deg, ${alpha('#f44336', 0.1)} 0%, ${alpha('#f44336', 0.05)} 100%)`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${alpha('#f44336', 0.3)}`,
+              }}
+            >
               {loginError}
             </Alert>
           )}
 
-          <TextField
+          <StyledTextField
             fullWidth
             autoComplete="username"
             type="text"
@@ -192,7 +266,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             }}
           />
 
-          <TextField
+          <StyledTextField
             fullWidth
             autoComplete="current-password"
             type={showPassword ? 'text' : 'password'}
@@ -218,7 +292,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           />
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
+        <Stack 
+          direction="row" 
+          alignItems="center" 
+          justifyContent="space-between" 
+          sx={{ 
+            my: { xs: 1.5, sm: 2 },
+          }}
+        >
           <Link 
             component="button" 
             variant="body2" 
@@ -228,7 +309,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               e.preventDefault();
               navigate('/reset-password');
             }}
-            sx={{ textAlign: 'left' }}
+            sx={{ 
+              textAlign: 'left',
+              fontSize: { xs: '0.85rem', sm: '0.875rem' },
+              color: 'primary.main',
+              fontWeight: 500,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                opacity: 0.8,
+              },
+            }}
           >
             Mot de passe oublié?
           </Link>
@@ -240,28 +330,26 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           type="submit"
           variant="contained"
           loading={isSubmitting}
-          sx={{ py: 1.5 }}
+          sx={{ 
+            borderRadius: { xs: 1.5, sm: 2 },
+            py: { xs: 1.5, sm: 1.8, md: 2 },
+            fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' },
+            fontWeight: 700,
+            background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            boxShadow: (theme) => `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
+              boxShadow: (theme) => `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+              transform: 'translateY(-2px)',
+            },
+            '&:active': {
+              transform: 'translateY(0px)',
+            },
+          }}
         >
           Se connecter
         </LoadingButton>
-
-        <Stack direction="row" alignItems="center" justifyContent="center" sx={{ mt: 3 }}>
-          <Typography variant="body2">
-            Pas encore de compte? &nbsp;
-            <Link 
-              variant="subtitle2" 
-              component="button"
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate('/register');
-              }}
-              underline="hover"
-            >
-              Créer un compte
-            </Link>
-          </Typography>
-        </Stack>
       </Form>
     </FormikProvider>
   );

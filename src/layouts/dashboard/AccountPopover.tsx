@@ -243,7 +243,7 @@ export default function AccountPopover() {
               const raw = avatar.fullUrl || avatar.url || avatar.path || avatar.filename || '';
               if (!raw) return '';
               if (/^https?:\/\//i.test(raw)) {
-                return raw.replace(/^https?:\/\/[^\/]+/, base).replace('http://localhost:3000', base);
+                return raw.replace('http://localhost:3000', base);
               }
               // Normalize leading slash
               const path = raw.startsWith('/') ? raw : `/${raw}`;
@@ -355,7 +355,7 @@ export default function AccountPopover() {
               const raw = avatar.fullUrl || avatar.url || avatar.path || avatar.filename || '';
               if (!raw) return '';
               if (/^https?:\/\//i.test(raw)) {
-                return raw.replace(/^https?:\/\/[^\/]+/, base).replace('http://localhost:3000', base);
+                return raw.replace('http://localhost:3000', base);
               }
               const path = raw.startsWith('/') ? raw : `/${raw}`;
               const finalPath = path.startsWith('/static/') ? path : `/static${path}`;

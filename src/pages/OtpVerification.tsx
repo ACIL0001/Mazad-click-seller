@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 // @mui
 import { styled, useTheme } from '@mui/material/styles';
 import { 
-  Card, 
   Link, 
-  Container, 
   Typography, 
   Stack, 
   TextField, 
@@ -16,9 +14,6 @@ import {
   Divider,
   IconButton
 } from '@mui/material';
-import { AlertColor } from '@mui/material';
-// hooks
-import useResponsive from '../hooks/useResponsive';
 // components
 import Page from '../components/Page';
 import Logo from '../components/Logo';
@@ -33,50 +28,35 @@ import { AuthAPI } from '@/api/auth';
 // ----------------------------------------------------------------------
 
 const RootStyle = styled('div')(({ theme }) => ({
-  [theme.breakpoints.up('md')]: {
-    display: 'flex',
-  },
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(3),
+  background: 'linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%)',
+  position: 'relative',
 }));
 
 const HeaderStyle = styled('header')(({ theme }) => ({
+  position: 'fixed',
   top: 0,
-  zIndex: 9,
-  lineHeight: 0,
-  width: '100%',
+  left: 0,
+  right: 0,
+  zIndex: 1000,
   display: 'flex',
   alignItems: 'center',
-  position: 'absolute',
-  padding: theme.spacing(3),
-  justifyContent: 'space-between',
-  [theme.breakpoints.up('md')]: {
-    alignItems: 'flex-start',
-    padding: theme.spacing(7, 5, 0, 7),
-  },
-}));
-
-const SectionStyle = styled(Card)(({ theme }) => ({
-  width: '100%',
-  maxWidth: 464,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  margin: theme.spacing(2, 0, 2, 2),
-  [theme.breakpoints.up('md')]: {
-    width: '40vw',
-    maxWidth: 'none',
-    margin: 0,
-    minHeight: '100vh',
+  padding: theme.spacing(2, 3),
+  backgroundColor: 'transparent',
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(2, 4),
   },
 }));
 
 const ContentStyle = styled('div')(({ theme }) => ({
   maxWidth: 480,
-  margin: 'auto',
-  minHeight: 'unset',
-  display: 'flex',
-  justifyContent: 'center',
-  flexDirection: 'column',
-  padding: theme.spacing(2, 0),
+  width: '100%',
+  marginTop: theme.spacing(10),
 }));
 
 const OtpInput = styled(TextField)(({ theme }) => ({
@@ -123,8 +103,6 @@ function hexToRgb(hex) {
 
 export default function OtpVerification() {
   const { t } = useTranslation();
-  const smUp = useResponsive('up', 'sm');
-  const mdUp = useResponsive('up', 'md');
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -223,8 +201,8 @@ export default function OtpVerification() {
         const authData = {
           user: {
             ...verificationResult.user,
-            isVerified: true, // Ensure isVerified is set to true
-            isHasIdentity: false // Ensure isHasIdentity is set to false for new users
+            isVerified: true, // Ensure isVerified is set to true after OTP
+            isHasIdentity: true // Set to true since identity verification is no longer required
           },
           tokens: {
             accessToken: verificationResult.tokens.accessToken,
@@ -234,22 +212,19 @@ export default function OtpVerification() {
         authStore.getState().set(authData);
         console.log('OtpVerification - Stored auth data:', authData);
         
-        // Navigate based on user type
+        // Navigate to subscription plans after OTP verification
         setTimeout(() => {
-          const userType = verificationResult.user.type;
-          console.log('OtpVerification - User type for navigation:', userType);
+          console.log('OtpVerification - Redirecting to subscription plans');
           console.log('OtpVerification - User data:', verificationResult.user);
-          console.log('OtpVerification - Auth store state:', authStore.getState().auth);
           
-          // Restore proper flow for professional users
-          if (userType === 'PROFESSIONAL' || userType === ACCOUNT_TYPE.PROFESSIONAL) {
-            console.log('OtpVerification - Professional user detected, navigating to identity verification');
-            console.log('OtpVerification - About to navigate to /identity-verification');
-            navigate('/identity-verification', { state: { user: verificationResult.user }, replace: true });
-          } else {
-            console.log('OtpVerification - Regular user, navigating to dashboard');
-            navigate('/dashboard/app', { replace: true });
-          }
+          // All users go to subscription plans after OTP verification
+          navigate('/subscription-plans', { 
+            state: { 
+              user: verificationResult.user,
+              fromRegistration: true 
+            }, 
+            replace: true 
+          });
         }, 500);
       } else {
         // Legacy response format or no tokens - redirect to login
@@ -302,157 +277,169 @@ export default function OtpVerification() {
   }, [resendTimer]);
 
   return (
-    <Page title={t('otpVerification')}>
-      <RootStyle>
-        <HeaderStyle>
-          <Logo />
-          <Button size="small" variant="text" onClick={() => navigate('/register', { state: { user, phone } })} sx={{ ml: 2, fontWeight: 600 }}>
-            ← Retour
-          </Button>
-          {smUp && (
-            <Typography variant="body2" sx={{ mt: { md: -2 } }}>
-              {t('backTo')} {''}
-              <Link variant="subtitle2" component={RouterLink} to="/login">
-                {t('login')}
-              </Link>
-            </Typography>
-          )}
-        </HeaderStyle>
+    <Page title="Vérification OTP">
+      <HeaderStyle>
+        <Logo />
+        <Button
+          size="small"
+          startIcon={<Iconify icon="eva:arrow-back-fill" width={16} height={16} />}
+          onClick={() => navigate('/register', { state: { user, phone } })}
+          sx={{
+            ml: 'auto',
+            color: 'text.primary',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            padding: '6px 12px',
+            borderRadius: 1.5,
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+          }}
+        >
+          Retour
+        </Button>
+      </HeaderStyle>
 
-        {mdUp && (
-          <SectionStyle
-            style={{
-              backgroundImage: `url(/static/logo/mazadclick-cover.png)`,
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '100vh',
+      <RootStyle>
+        <ContentStyle>
+          <Paper
+            elevation={8}
+            sx={{
+              p: { xs: 3, sm: 4 },
+              borderRadius: 3,
+              backgroundColor: 'background.paper',
+              overflow: 'hidden',
+              position: 'relative',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 4,
+                background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
+              }
             }}
           >
-          </SectionStyle>
-        )}
-
-        <Container sx={mdUp ? { width: '60vw', minHeight: '100vh', margin: 8, padding: 0 } : {}}>
-          <ContentStyle>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                backgroundColor: 'background.paper',
-                overflow: 'hidden',
-                position: 'relative',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  backgroundColor: 'primary.main'
-                }
-              }}
-            >
-              <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <IconButton 
-                  sx={{ 
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                    width: 64,
-                    height: 64,
-                    mb: 2
-                  }}
-                >
-                  <Iconify icon="eva:shield-fill" width={30} height={30} style={{ color: theme.palette.primary.main }} />
-                </IconButton>
-                <Typography variant="h5" fontWeight={600}>
-                  {t('otpVerification')}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <IconButton 
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  width: 72,
+                  height: 72,
+                  mb: 2.5,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                  }
+                }}
+              >
+                <Iconify icon="eva:shield-fill" width={36} height={36} style={{ color: theme.palette.primary.main }} />
+              </IconButton>
+              <Typography variant="h4" fontWeight={700} sx={{ mb: 1.5 }}>
+                Vérification OTP
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                Veuillez entrer le code à 5 chiffres envoyé à
+              </Typography>
+              {phone && (
+                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  {phone}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-                  {t('enterOtpCode')}
-                </Typography>
-                {phone && (
-                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                    +213 {phone}
-                  </Typography>
-                )}
-              </Box>
+              )}
+            </Box>
 
-              <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 3 }} />
 
-              <Box sx={{ mb: 3 }}>
-                <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 4 }}>
-                  {otp.map((digit, index) => (
-                    <OtpInput
-                      key={index}
-                      inputRef={(el) => (inputRefs.current[index] = el)}
-                      variant="outlined"
-                      value={digit}
-                      onChange={(e) => handleChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      inputProps={{ maxLength: 1 }}
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </Stack>
-                <Button
-                  fullWidth
-                  size="large"
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={otp.includes('')}
+            <Box sx={{ mb: 3 }}>
+              <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 4 }}>
+                {otp.map((digit, index) => (
+                  <OtpInput
+                    key={index}
+                    inputRef={(el) => (inputRefs.current[index] = el)}
+                    variant="outlined"
+                    value={digit}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    inputProps={{ maxLength: 1 }}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </Stack>
+              <Button
+                fullWidth
+                size="large"
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={otp.includes('')}
+                sx={{ 
+                  borderRadius: 2,
+                  py: 1.8,
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: `0 8px 20px 0 ${alpha(theme.palette.primary.main, 0.3)}`,
+                  '&:hover': {
+                    boxShadow: `0 8px 24px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Vérifier
+              </Button>
+            </Box>
+
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                Vous n'avez pas reçu le code ?
+              </Typography>
+              <Link
+                variant="subtitle2"
+                component="button"
+                onClick={handleResend}
+                sx={{ 
+                  border: 'none',
+                  background: 'none',
+                  cursor: resendTimer > 0 ? 'default' : 'pointer',
+                  color: resendTimer > 0 ? 'text.disabled' : 'primary.main',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  fontSize: '0.95rem',
+                  '&:hover': {
+                    textDecoration: resendTimer > 0 ? 'none' : 'underline',
+                  }
+                }}
+                disabled={resendTimer > 0}
+              >
+                <Iconify icon="eva:refresh-fill" width={18} height={18} style={{ marginRight: 6 }} />
+                {resendTimer > 0 ? `Renvoyer OTP (${resendTimer}s)` : 'Renvoyer OTP'}
+              </Link>
+            </Box>
+
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Retour à la{' '}
+                <Link 
+                  variant="subtitle2" 
+                  component={RouterLink} 
+                  to="/login"
                   sx={{ 
-                    borderRadius: 1.5,
-                    py: 1.5,
-                    boxShadow: `0 8px 16px 0 ${alpha(theme.palette.primary.main, 0.24)}`,
+                    fontWeight: 600,
+                    textDecoration: 'none',
                     '&:hover': {
-                      boxShadow: `0 8px 16px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+                      textDecoration: 'underline',
                     }
                   }}
                 >
-                  {t('verifyOtp')}
-                </Button>
-              </Box>
-
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  {t('didNotReceiveCode')} {''}
-                </Typography>
-                <Link
-                  variant="subtitle2"
-                  component="button"
-                  onClick={handleResend}
-                  sx={{ 
-                    border: 'none',
-                    background: 'none',
-                    cursor: resendTimer > 0 ? 'default' : 'pointer',
-                    color: resendTimer > 0 ? 'text.disabled' : 'primary.main',
-                    fontWeight: 600,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    mt: 1
-                  }}
-                  disabled={resendTimer > 0}
-                >
-                  <Iconify icon="eva:refresh-fill" width={16} height={16} style={{ marginRight: 4 }} />
-                  {resendTimer > 0 ? `${t('resendOtp')} (${resendTimer}s)` : t('resendOtp')}
+                  page de connexion
                 </Link>
-              </Box>
-
-              {!smUp && (
-                <Typography variant="body2" sx={{ mt: 3, textAlign: 'center' }}>
-                  {t('backTo')} {''}
-                  <Link variant="subtitle2" to="/login" component={RouterLink}>
-                    {t('login')}
-                  </Link>
-                </Typography>
-              )}
-            </Paper>
-          </ContentStyle>
-        </Container>
+              </Typography>
+            </Box>
+          </Paper>
+        </ContentStyle>
       </RootStyle>
     </Page>
   );

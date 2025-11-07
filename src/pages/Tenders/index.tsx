@@ -151,6 +151,9 @@ export default function Tenders() {
     return num != null ? `${num.toFixed(2)} DA` : '-';
   };
 
+  // DISABLED: Delete functionality removed as per requirements
+  // Users cannot delete tenders/auctions after creation
+  /*
   const handleDeleteTender = async (tenderId: string) => {
     try {
       setLoading(true);
@@ -181,6 +184,7 @@ export default function Tenders() {
       setLoading(false);
     }
   };
+  */
 
   const TableBodyComponent = ({ data = [] }) => {
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
@@ -241,6 +245,8 @@ export default function Tenders() {
                   >
                     Modifier
                   </Button>
+                  {/* Delete button removed - users cannot delete tenders after creation */}
+                  {/*
                   <Button
                     size="small"
                     variant="outlined"
@@ -253,6 +259,7 @@ export default function Tenders() {
                   >
                     Supprimer
                   </Button>
+                  */}
                 </Stack>
               </TableCell>
             </TableRow>

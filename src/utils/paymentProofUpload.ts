@@ -21,7 +21,16 @@ export const uploadPaymentProof = async (identityId: string, file: File): Promis
     
     console.log('🔍 Access token found, making request...');
     // const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/identities/${identityId}/payment-proof`;
-    const apiUrl = `${import.meta.env.VITE_API_URL || 'https://mazadclick-server.onrender.com'}/identities/${identityId}/payment-proof`;
+    const baseUrl = (() => {
+      const envUrl = import.meta.env.VITE_API_URL;
+      if (envUrl && envUrl.trim() !== '') {
+        return envUrl.trim().replace(/\/$/, '');
+      }
+      return (import.meta.env.MODE === 'production'
+        ? 'https://mazadclick-server.onrender.com'
+        : 'http://localhost:3000').replace(/\/$/, '');
+    })();
+    const apiUrl = `${baseUrl}/identities/${identityId}/payment-proof`;
     console.log('🔍 API URL:', apiUrl);
     
     const response = await fetch(apiUrl, {

@@ -28,6 +28,7 @@ export interface Tender {
   endingAt: Date;
   tenderType: TENDER_TYPE;
   auctionType: TENDER_AUCTION_TYPE;
+  evaluationType?: string;
   quantity?: string;
   wilaya: string;
   location: string;

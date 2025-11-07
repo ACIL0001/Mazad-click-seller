@@ -1,5 +1,5 @@
 import * as PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, SyntheticEvent } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 // material
 import { styled, alpha } from '@mui/material/styles';
@@ -143,10 +143,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
                         url = url.replace('&', '?');
                       }
                       // Normalize localhost URLs
-                      // if (url.startsWith('http://localhost:3000')) {
-                      //   return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                      if (url.startsWith('http://localhost:3000') || url.startsWith('https://mazadclick-server.onrender.com')) {
-                        return url.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
+                      if (url.startsWith('http://localhost:3000')) {
+                        return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                       }
                       if (url.startsWith('http://localhost/')) {
                         return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
@@ -169,10 +167,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
                       // Try fullUrl first
                       if (avatar.fullUrl) {
                         let fullUrl = avatar.fullUrl;
-                        // if (fullUrl.startsWith('http://localhost:3000')) {
-                        //   fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                        if (fullUrl.startsWith('http://localhost:3000') || fullUrl.startsWith('https://mazadclick-server.onrender.com')) {
-                          fullUrl = fullUrl.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
+                        if (fullUrl.startsWith('http://localhost:3000')) {
+                          fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                         }
                         return fullUrl;
                       }
@@ -180,7 +176,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
                       // Try url
                       if (avatar.url) {
                         if (avatar.url.startsWith('http')) {
-                          return avatar.url.replace(/^https?:\/\/[^\/]+/, app.baseURL.replace(/\/$/, ''));
+                          return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                         }
                         const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
                         const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
@@ -209,12 +205,11 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: any)
                           border: (theme) => `3px solid ${theme.palette.primary.main}`,
                           objectFit: 'cover',
                         }}
-                        onError={(e) => {
+                        onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
                           console.warn('Avatar image failed to load:', avatarUrl);
-                          e.currentTarget.onerror = null;
-                          if (e.currentTarget instanceof HTMLImageElement) {
-                            e.currentTarget.src = '';
-                          }
+                          const img = e.currentTarget;
+                          img.onerror = null;
+                          img.src = '';
                         }}
                       />
                     );

@@ -18,6 +18,18 @@ export interface AlternativePaymentOption {
 /**
  * Handle 403 Forbidden error from SATIM payment gateway
  */
+const resolveApiBaseUrl = (): string => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl && apiUrl.trim() !== '') {
+    return apiUrl.trim().replace(/\/$/, '');
+  }
+  return (import.meta.env.MODE === 'production'
+    ? 'https://mazadclick-server.onrender.com'
+    : 'http://localhost:3000').replace(/\/$/, '');
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
+
 export const handleSatimForbiddenError = (paymentId: string): void => {
   console.log('Handling SATIM 403 Forbidden error for payment:', paymentId);
   
@@ -38,7 +50,7 @@ export const handleSatimForbiddenError = (paymentId: string): void => {
   if (alternativeUrls.length > 0) {
     console.log('Redirecting to forbidden handler with alternatives');
     // window.location.href = `http://localhost:3000/subscription/payment/satim-forbidden/${paymentId}`;
-    window.location.href = `https://mazadclick-server.onrender.com/subscription/payment/satim-forbidden/${paymentId}`;
+    window.location.href = `${API_BASE_URL}/subscription/payment/satim-forbidden/${paymentId}`;
     return;
   }
 
@@ -125,7 +137,7 @@ export const initializePaymentErrorHandling = (): void => {
  */
 export const getAlternativePaymentOptions = (paymentId: string): Promise<AlternativePaymentOption[]> => {
   // return fetch(`http://localhost:3000/subscription/payment/satim-forbidden/${paymentId}`)
-  return fetch(`https://mazadclick-server.onrender.com/subscription/payment/satim-forbidden/${paymentId}`)
+  return fetch(`${API_BASE_URL}/subscription/payment/satim-forbidden/${paymentId}`)
     .then(response => response.text())
     .then(html => {
       // Parse the HTML to extract alternative URLs

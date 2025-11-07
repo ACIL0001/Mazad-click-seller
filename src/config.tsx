@@ -8,6 +8,11 @@ const getStorageKey = () => {
   return 'auth'; // fallback
 };
 
+const pickUrl = (value: string | undefined, devFallback: string, prodFallback: string) =>
+  value && value.trim() !== ''
+    ? value.trim()
+    : (import.meta.env.MODE === 'production' ? prodFallback : devFallback);
+
 const app = {
   name: 'MazadClick',
   pole: 'NotEasy',
@@ -16,15 +21,13 @@ const app = {
   
   // Development URLs - using localhost
   // socket: import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/',
+  socket: pickUrl(import.meta.env.VITE_SOCKET_URL, 'http://localhost:3000/', 'https://mazadclick-server.onrender.com/'),
   // route: import.meta.env.VITE_STATIC_URL || "http://localhost:3000/static/",
+  route: pickUrl(import.meta.env.VITE_STATIC_URL, 'http://localhost:3000', 'https://mazadclick-server.onrender.com'),
   // baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/",
+  baseURL: pickUrl(import.meta.env.VITE_API_URL, 'http://localhost:3000/', 'https://mazadclick-server.onrender.com/'),
   // buyerURL: import.meta.env.VITE_BUYER_URL || "http://localhost:3001/",
-  
-  // Production URLs
-  socket: import.meta.env.VITE_SOCKET_URL || 'https://mazadclick-server.onrender.com/',
-  route: import.meta.env.VITE_STATIC_URL || "https://mazadclick-server.onrender.com/static/",
-  baseURL: import.meta.env.VITE_API_URL || "https://mazadclick-server.onrender.com/",
-  buyerURL: import.meta.env.VITE_BUYER_URL || "https://mazadclick.vercel.app/",
+  buyerURL: pickUrl(import.meta.env.VITE_BUYER_URL, 'http://localhost:3001/', 'https://mazadclick.vercel.app/'),
 
   // Production URLs (commented out)
   // socket: import.meta.env.VITE_SOCKET_URL || 'https://api.mazad.click/',

@@ -26,6 +26,10 @@ import {
   MenuItem,
   StepConnector,
   stepConnectorClasses,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   type StepIconProps
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
@@ -36,7 +40,6 @@ import { Form, useFormik, FormikProvider } from 'formik';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
 import { UploadMultiFile } from '@/components/upload/UploadMultiFile';
-import { UploadVideoFile } from '@/components/upload/UploadVideoFile';
 import Page from '@/components/Page';
 import { AuctionsAPI } from '@/api/auctions';
 import { CategoryAPI } from '@/api/category';
@@ -939,8 +942,7 @@ export default function CreateAuction() {
   const { auth, isLogged } = useAuth();
 
   const [activeStep, setActiveStep] = useState(0);
-  const [thumbs, setThumbs] = useState<File[]>([]);
-  const [videos, setVideos] = useState<File[]>([]);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]); // Combined images and videos
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
@@ -949,6 +951,7 @@ export default function CreateAuction() {
   const [wilayaAutoDetected, setWilayaAutoDetected] = useState(false);
   const [detectedWilaya, setDetectedWilaya] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
@@ -996,8 +999,8 @@ export default function CreateAuction() {
     initialValues: {
       title: '',
       description: '',
-      bidType: BID_TYPES.PRODUCT,
-      auctionType: AUCTION_TYPES.CLASSIC,
+      bidType: '',
+      auctionType: '',
       productCategory: '',
       productSubCategory: '',
       startingPrice: '',
@@ -1018,6 +1021,35 @@ export default function CreateAuction() {
       await handleSubmit(values);
     },
   });
+
+  // Helper function to get formatted selection text for each step
+  const getStepSelectionText = (stepIndex: number): string | null => {
+    if (stepIndex === steps.length - 1) return null; // Skip last step (details)
+    
+    switch (stepIndex) {
+      case 0: {
+        // Step 0: Show bidType and auctionType
+        const bidTypeLabel = formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 
+                           formik.values.bidType === BID_TYPES.SERVICE ? 'Service' : null;
+        const auctionTypeLabel = formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'Classique' :
+                                formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'Express' : null;
+        
+        if (bidTypeLabel && auctionTypeLabel) {
+          return `${bidTypeLabel} - ${auctionTypeLabel}`;
+        }
+        return null;
+      }
+      case 1: {
+        // Step 1: Show category name
+        if (selectedCategory && selectedCategory.name) {
+          return selectedCategory.name;
+        }
+        return null;
+      }
+      default:
+        return null;
+    }
+  };
 
   // Helper function to scroll to first error field
   const scrollToField = (fieldName: string) => {
@@ -1235,8 +1267,49 @@ export default function CreateAuction() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Auto-advance functionality: Move to next step when options are selected
+  useEffect(() => {
+    // Step 0: Auto-advance when both bidType and auctionType are selected
+    if (activeStep === 0 && formik.values.bidType && formik.values.auctionType) {
+      const isValid = validateStep(0, formik.values);
+      if (isValid) {
+        // Small delay to ensure UI updates smoothly
+        setTimeout(() => {
+          setActiveStep(1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+    
+    // Step 1: Auto-advance when category is selected
+    if (activeStep === 1 && formik.values.productCategory) {
+      const isValid = validateStep(1, formik.values);
+      if (isValid) {
+        setTimeout(() => {
+          setActiveStep(2);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  }, [activeStep, formik.values.bidType, formik.values.auctionType, formik.values.productCategory]);
+
   const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
+    const previousStep = activeStep - 1;
+    
+    // Clear selections when going back to prevent auto-advance
+    if (previousStep === 0) {
+      // Going back to step 0: clear bidType and auctionType
+      formik.setFieldValue('bidType', '');
+      formik.setFieldValue('auctionType', '');
+    } else if (previousStep === 1) {
+      // Going back to step 1: clear category
+      formik.setFieldValue('productCategory', '');
+      formik.setFieldValue('productSubCategory', '');
+      setSelectedCategory(null);
+      setSelectedCategoryPath([]);
+    }
+    
+    setActiveStep(previousStep);
     // Scroll to top when going back
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1555,14 +1628,14 @@ export default function CreateAuction() {
     }
 
     // Additional validation for files
-    if (thumbs.length === 0 && videos.length === 0) {
+    if (mediaFiles.length === 0) {
       enqueueSnackbar('Veuillez télécharger au moins une image ou une vidéo', { variant: 'error' });
       setActiveStep(2); // Go to details step where files are uploaded
-      // Scroll to images section
+      // Scroll to media section
       setTimeout(() => {
-        const imagesSection = document.querySelector('h5')?.parentElement?.parentElement;
-        if (imagesSection) {
-          imagesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const mediaSection = document.querySelector('h5')?.parentElement?.parentElement;
+        if (mediaSection) {
+          mediaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 200);
       return;
@@ -1573,7 +1646,16 @@ export default function CreateAuction() {
       return;
     }
 
+    // Show warning modal instead of directly submitting
+    setShowWarningModal(true);
+  };
+
+  // Actual submission after user confirms the warning
+  const handleConfirmSubmit = async () => {
+    setShowWarningModal(false);
     setIsSubmitting(true);
+
+    const values = formik.values;
 
     try {
       const now = new Date();
@@ -1609,12 +1691,13 @@ export default function CreateAuction() {
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataPayload));
 
-      thumbs.forEach((file) => {
-        formData.append('thumbs[]', file);
-      });
-
-      videos.forEach((file) => {
-        formData.append('videos[]', file);
+      // Separate images and videos from combined mediaFiles
+      mediaFiles.forEach((file) => {
+        if (file.type.startsWith('image/')) {
+          formData.append('thumbs[]', file);
+        } else if (file.type.startsWith('video/')) {
+          formData.append('videos[]', file);
+        }
       });
 
       await AuctionsAPI.create(formData);
@@ -1636,27 +1719,15 @@ export default function CreateAuction() {
   };
 
   const handleDrop = (acceptedFiles: File[]) => {
-    setThumbs(acceptedFiles);
+    setMediaFiles(prev => [...prev, ...acceptedFiles]);
   };
 
   const handleRemoveFile = (file: File) => {
-    setThumbs(thumbs.filter(f => f !== file));
+    setMediaFiles(mediaFiles.filter(f => f !== file));
   };
 
   const handleRemoveAllFiles = () => {
-    setThumbs([]);
-  };
-
-  const handleVideoDrop = (acceptedFiles: File[]) => {
-    setVideos(acceptedFiles);
-  };
-
-  const handleRemoveVideo = (file: File) => {
-    setVideos(videos.filter(f => f !== file));
-  };
-
-  const handleRemoveAllVideos = () => {
-    setVideos([]);
+    setMediaFiles([]);
   };
 
   const getStepContent = (step: number) => {
@@ -2435,46 +2506,27 @@ export default function CreateAuction() {
                 </FormControl>
               </Grid>
 
-              {/* Images */}
+              {/* Images & Videos */}
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Images
+                  Images et Vidéos
                 </Typography>
 
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Téléchargez des images de haute qualité pour attirer plus d'enchérisseurs
+                  Téléchargez des images et vidéos de haute qualité pour mieux présenter votre produit ou service. Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM
                 </Alert>
 
                 <UploadMultiFile
                   showPreview
-                  files={thumbs}
+                  files={mediaFiles}
                   onDrop={handleDrop}
                   onRemove={handleRemoveFile}
                   onRemoveAll={handleRemoveAllFiles}
                   accept={{
-                    'image/*': ['.jpeg', '.jpg', '.png', '.gif']
+                    'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
+                    'video/*': ['.mp4', '.mpeg', '.mov', '.avi', '.webm']
                   }}
-                />
-              </Grid>
-
-              {/* Videos */}
-              <Grid item xs={12}>
-                <Divider sx={{ my: 3 }} />
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Vidéos (Optionnel)
-                </Typography>
-
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  Ajoutez des vidéos pour mieux présenter votre produit ou service
-                </Alert>
-
-                <UploadVideoFile
-                  showPreview
-                  files={videos}
-                  onDrop={handleVideoDrop}
-                  onRemove={handleRemoveVideo}
-                  onRemoveAll={handleRemoveAllVideos}
                   maxSize={100 * 1024 * 1024} // 100MB
                 />
               </Grid>
@@ -2521,18 +2573,28 @@ export default function CreateAuction() {
         {/* Stepper */}
         <Box sx={{ mb: 4 }}>
           <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((step, index) => (
-              <Step key={step.title}>
-                <StepLabel>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {step.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {step.description}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
+            {steps.map((step, index) => {
+              const selectionText = getStepSelectionText(index);
+              return (
+                <Step key={step.title}>
+                  <StepLabel>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {step.title}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      color={selectionText ? "primary.main" : "text.secondary"}
+                      sx={{ 
+                        fontWeight: selectionText ? 600 : 400,
+                        fontStyle: selectionText ? 'normal' : 'italic'
+                      }}
+                    >
+                      {selectionText || step.description}
+                    </Typography>
+                  </StepLabel>
+                </Step>
+              );
+            })}
           </Stepper>
         </Box>
 
@@ -2569,20 +2631,111 @@ export default function CreateAuction() {
                   Créer l'enchère
                 </LoadingButton>
               ) : (
-                <Button
-                  type="button"
-                  variant="contained"
-                  onClick={handleNext}
-                  endIcon={<Iconify icon="eva:arrow-forward-fill" />}
-                  sx={{ borderRadius: 2, px: 4 }}
-                >
-                  Suivant
-                </Button>
+                // Hide "Suivant" button on steps 0 and 1 (auto-advance enabled)
+                activeStep >= 2 && (
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleNext}
+                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                    sx={{ borderRadius: 2, px: 4 }}
+                  >
+                    Suivant
+                  </Button>
+                )
               )}
             </Box>
           </Form>
         </FormikProvider>
       </MainContainer>
+
+      {/* Warning Modal */}
+      <Dialog
+        open={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          pb: 1,
+          pt: 3,
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <Box sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Iconify icon="mdi:alert" width={32} height={32} sx={{ color: 'white' }} />
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+              Attention Important
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ px: 4, py: 3 }}>
+          <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+              ⚠️ Une fois créée, vous ne pourrez plus supprimer cette enchère
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Veuillez vous assurer que toutes les informations sont correctes avant de confirmer la création.
+            </Typography>
+          </Alert>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 2 }}>
+            Voulez-vous vraiment créer cette enchère ?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button
+            onClick={() => setShowWarningModal(false)}
+            variant="outlined"
+            sx={{ 
+              borderRadius: 2,
+              px: 3,
+              borderColor: '#e2e8f0',
+              color: '#64748b',
+              '&:hover': {
+                borderColor: '#cbd5e1',
+                background: '#f8fafc',
+              }
+            }}
+          >
+            Annuler
+          </Button>
+          <LoadingButton
+            onClick={handleConfirmSubmit}
+            loading={isSubmitting}
+            variant="contained"
+            sx={{ 
+              borderRadius: 2,
+              px: 3,
+              background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #005299 0%, #0091cc 100%)',
+              }
+            }}
+          >
+            Confirmer et Créer
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Page>
   );
 }

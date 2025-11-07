@@ -26,6 +26,10 @@ import {
   MenuItem,
   StepConnector,
   stepConnectorClasses,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   type StepIconProps
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
@@ -178,6 +182,11 @@ const TENDER_AUCTION_TYPES = {
   EXPRESS: "EXPRESS",
 };
 
+const TENDER_EVALUATION_TYPES = {
+  MOINS_DISANT: "MOINS_DISANT",
+  MIEUX_DISANT: "MIEUX_DISANT",
+};
+
 // Google Maps API types
 declare global {
   interface Window {
@@ -202,11 +211,13 @@ export default function CreateTender() {
   const [wilayaAutoDetected, setWilayaAutoDetected] = useState(false);
   const [detectedWilaya, setDetectedWilaya] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [showWarningModal, setShowWarningModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
     { title: 'Type de produit/service', description: 'Choisissez produit ou service' },
     { title: 'Type d\'appel d\'offres', description: 'Choisissez le type d\'appel d\'offres' },
+    { title: 'Type d\'évaluation', description: 'Mieux disant ou moins disant' },
     { title: 'Catégorie', description: 'Sélectionnez la catégorie' },
     { title: 'Détails', description: 'Remplissez les informations' }
   ];
@@ -262,6 +273,9 @@ export default function CreateTender() {
     auctionType: Yup.string()
       .oneOf(Object.values(TENDER_AUCTION_TYPES))
       .required('Le type d\'appel d\'offres est requis'),
+    evaluationType: Yup.string()
+      .oneOf(Object.values(TENDER_EVALUATION_TYPES))
+      .required('Le type d\'évaluation est requis'),
     category: Yup.string()
       .required('La catégorie est requise'),
     duration: Yup.object()
@@ -276,8 +290,9 @@ export default function CreateTender() {
     initialValues: {
       title: '',
       description: '',
-      tenderType: TENDER_TYPES.PRODUCT,
-      auctionType: TENDER_AUCTION_TYPES.CLASSIC,
+      tenderType: '',
+      auctionType: '',
+      evaluationType: '',
       category: '',
       subCategory: '',
       duration: null,
@@ -286,6 +301,7 @@ export default function CreateTender() {
       wilaya: '',
       quantity: '',
       isPro: false,
+      hidden: false,
     },
     validationSchema,
     validateOnChange: false,
@@ -295,6 +311,50 @@ export default function CreateTender() {
       await handleSubmit(values);
     },
   });
+
+  // Helper function to get formatted selection text for each step
+  const getStepSelectionText = (stepIndex: number): string | null => {
+    if (stepIndex === steps.length - 1) return null; // Skip last step (details)
+    
+    switch (stepIndex) {
+      case 0: {
+        // Step 0: Show tenderType
+        if (formik.values.tenderType === TENDER_TYPES.PRODUCT) {
+          return 'Produit';
+        } else if (formik.values.tenderType === TENDER_TYPES.SERVICE) {
+          return 'Service';
+        }
+        return null;
+      }
+      case 1: {
+        // Step 1: Show auctionType
+        if (formik.values.auctionType === TENDER_AUCTION_TYPES.CLASSIC) {
+          return 'Classique';
+        } else if (formik.values.auctionType === TENDER_AUCTION_TYPES.EXPRESS) {
+          return 'Express';
+        }
+        return null;
+      }
+      case 2: {
+        // Step 2: Show evaluationType
+        if (formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT) {
+          return 'Moins disant';
+        } else if (formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT) {
+          return 'Mieux disant';
+        }
+        return null;
+      }
+      case 3: {
+        // Step 3: Show category name
+        if (selectedCategory && selectedCategory.name) {
+          return selectedCategory.name;
+        }
+        return null;
+      }
+      default:
+        return null;
+    }
+  };
 
   // Helper function to scroll to first error field
   const scrollToField = (fieldName: string) => {
@@ -378,7 +438,15 @@ export default function CreateTender() {
         }
         return true;
 
-      case 2: // Category
+      case 2: // Evaluation Type
+        if (!values.evaluationType) {
+          enqueueSnackbar('Veuillez sélectionner un type d\'évaluation', { variant: 'error' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return false;
+        }
+        return true;
+
+      case 3: // Category
         if (!values.category) {
           enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -386,7 +454,7 @@ export default function CreateTender() {
         }
         return true;
 
-      case 3: // Details
+      case 4: // Details
         console.log('📝 Validating Step 3 (Details)...');
         const errors = [];
         let firstErrorField = '';
@@ -465,9 +533,12 @@ export default function CreateTender() {
         touchedFields.auctionType = true;
         break;
       case 2:
-        touchedFields.category = true;
+        touchedFields.evaluationType = true;
         break;
       case 3:
+        touchedFields.category = true;
+        break;
+      case 4:
         touchedFields.title = true;
         touchedFields.description = true;
         touchedFields.duration = true;
@@ -647,6 +718,53 @@ export default function CreateTender() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Auto-advance functionality: Move to next step when options are selected
+  useEffect(() => {
+    // Step 0: Auto-advance when tenderType is selected
+    if (activeStep === 0 && formik.values.tenderType) {
+      const isValid = validateStep(0, formik.values);
+      if (isValid) {
+        setTimeout(() => {
+          setActiveStep(1);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+    
+    // Step 1: Auto-advance when auctionType is selected
+    if (activeStep === 1 && formik.values.auctionType) {
+      const isValid = validateStep(1, formik.values);
+      if (isValid) {
+        setTimeout(() => {
+          setActiveStep(2);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+    
+    // Step 2: Auto-advance when evaluationType is selected
+    if (activeStep === 2 && formik.values.evaluationType) {
+      const isValid = validateStep(2, formik.values);
+      if (isValid) {
+        setTimeout(() => {
+          setActiveStep(3);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+    
+    // Step 3: Auto-advance when category is selected
+    if (activeStep === 3 && formik.values.category) {
+      const isValid = validateStep(3, formik.values);
+      if (isValid) {
+        setTimeout(() => {
+          setActiveStep(4);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+      }
+    }
+  }, [activeStep, formik.values.tenderType, formik.values.auctionType, formik.values.evaluationType, formik.values.category]);
+
   // Reset category selection when tender type changes
   const handleTenderTypeChange = (tenderType: string) => {
     formik.setFieldValue('tenderType', tenderType);
@@ -658,7 +776,27 @@ export default function CreateTender() {
   };
 
   const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
+    const previousStep = activeStep - 1;
+    
+    // Clear selections when going back to prevent auto-advance
+    if (previousStep === 0) {
+      // Going back to step 0: clear tenderType
+      formik.setFieldValue('tenderType', '');
+    } else if (previousStep === 1) {
+      // Going back to step 1: clear auctionType
+      formik.setFieldValue('auctionType', '');
+    } else if (previousStep === 2) {
+      // Going back to step 2: clear evaluationType
+      formik.setFieldValue('evaluationType', '');
+    } else if (previousStep === 3) {
+      // Going back to step 3: clear category
+      formik.setFieldValue('category', '');
+      formik.setFieldValue('subCategory', '');
+      setSelectedCategory(null);
+      setSelectedCategoryPath([]);
+    }
+    
+    setActiveStep(previousStep);
     // Scroll to top when going back
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -679,13 +817,13 @@ export default function CreateTender() {
         // Don't show generic error message - validateStep already showed specific error
         // Only show message if we're switching steps
         if (step !== activeStep) {
-          const stepNames = ['le type de produit/service', 'le type d\'appel d\'offres', 'la catégorie', 'les détails'];
+          const stepNames = ['le type de produit/service', 'le type d\'appel d\'offres', 'le type d\'évaluation', 'la catégorie', 'les détails'];
           enqueueSnackbar(`Veuillez compléter ${stepNames[step]}`, { variant: 'warning' });
         }
         
-        // If error is on step 0, 1, or 2, scroll to top to show step selector
-        // If error is on step 3 (current step), validateStep already handled scrolling to the field
-        if (step !== 3) {
+        // If error is on step 0, 1, 2, or 3, scroll to top to show step selector
+        // If error is on step 4 (details step), validateStep already handled scrolling to the field
+        if (step !== 4) {
           setTimeout(() => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }, 100);
@@ -716,7 +854,16 @@ export default function CreateTender() {
       return;
     }
 
+    // Show warning modal instead of directly submitting
+    setShowWarningModal(true);
+  };
+
+  // Actual submission after user confirms the warning
+  const handleConfirmSubmit = async () => {
+    setShowWarningModal(false);
     setIsSubmitting(true);
+
+    const values = formik.values;
 
     try {
       const now = new Date();
@@ -734,6 +881,7 @@ export default function CreateTender() {
         description: values.description,
         tenderType: values.tenderType,
         auctionType: values.auctionType,
+        evaluationType: values.evaluationType, // Add evaluation type to payload
         category: values.category,
         subCategory: values.subCategory || undefined,
         startingAt: now.toISOString(),
@@ -742,8 +890,15 @@ export default function CreateTender() {
         location: values.location,
         wilaya: values.wilaya,
         isPro: values.isPro,
+        hidden: values.hidden,
         quantity: values.quantity || '',
       };
+      
+      console.log('📤 [CreateTender] Sending tender data with evaluationType:', {
+        evaluationType: values.evaluationType,
+        tenderType: values.tenderType,
+        auctionType: values.auctionType
+      });
 
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataPayload));
@@ -900,6 +1055,65 @@ export default function CreateTender() {
         );
 
       case 2:
+        return (
+          <StepCard>
+            <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
+              Choisissez le type d'évaluation
+            </Typography>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <SelectionCard
+                  className={formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT ? 'selected' : ''}
+                  onClick={() => formik.setFieldValue('evaluationType', TENDER_EVALUATION_TYPES.MOINS_DISANT)}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    <IconContainer className={formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT ? 'selected' : ''}>
+                      <Iconify
+                        icon="mdi:cash-multiple"
+                        width={32}
+                        height={32}
+                        sx={{ color: formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT ? 'white' : theme.palette.primary.main }}
+                      />
+                    </IconContainer>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                      Moins Disant
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Le prix le plus bas remporte (soumission de prix uniquement)
+                    </Typography>
+                  </Box>
+                </SelectionCard>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <SelectionCard
+                  className={formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT ? 'selected' : ''}
+                  onClick={() => formik.setFieldValue('evaluationType', TENDER_EVALUATION_TYPES.MIEUX_DISANT)}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    <IconContainer className={formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT ? 'selected' : ''}>
+                      <Iconify
+                        icon="mdi:star-circle"
+                        width={32}
+                        height={32}
+                        sx={{ color: formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT ? 'white' : theme.palette.primary.main }}
+                      />
+                    </IconContainer>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                      Mieux Disant
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      La meilleure proposition/offre remporte (soumission détaillée)
+                    </Typography>
+                  </Box>
+                </SelectionCard>
+              </Grid>
+            </Grid>
+          </StepCard>
+        );
+
+      case 3:
         // Category selection (reuse category hierarchy from CreateAuction)
         const renderCategoryHierarchy = (categories: any[], level = 0, parentPath: any[] = []): JSX.Element[] => {
           return categories
@@ -1123,7 +1337,7 @@ export default function CreateTender() {
           </StepCard>
         );
 
-      case 3:
+      case 4:
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
@@ -1334,15 +1548,44 @@ export default function CreateTender() {
                 </Grid>
               )}
 
+              {/* Name Visibility Option (Anonymous Mode) */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 3 }} />
+                <FormControl component="fieldset">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formik.values.hidden}
+                        onChange={(e) => formik.setFieldValue('hidden', e.target.checked)}
+                        color="primary"
+                      />
+                    }
+                    label={
+                      <Box>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {t('auctions.nameVisibility.title')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {formik.values.hidden 
+                            ? t('auctions.nameVisibility.descriptionHidden')
+                            : t('auctions.nameVisibility.descriptionVisible')
+                          }
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </FormControl>
+              </Grid>
+
               {/* Attachments */}
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Pièces jointes
+                  Images, Vidéos et Documents
                 </Typography>
 
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Téléchargez le cahier des charges, plans, spécifications techniques...
+                  Téléchargez des images, vidéos et documents (cahier des charges, plans, spécifications techniques...). Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM, PDF, DOC, DOCX
                 </Alert>
 
                 <UploadMultiFile
@@ -1352,11 +1595,13 @@ export default function CreateTender() {
                   onRemove={handleRemoveFile}
                   onRemoveAll={handleRemoveAllFiles}
                   accept={{
-                    'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+                    'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
+                    'video/*': ['.mp4', '.mpeg', '.mov', '.avi', '.webm'],
                     'application/pdf': ['.pdf'],
                     'application/msword': ['.doc'],
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
                   }}
+                  maxSize={100 * 1024 * 1024} // 100MB
                 />
               </Grid>
             </Grid>
@@ -1403,18 +1648,28 @@ export default function CreateTender() {
         {/* Stepper */}
         <Box sx={{ mb: 4 }}>
           <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((step, index) => (
-              <Step key={step.title}>
-                <StepLabel>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {step.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {step.description}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
+            {steps.map((step, index) => {
+              const selectionText = getStepSelectionText(index);
+              return (
+                <Step key={step.title}>
+                  <StepLabel>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {step.title}
+                    </Typography>
+                    <Typography 
+                      variant="caption" 
+                      color={selectionText ? "primary.main" : "text.secondary"}
+                      sx={{ 
+                        fontWeight: selectionText ? 600 : 400,
+                        fontStyle: selectionText ? 'normal' : 'italic'
+                      }}
+                    >
+                      {selectionText || step.description}
+                    </Typography>
+                  </StepLabel>
+                </Step>
+              );
+            })}
           </Stepper>
         </Box>
 
@@ -1451,20 +1706,111 @@ export default function CreateTender() {
                   Créer l'appel d'offres
                 </LoadingButton>
               ) : (
-                <Button
-                  type="button"
-                  variant="contained"
-                  onClick={handleNext}
-                  endIcon={<Iconify icon="eva:arrow-forward-fill" />}
-                  sx={{ borderRadius: 2, px: 4 }}
-                >
-                  Suivant
-                </Button>
+                // Hide "Suivant" button on steps 0, 1, and 2 (auto-advance enabled)
+                activeStep >= 3 && (
+                  <Button
+                    type="button"
+                    variant="contained"
+                    onClick={handleNext}
+                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                    sx={{ borderRadius: 2, px: 4 }}
+                  >
+                    Suivant
+                  </Button>
+                )
               )}
             </Box>
           </Form>
         </FormikProvider>
       </MainContainer>
+
+      {/* Warning Modal */}
+      <Dialog
+        open={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          pb: 1,
+          pt: 3,
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            gap: 2
+          }}>
+            <Box sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Iconify icon="mdi:alert" width={32} height={32} sx={{ color: 'white' }} />
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+              Attention Important
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ px: 4, py: 3 }}>
+          <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+              ⚠️ Une fois créé, vous ne pourrez plus supprimer cet appel d'offres
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Veuillez vous assurer que toutes les informations sont correctes avant de confirmer la création.
+            </Typography>
+          </Alert>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 2 }}>
+            Voulez-vous vraiment créer cet appel d'offres ?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button
+            onClick={() => setShowWarningModal(false)}
+            variant="outlined"
+            sx={{ 
+              borderRadius: 2,
+              px: 3,
+              borderColor: '#e2e8f0',
+              color: '#64748b',
+              '&:hover': {
+                borderColor: '#cbd5e1',
+                background: '#f8fafc',
+              }
+            }}
+          >
+            Annuler
+          </Button>
+          <LoadingButton
+            onClick={handleConfirmSubmit}
+            loading={isSubmitting}
+            variant="contained"
+            sx={{ 
+              borderRadius: 2,
+              px: 3,
+              background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #005299 0%, #0091cc 100%)',
+              }
+            }}
+          >
+            Confirmer et Créer
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Page>
   );
 }

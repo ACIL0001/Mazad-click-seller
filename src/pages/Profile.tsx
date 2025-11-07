@@ -134,7 +134,7 @@ export default function Profile() {
     const getAvatarUrl = (avatar: AvatarData | string): string => {
         if (typeof avatar === 'string') {
             if (avatar.startsWith('http')) {
-                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, '')).replace('https://mazadclick-server.onrender.com', API_BASE_URL.replace(/\/$/, ''));
+                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
                 return `${API_BASE_URL}/static/${cleanPath}`;
@@ -142,12 +142,12 @@ export default function Profile() {
         }
 
         if (avatar?.fullUrl) {
-            return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, '')).replace('https://mazadclick-server.onrender.com', API_BASE_URL.replace(/\/$/, ''));
+            return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
         }
 
         if (avatar?.url) {
             if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, '')).replace('https://mazadclick-server.onrender.com', API_BASE_URL.replace(/\/$/, ''));
+                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 const cleanUrl = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
                 return `${API_BASE_URL}/static/${cleanUrl}`;

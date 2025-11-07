@@ -262,9 +262,9 @@
       "failedToCreateChat": "Erreur lors de la création de la conversation"
     },
     "nameVisibility": {
-      "title": "Masquer mon nom",
-      "descriptionVisible": "Votre nom sera visible dans cette enchère",
-      "descriptionHidden": "Votre nom ne sera pas visible dans cette enchère"
+      "title": "Mode Anonyme",
+      "descriptionVisible": "Votre nom sera visible publiquement",
+      "descriptionHidden": "Votre nom sera masqué (Mode Anonyme)"
     },
     "identityPending": {
       "title": "Documents en cours de vérification",

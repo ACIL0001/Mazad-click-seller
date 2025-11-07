@@ -34,6 +34,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // component
@@ -73,27 +74,45 @@ const AccountTypeToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     fontSize: '1.1rem',
     fontWeight: 600,
     textTransform: 'none',
-    borderRadius: 12,
-    border: `2px solid ${theme.palette.grey[300]}`,
+    borderRadius: 16,
+    border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
     color: theme.palette.text.secondary,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+    backdropFilter: 'blur(10px)',
     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative',
     overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `linear-gradient(45deg, transparent 30%, ${alpha(theme.palette.primary.main, 0.05)} 50%, transparent 70%)`,
+      backgroundSize: '200% 200%',
+      opacity: 0,
+      transition: 'opacity 0.3s ease',
+    },
     '&:hover': {
-      backgroundColor: theme.palette.primary.light,
-      color: theme.palette.primary.contrastText,
-      borderColor: theme.palette.primary.main,
-      transform: 'translateY(-2px)',
-      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+      borderColor: alpha(theme.palette.primary.main, 0.4),
+      transform: 'translateY(-4px)',
+      boxShadow: `0 12px 24px ${alpha(theme.palette.primary.main, 0.2)}`,
+      '&::before': {
+        opacity: 1,
+      },
     },
     '&.Mui-selected': {
-      backgroundColor: theme.palette.primary.main,
+      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
       color: theme.palette.primary.contrastText,
       borderColor: theme.palette.primary.main,
+      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
       '&:hover': {
-        backgroundColor: theme.palette.primary.dark,
+        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
         borderColor: theme.palette.primary.dark,
+        transform: 'translateY(-4px)',
+        boxShadow: `0 12px 28px ${alpha(theme.palette.primary.main, 0.4)}`,
       },
     },
     '&:first-of-type': {
@@ -102,34 +121,95 @@ const AccountTypeToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '&:last-of-type': {
       marginLeft: theme.spacing(1),
     },
+    
+    // Responsive adjustments
+    [theme.breakpoints.down('sm')]: {
+      minHeight: 70,
+      fontSize: '0.95rem',
+      borderRadius: 12,
+      padding: theme.spacing(1),
+      '& .MuiBox-root': {
+        gap: theme.spacing(1),
+      },
+    },
+    
+    '@media (max-width: 400px)': {
+      minHeight: 60,
+      fontSize: '0.85rem',
+      padding: theme.spacing(0.5),
+    },
   },
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
-    borderRadius: 8,
-    transition: theme.transitions.create(['box-shadow', 'border-color']),
+    borderRadius: 12,
+    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+    backdropFilter: 'blur(10px)',
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    fontSize: '1rem',
+    
     '&:hover': {
-      borderColor: theme.palette.primary.main,
+      backgroundColor: alpha(theme.palette.background.paper, 0.8),
+      borderColor: alpha(theme.palette.primary.main, 0.3),
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
     },
     '&.Mui-focused': {
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-    }
+      backgroundColor: alpha(theme.palette.background.paper, 0.9),
+      borderColor: theme.palette.primary.main,
+      boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
+      transform: 'translateY(-2px)',
+    },
+    '& fieldset': {
+      border: 'none',
+    },
+    
+    // Responsive font sizes
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.95rem',
+      '& input': {
+        fontSize: '0.95rem',
+      },
+    },
   },
+  
+  '& .MuiInputLabel-root': {
+    fontSize: '1rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+    },
+  },
+  
+  '& .MuiFormHelperText-root': {
+    fontSize: '0.75rem',
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.7rem',
+    },
+  },
+  
   marginBottom: theme.spacing(2)
 }));
 
-// Terms Agreement Box - Modern card style matching buyer app
+// Terms Agreement Box - Glassmorphism style
 const TermsAgreementBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(3),
-  borderRadius: 12,
-  border: `1px solid ${theme.palette.grey[200]}`,
-  backgroundColor: theme.palette.background.paper,
+  borderRadius: 16,
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   marginTop: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.08)}`,
   position: 'relative',
   overflow: 'hidden',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    boxShadow: `0 12px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+    transform: 'translateY(-2px)',
+  },
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -138,13 +218,24 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
     right: 0,
     height: 3,
     background: 'linear-gradient(90deg, #1976d2 0%, #42a5f5 100%)',
-    borderRadius: '12px 12px 0 0',
+    borderRadius: '16px 16px 0 0',
+  },
+  
+  // Responsive adjustments
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2),
+    borderRadius: 12,
   },
   '& .terms-card-header': {
     display: 'flex',
     alignItems: 'center',
     marginBottom: theme.spacing(2),
     gap: theme.spacing(1.5),
+    
+    [theme.breakpoints.down('sm')]: {
+      gap: theme.spacing(1),
+      marginBottom: theme.spacing(1.5),
+    },
   },
   '& .terms-card-icon': {
     display: 'flex',
@@ -155,17 +246,34 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
     borderRadius: '50%',
     backgroundColor: theme.palette.primary.light,
     color: theme.palette.primary.main,
+    
+    [theme.breakpoints.down('sm')]: {
+      width: 32,
+      height: 32,
+      '& svg': {
+        width: 16,
+        height: 16,
+      },
+    },
   },
   '& .terms-card-title': {
     fontSize: '1rem',
     fontWeight: 600,
     color: theme.palette.text.primary,
     margin: 0,
+    
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.9rem',
+    },
   },
   '& .terms-card-subtitle': {
     fontSize: '0.875rem',
     color: theme.palette.text.secondary,
     margin: 0,
+    
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.75rem',
+    },
   },
   '& .terms-row': {
     display: 'flex',
@@ -195,6 +303,11 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
     lineHeight: 1.5,
     color: theme.palette.text.primary,
     flex: 1,
+    
+    [theme.breakpoints.down('sm')]: {
+      fontSize: '0.8rem',
+      lineHeight: 1.4,
+    },
   },
   '& .terms-link': {
     background: 'none',
@@ -356,10 +469,10 @@ export default function RegisterForm(props: RegisterFormProps) {
     type: Yup.string()
       .required('Le type de vendeur est requis')
       .oneOf(Object.values(USER_TYPE), 'Le type d\'utilisateur doit être l\'une des valeurs suivantes'),
-    secteur: Yup.string()
+    secteur: Yup.array()
       .when('type', {
         is: USER_TYPE.PROFESSIONAL,
-        then: (schema) => schema.required('Le secteur est requis pour les professionnels'),
+        then: (schema) => schema.min(1, 'Au moins un secteur est requis pour les professionnels'),
         otherwise: (schema) => schema.notRequired(),
       }),
     entreprise: Yup.string()
@@ -386,7 +499,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       password: '',
       phone: '',
       type: USER_TYPE.PROFESSIONAL, // Default to PROFESSIONAL as requested
-      secteur: '',
+      secteur: [],
       entreprise: '',
       postOccupé: '',
     },
@@ -407,7 +520,7 @@ export default function RegisterForm(props: RegisterFormProps) {
           password: values.password,
           phone: values.phone.replace(/\s/g, ''), // Remove spaces for storage
           type: 'PROFESSIONAL', // Always send PROFESSIONAL type to backend as requested
-          secteur: values.secteur,
+          secteur: Array.isArray(values.secteur) ? values.secteur.join(', ') : values.secteur,
           entreprise: values.entreprise,
           postOccupé: values.postOccupé,
         };
@@ -630,322 +743,21 @@ export default function RegisterForm(props: RegisterFormProps) {
 
   return (
     <FormikProvider value={formik}>
-      <Paper
-        elevation={3}
-        sx={{
-          p: 3,
-          borderRadius: 2,
-          backgroundColor: 'background.paper',
-          overflow: 'hidden',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 4,
-            backgroundColor: 'primary.main'
-          }
+          <Box 
+            sx={{ 
+          p: 0,
+          borderRadius: 0,
+          backgroundColor: 'transparent',
+          border: 'none',
+                    boxShadow: 'none',
         }}
       >
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-          {/* Account Type Switch at the top */}
-          <Box 
-            sx={{ 
-              mb: 4,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center'
-            }}
-          >
-            <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 600 }}>
-              Type de compte
-            </Typography>
-            
-            <AccountTypeToggleButtonGroup
-              value={values.type}
-              exclusive
-              onChange={handleTypeChange}
-              aria-label="account type"
-            >
-              <ToggleButton 
-                value={USER_TYPE.CLIENT} 
-                aria-label="acheteur vendeur"
-                disabled={true}
-                sx={{
-                  opacity: 0.7,
-                  cursor: 'not-allowed',
-                  position: 'relative',
-                  background: 'linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)',
-                  border: '2px solid #d0d0d0',
-                  color: 'text.disabled',
-                  '&:hover': {
-                    backgroundColor: 'linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%)',
-                    color: 'text.disabled',
-                    transform: 'none',
-                    boxShadow: 'none',
-                  },
-                  '&.Mui-selected': {
-                    backgroundColor: 'linear-gradient(135deg, #e8e8e8 0%, #d8d8d8 100%)',
-                    color: 'text.disabled',
-                    borderColor: '#c0c0c0',
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)',
-                    borderRadius: 'inherit',
-                    pointerEvents: 'none',
-                  }
-                }}
-              >
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  gap: 1.5,
-                  position: 'relative',
-                  zIndex: 1
-                }}>
-                  <Box sx={{ 
-                    position: 'relative',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%)',
-                    border: '2px solid #d0d0d0',
-                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
-                  }}>
-                    <Iconify icon="eva:people-fill" width={28} height={28} sx={{ color: '#999' }} />
-                    <Box sx={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      width: 20,
-                      height: 20,
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxShadow: '0 2px 6px rgba(255, 152, 0, 0.3)',
-                      border: '2px solid white'
-                    }}>
-                      <Iconify 
-                        icon="eva:clock-fill" 
-                        width={12} 
-                        height={12} 
-                        sx={{ color: 'white' }}
-                      />
-                    </Box>
-                  </Box>
-                  
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      fontWeight={600}
-                      sx={{ 
-                        color: '#666',
-                        mb: 0.5,
-                        fontSize: '1rem'
-                      }}
-                    >
-                      Acheteur & Vendeur
-                    </Typography>
-                    <Box sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: '12px',
-                      background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-                      border: '1px solid #ffb74d',
-                      boxShadow: '0 1px 3px rgba(255, 152, 0, 0.2)'
-                    }}>
-                      <Iconify 
-                        icon="eva:clock-outline" 
-                        width={12} 
-                        height={12} 
-                        sx={{ color: '#f57c00' }}
-                      />
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          color: '#e65100',
-                          fontWeight: 700,
-                          fontSize: '0.65rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}
-                      >
-                        Bientôt disponible
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Box>
-              </ToggleButton>
-              <ToggleButton 
-                value={USER_TYPE.PROFESSIONAL} 
-                aria-label="professionnel"
-                sx={{
-                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                  color: 'white',
-                  border: '2px solid #1976d2',
-                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
-                    transform: 'translateY(-2px)',
-                  },
-                  '&.Mui-selected': {
-                    background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                    boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)',
-                  }
-                }}
-              >
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  gap: 1.5
-                }}>
-                  <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: 'inset 0 2px 4px rgba(255, 255, 255, 0.1)'
-                  }}>
-                    <Iconify icon="eva:briefcase-fill" width={28} height={28} sx={{ color: 'white' }} />
-                  </Box>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography 
-                      variant="subtitle1" 
-                      fontWeight={700}
-                      sx={{ 
-                        color: 'white',
-                        fontSize: '1rem',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      Professionnel
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        fontSize: '0.7rem',
-                        fontWeight: 500
-                      }}
-                    >
-                      Disponible maintenant
-                    </Typography>
-                  </Box>
-                </Box>
-              </ToggleButton>
-            </AccountTypeToggleButtonGroup>
-            
-            {/* Information about disabled CLIENT option */}
-            <Box sx={{
-              mt: 1,
-              mb: 1,
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              p: 1.5,
-              background: 'linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%)',
-              borderRadius: 1,
-              border: '1px solid #ffb74d',
-              boxShadow: '0 2px 6px rgba(255, 152, 0, 0.1)',
-              position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 2,
-                background: 'linear-gradient(90deg, #ff9800 0%, #f57c00 100%)',
-                borderRadius: '4px 4px 0 0'
-              }
-            }}>
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                width: '100%'
-              }}>
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                  boxShadow: '0 1px 4px rgba(255, 152, 0, 0.3)',
-                  flexShrink: 0
-                }}>
-                  <Iconify 
-                    icon="eva:clock-fill" 
-                    width={12} 
-                    height={12} 
-                    sx={{ color: 'white' }}
-                  />
-                </Box>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    color: '#bf360c', 
-                    lineHeight: 1.4,
-                    fontSize: '0.8rem',
-                    fontWeight: 500
-                  }}
-                >
-                  Le compte <strong>"Acheteur & Vendeur"</strong> sera bientôt disponible. 
-                  Créez un compte <strong>Professionnel</strong> en attendant.
-                </Typography>
-              </Box>
-            </Box>
 
-            {values.type === USER_TYPE.PROFESSIONAL && (
-              <Box sx={{
-                mt: 1,
-                mb: 2,
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-                <Iconify icon="eva:info-fill" width={20} height={20} style={{ marginRight: 2, color: theme.palette.info.main }} />
-                <Typography variant="body2" sx={{ color: 'info.main', textAlign: 'center' }}>
-                  Le compte Professionnel est réservé uniquement aux entreprises.
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Stack spacing={3}>
-            <Grid container spacing={2}>
+          <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <StyledTextField
                   fullWidth
                   label="Prénom"
                   placeholder="Entrez votre prénom"
@@ -959,12 +771,11 @@ export default function RegisterForm(props: RegisterFormProps) {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ mb: 2 }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <StyledTextField
                   fullWidth
                   label="Nom"
                   placeholder="Entrez votre nom"
@@ -978,7 +789,6 @@ export default function RegisterForm(props: RegisterFormProps) {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ mb: 2 }}
                 />
               </Grid>
             </Grid>
@@ -989,22 +799,62 @@ export default function RegisterForm(props: RegisterFormProps) {
                 <FormControl 
                   fullWidth 
                   error={Boolean(touched.secteur && errors.secteur)}
-                  sx={{ mb: 2 }}
+                  sx={{ 
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                        borderColor: alpha(theme.palette.primary.main, 0.3),
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+                        borderColor: theme.palette.primary.main,
+                        boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
+                        transform: 'translateY(-2px)',
+                      },
+                      '& fieldset': {
+                        border: 'none',
+                      }
+                    }
+                  }}
                 >
                   <InputLabel id="secteur-label">Secteur d'activité</InputLabel>
                   <Select
                     labelId="secteur-label"
                     id="secteur"
+                    multiple
                     value={values.secteur}
                     label="Secteur d'activité"
                     onChange={(event) => setFieldValue('secteur', event.target.value)}
                     disabled={loadingCategories}
                     displayEmpty
                     renderValue={(selected) => {
-                      if (!selected) {
-                        return <Box sx={{ color: 'text.secondary' }}>Choisir votre secteur d'activité</Box>;
+                      if (!selected || selected.length === 0) {
+                        return <Box sx={{ color: 'text.secondary' }}>Choisir vos secteurs d'activité</Box>;
                       }
-                      return selected;
+                      return (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((value) => (
+                            <Chip 
+                              key={value} 
+                              label={value} 
+                              size="small"
+                              sx={{ 
+                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                color: 'primary.main',
+                                fontWeight: 500,
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      );
                     }}
                     startAdornment={
                       <InputAdornment position="start">
@@ -1020,6 +870,7 @@ export default function RegisterForm(props: RegisterFormProps) {
                     ) : categories.length > 0 ? (
                       categories.map((category) => (
                         <MenuItem key={category._id} value={category.name}>
+                          <Checkbox checked={values.secteur.indexOf(category.name) > -1} />
                           {category.name}
                         </MenuItem>
                       ))
@@ -1031,12 +882,40 @@ export default function RegisterForm(props: RegisterFormProps) {
                   </Select>
                   {touched.secteur && errors.secteur && (
                     <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                      {errors.secteur}
+                      {(() => {
+                        const err = errors.secteur;
+                        if (!err) return null;
+                        if (typeof err === 'string') return err;
+                        if (Array.isArray(err)) {
+                          return err
+                            .map((item) => {
+                              if (!item) return null;
+                              if (typeof item === 'string') return item;
+                              if (Array.isArray(item)) {
+                                return item.filter(Boolean).join(', ');
+                              }
+                              if (typeof item === 'object') {
+                                return Object.values(item)
+                                  .filter((value): value is string => typeof value === 'string')
+                                  .join(', ');
+                              }
+                              return String(item);
+                            })
+                            .filter(Boolean)
+                            .join(', ');
+                        }
+                        if (typeof err === 'object') {
+                          return Object.values(err as Record<string, unknown>)
+                            .map((value) => (typeof value === 'string' ? value : String(value)))
+                            .join(', ');
+                        }
+                        return String(err);
+                      })()}
                     </Typography>
                   )}
                 </FormControl>
 
-                <TextField
+                <StyledTextField
                   fullWidth
                   label="Nom de l'entreprise"
                   placeholder="Entrez le nom de votre entreprise"
@@ -1050,10 +929,9 @@ export default function RegisterForm(props: RegisterFormProps) {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ mb: 2 }}
                 />
 
-                <TextField
+                <StyledTextField
                   fullWidth
                   label="Post occupé"
                   placeholder="Entrez votre poste (optionnel)"
@@ -1067,12 +945,11 @@ export default function RegisterForm(props: RegisterFormProps) {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ mb: 2 }}
                 />
               </>
             )}
 
-            <TextField
+            <StyledTextField
               fullWidth
               autoComplete="username"
               type="email"
@@ -1088,10 +965,9 @@ export default function RegisterForm(props: RegisterFormProps) {
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
             />
 
-            <TextField
+            <StyledTextField
               fullWidth
               label="Téléphone"
               value={values.phone}
@@ -1106,10 +982,9 @@ export default function RegisterForm(props: RegisterFormProps) {
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
             />
 
-            <TextField
+            <StyledTextField
               fullWidth
               autoComplete="new-password"
               type={showPassword ? 'text' : 'password'}
@@ -1196,16 +1071,22 @@ export default function RegisterForm(props: RegisterFormProps) {
               disabled={hasTerms ? !termsAccepted : false}
               loading={isSubmitting}
               sx={{ 
-                borderRadius: 1.5,
-                py: 1.5,
-                mt: 2,
-                boxShadow: `0 8px 16px 0 ${alpha(theme.palette.primary.main, 0.24)}`,
+                borderRadius: { xs: 1.5, sm: 2 },
+                py: { xs: 1.5, sm: 1.8, md: 2 },
+                mt: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' },
+                fontWeight: 700,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  boxShadow: `0 8px 16px 0 ${alpha(theme.palette.primary.main, 0.4)}`,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
+                  boxShadow: `0 12px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  transform: 'translateY(-2px)',
                 },
                 '&.Mui-disabled': {
-                  backgroundColor: 'grey.300',
-                  color: 'grey.500',
+                  background: alpha(theme.palette.grey[400], 0.5),
+                  color: alpha(theme.palette.common.white, 0.6),
                   opacity: 0.6,
                   cursor: 'not-allowed',
                 }
@@ -1215,7 +1096,7 @@ export default function RegisterForm(props: RegisterFormProps) {
             </LoadingButton>
           </Stack>
         </Form>
-      </Paper>
+      </Box>
 
       {/* Terms Modal */}
       <TermsModal 

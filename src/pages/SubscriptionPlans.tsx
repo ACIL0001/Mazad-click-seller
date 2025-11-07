@@ -348,91 +348,44 @@ const PrimaryButton = styled(ModernButton)(({ theme }) => ({
 // Success Dialog Styles - Modern & Well-Spaced
 const SuccessDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiBackdrop-root': {
-    background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%)',
-    backdropFilter: 'blur(12px)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(8px)',
   },
   '& .MuiDialog-paper': {
-    borderRadius: 28,
+    borderRadius: 16,
     padding: 0,
-    maxWidth: 560,
+    maxWidth: 500,
     width: '90%',
-    overflow: 'hidden',
-    background: 'linear-gradient(180deg, #ffffff 0%, #fafafa 100%)',
-    boxShadow: '0 32px 64px rgba(0, 0, 0, 0.24), 0 0 100px rgba(76, 175, 80, 0.2)',
-    position: 'relative',
+    overflow: 'visible',
+    backgroundColor: '#ffffff',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
   }
 }));
 
 const SuccessHeader = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  padding: theme.spacing(5, 3, 4),
-  background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #81c784 100%)',
-  overflow: 'hidden',
+  padding: theme.spacing(5, 4, 4),
   textAlign: 'center',
-  minHeight: '240px',
+  position: 'relative',
+  overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
-    top: '-60%',
-    right: '-15%',
-    width: '350px',
-    height: '350px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
-    animation: `${ripple} 4s ease-out infinite`,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: 'linear-gradient(90deg, #4caf50 0%, #81c784 50%, #4caf50 100%)',
+    backgroundSize: '200% 100%',
+    animation: `${gradientShift} 3s ease infinite`,
   },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: '-40%',
-    left: '-15%',
-    width: '300px',
-    height: '300px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
-    animation: `${ripple} 4s ease-out 1.5s infinite`,
-  }
 }));
 
 const SuccessIconWrapper = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  width: 96,
-  height: 96,
   margin: '0 auto',
   marginBottom: theme.spacing(2.5),
-  zIndex: 2,
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '150%',
-    height: '150%',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%)',
-    animation: `${ripple} 3s ease-out infinite`,
-  },
-}));
-
-const SuccessIcon = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  zIndex: 1,
-  width: 96,
-  height: 96,
-  borderRadius: '50%',
-  background: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2), inset 0 2px 8px rgba(255, 255, 255, 0.9)',
-  animation: `${bounceIn} 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55)`,
-  border: '4px solid rgba(255, 255, 255, 0.3)',
-  '& svg': {
-    fontSize: 56,
-    color: '#4caf50',
-    filter: 'drop-shadow(0 2px 4px rgba(76, 175, 80, 0.3))',
-  }
 }));
 
 const CelebrationIcon = styled(Box)(({ theme }) => ({
@@ -604,7 +557,7 @@ const SubscriptionPlans = () => {
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(8);
   const [userRole, setUserRole] = useState<string>('PROFESSIONAL');
 
   useEffect(() => {
@@ -644,7 +597,13 @@ const SubscriptionPlans = () => {
         
         setPlans(activePlans);
         if (activePlans.length > 0) {
-          setSelectedPlan(activePlans[0]);
+          const firstPlan = activePlans[0];
+          setSelectedPlan(firstPlan);
+          // Store the first plan in sessionStorage if no plan is already stored
+          if (firstPlan?.name && !sessionStorage.getItem('selectedSubscriptionPlan')) {
+            sessionStorage.setItem('selectedSubscriptionPlan', firstPlan.name);
+            console.log('✅ Auto-stored first subscription plan:', firstPlan.name);
+          }
         }
         setError(null);
       } catch (err) {
@@ -675,7 +634,10 @@ const SubscriptionPlans = () => {
     if (showSuccessDialog && countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     } else if (showSuccessDialog && countdown === 0) {
-      navigate('/waiting-for-verification', { replace: true });
+      // Clear auth data before redirecting to login page
+      authStore.getState().clear();
+      // Redirect to login page after subscription completion
+      navigate('/login', { replace: true });
     }
     return () => clearTimeout(timer);
   }, [showSuccessDialog, countdown, navigate]);
@@ -1056,7 +1018,14 @@ const SubscriptionPlans = () => {
                             fullWidth
                             size="medium"
                             startIcon={<CheckCircleOutlineIcon />}
-                            onClick={() => setSelectedPlan(plan)}
+                            onClick={() => {
+                              setSelectedPlan(plan);
+                              // Store selected plan name in sessionStorage so it can be retrieved in IdentityVerification
+                              if (plan?.name) {
+                                sessionStorage.setItem('selectedSubscriptionPlan', plan.name);
+                                console.log('✅ Stored subscription plan:', plan.name);
+                              }
+                            }}
                           >
                             Plan Sélectionné
                           </PrimaryButton>
@@ -1065,7 +1034,14 @@ const SubscriptionPlans = () => {
                             variant="outlined"
                             fullWidth
                             size="medium"
-                            onClick={() => setSelectedPlan(plan)}
+                            onClick={() => {
+                              setSelectedPlan(plan);
+                              // Store selected plan name in sessionStorage so it can be retrieved in IdentityVerification
+                              if (plan?.name) {
+                                sessionStorage.setItem('selectedSubscriptionPlan', plan.name);
+                                console.log('✅ Stored subscription plan:', plan.name);
+                              }
+                            }}
                             sx={{
                               borderColor: '#1976d2',
                               color: '#1976d2',
@@ -1195,235 +1171,138 @@ const SubscriptionPlans = () => {
           open={showSuccessDialog}
           onClose={() => {}}
           disableEscapeKeyDown
-          aria-labelledby="success-dialog-title"
         >
-          {/* Green Header with Success Icon */}
-          <SuccessHeader>
-            {/* Floating Celebration Emojis */}
-            <CelebrationIcon sx={{ top: '15%', left: '10%', animationDelay: '0s' }}>
-              🎉
-            </CelebrationIcon>
-            <CelebrationIcon sx={{ top: '25%', right: '12%', animationDelay: '0.5s' }}>
-              ✨
-            </CelebrationIcon>
-            <CelebrationIcon sx={{ bottom: '20%', left: '15%', animationDelay: '1s' }}>
-              🎊
-            </CelebrationIcon>
-            <CelebrationIcon sx={{ bottom: '15%', right: '8%', animationDelay: '1.5s' }}>
-              🌟
-            </CelebrationIcon>
+          <DialogContent sx={{ p: 0 }}>
+            <SuccessHeader>
+              {/* Party Popper Icon with Animation */}
+              <SuccessIconWrapper>
+                <Typography 
+                  sx={{ 
+                    fontSize: 72,
+                    animation: `${bounceIn} 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), ${floatAnimation} 3s ease-in-out infinite 0.8s`,
+                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
+                  }}
+                >
+                  🎉
+                </Typography>
+              </SuccessIconWrapper>
 
-            {/* Success Icon */}
-            <SuccessIconWrapper>
-              <SuccessIcon>
-                <CheckCircleOutlineIcon />
-              </SuccessIcon>
-            </SuccessIconWrapper>
-
-            {/* Title - Felicitations */}
-            <Typography 
-              sx={{ 
-                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
-                fontWeight: 800,
-                color: '#ffffff',
-                textAlign: 'center',
-                textShadow: '0 2px 20px rgba(0, 0, 0, 0.15)',
-                letterSpacing: '-0.5px',
-                position: 'relative',
-                zIndex: 2,
-                animation: `${fadeInUp} 0.6s ease-out 0.2s both`,
-                mb: 2
-              }}
-            >
-              Félicitations ! 🎉
-            </Typography>
-
-            {/* Subtitle */}
-            <Typography 
-              sx={{ 
-                fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.15rem' },
-                color: 'rgba(255, 255, 255, 0.95)',
-                textAlign: 'center',
-                fontWeight: 400,
-                position: 'relative',
-                zIndex: 2,
-                animation: `${fadeInUp} 0.6s ease-out 0.3s both`,
-                lineHeight: 1.6,
-                px: { xs: 2, sm: 3, md: 4 },
-                maxWidth: '100%',
-                wordWrap: 'break-word'
-              }}
-            >
-              Vous êtes à quelques heures seulement de devenir un membre professionnel MazadClick
-            </Typography>
-          </SuccessHeader>
-
-          {/* White Content Area - Better Spacing */}
-          <DialogContent sx={{ p: 5 }}>
-            {/* Plan Selected Badge */}
-            <Box 
-              sx={{ 
-                textAlign: 'center',
-                mb: 4,
-                animation: `${fadeInUp} 0.6s ease-out 0.4s both`
-              }}
-            >
-              <Chip
-                icon={<DiamondIcon />}
-                label={`Plan ${selectedPlan?.name}`}
-                sx={{
-                  px: 3,
-                  py: 3,
-                  height: 'auto',
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                  border: 'none',
-                  color: '#1565c0',
-                  boxShadow: '0 4px 16px rgba(25, 118, 210, 0.15)',
-                  '& .MuiChip-icon': {
-                    fontSize: '1.3rem',
-                    color: '#1976d2',
-                  },
-                  '& .MuiChip-label': {
-                    px: 1.5,
-                  }
+              {/* Title with gradient */}
+              <Typography 
+                variant="h4"
+                sx={{ 
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 2,
+                  letterSpacing: '-0.5px',
+                  animation: `${fadeInUp} 0.6s ease-out`,
                 }}
-              />
-            </Box>
+              >
+                Félicitations !
+              </Typography>
 
-            {/* Verification Notice - Well Spaced */}
-            <Box 
-              sx={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: 3,
-                p: 3,
-                borderRadius: 4,
-                background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
-                border: 'none',
-                mb: 4,
-                boxShadow: '0 4px 16px rgba(255, 152, 0, 0.12)',
-                animation: `${fadeInUp} 0.6s ease-out 0.5s both`
-              }}
-            >
+              {/* Shortened Welcome Message */}
+              <Typography 
+                variant="body1"
+                sx={{ 
+                  color: 'text.secondary',
+                  lineHeight: 1.7,
+                  mb: 3,
+                  px: { xs: 2, sm: 3 },
+                  fontSize: '1rem',
+                  animation: `${fadeInUp} 0.6s ease-out 0.2s both`,
+                }}
+              >
+                Inscription réussie ! Vous êtes maintenant professionnel.
+                <br />
+                Bienvenue dans la communauté <strong style={{ color: '#1976d2' }}>MazadClick</strong> 🎊
+              </Typography>
+
+              <Divider sx={{ mb: 3, opacity: 0.3 }} />
+
+              {/* Plan Badge with subtle color */}
               <Box 
                 sx={{ 
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  boxShadow: '0 8px 20px rgba(255, 152, 0, 0.3)',
+                  mb: 3,
+                  animation: `${fadeInUp} 0.6s ease-out 0.3s both`,
                 }}
               >
-                <AccessTimeIcon sx={{ color: '#fff', fontSize: 32 }} />
+                <Chip
+                  icon={<DiamondIcon />}
+                  label={`Plan ${selectedPlan?.name || 'Gratuit'}`}
+                  sx={{
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    backgroundColor: alpha('#4caf50', 0.1),
+                    color: '#2e7d32',
+                    border: `2px solid ${alpha('#4caf50', 0.3)}`,
+                    px: 2,
+                    py: 0.5,
+                    '& .MuiChip-icon': {
+                      color: '#4caf50',
+                    },
+                  }}
+                />
               </Box>
-              <Box flex={1}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#e65100', mb: 0.5 }}>
-                  Vérification en cours
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6, fontSize: '0.95rem' }}>
-                  Vos documents seront vérifiés sous <strong>24 à 48 heures</strong>
-                </Typography>
-              </Box>
-            </Box>
 
-            {/* Countdown Badge - Better Spacing */}
-            <Box 
-              sx={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 2,
-                p: 3,
-                borderRadius: 4,
-                background: countdown <= 3 
-                  ? 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)'
-                  : 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                border: 'none',
-                mb: 4,
-                boxShadow: countdown <= 3 
-                  ? '0 4px 16px rgba(244, 67, 54, 0.15)'
-                  : '0 4px 16px rgba(33, 150, 243, 0.15)',
-                animation: `${fadeInUp} 0.6s ease-out 0.6s both`
-              }}
-            >
-              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>
-                Redirection dans
+              {/* Countdown with color */}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 3, 
+                  fontSize: '0.9rem',
+                  color: 'text.secondary',
+                  animation: `${fadeInUp} 0.6s ease-out 0.4s both`,
+                }}
+              >
+                Redirection dans{' '}
+                <Box 
+                  component="span" 
+                  sx={{ 
+                    fontWeight: 700,
+                    color: countdown <= 3 ? '#f44336' : '#1976d2',
+                    fontSize: '1.1rem',
+                    animation: countdown <= 3 ? `${pulseAnimation} 0.6s ease-in-out infinite` : 'none',
+                  }}
+                >
+                  {countdown}
+                </Box>
+                {' '}{countdown === 1 ? 'seconde' : 'secondes'}
               </Typography>
-              <Box
+
+              {/* Action Button with gradient */}
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={() => {
+                  authStore.getState().clear();
+                  navigate('/login', { replace: true });
+                }}
                 sx={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: '50%',
-                  background: countdown <= 3 
-                    ? 'linear-gradient(135deg, #f44336 0%, #e57373 100%)'
-                    : 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontSize: '1.5rem',
-                  color: '#fff',
-                  boxShadow: countdown <= 3 
-                    ? '0 6px 20px rgba(244, 67, 54, 0.4)'
-                    : '0 6px 20px rgba(25, 118, 210, 0.4)',
-                  animation: countdown <= 3 ? `${pulseAnimation} 0.6s ease-in-out infinite` : 'none',
-                  transition: 'all 0.3s ease'
+                  py: 1.8,
+                  mb: 2,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
+                  boxShadow: '0 4px 16px rgba(76, 175, 80, 0.3)',
+                  animation: `${fadeInUp} 0.6s ease-out 0.5s both`,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #388e3c 0%, #4caf50 100%)',
+                    boxShadow: '0 6px 20px rgba(76, 175, 80, 0.4)',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
                 }}
               >
-                {countdown}
-              </Box>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>
-                {countdown === 1 ? 'seconde' : 'secondes'}
-              </Typography>
-            </Box>
-
-            {/* Action Button - Well Spaced */}
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={() => navigate('/waiting-for-verification', { replace: true })}
-              startIcon={<VerifiedIcon />}
-              sx={{
-                py: 2.5,
-                borderRadius: 4,
-                textTransform: 'none',
-                fontWeight: 700,
-                fontSize: '1.1rem',
-                background: 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)',
-                boxShadow: '0 8px 24px rgba(76, 175, 80, 0.3)',
-                animation: `${fadeInUp} 0.6s ease-out 0.7s both`,
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #388e3c 0%, #4caf50 100%)',
-                  boxShadow: '0 12px 32px rgba(76, 175, 80, 0.4)',
-                  transform: 'translateY(-3px)',
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Voir mon statut de vérification
-            </Button>
-
-            {/* Footer Note - Better Spacing */}
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                display: 'block',
-                textAlign: 'center',
-                color: 'text.secondary',
-                mt: 3,
-                fontSize: '0.9rem',
-                animation: `${fadeInUp} 0.6s ease-out 0.8s both`
-              }}
-            >
-              📧 Un email de confirmation vous sera envoyé
-            </Typography>
+                Se connecter maintenant
+              </Button>
+            </SuccessHeader>
           </DialogContent>
         </SuccessDialog>
       </MainContainer>

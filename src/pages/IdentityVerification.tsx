@@ -593,7 +593,7 @@ export default function IdentityVerification() {
     const { tokens, user: authUser } = authStore.getState().auth;
     if (!tokens || !tokens.accessToken) {
       if (!checkFlagAgain) {
-        navigate('/login');
+      navigate('/login');
       }
       return;
     }
@@ -601,14 +601,14 @@ export default function IdentityVerification() {
     // Check if user is verified (has completed OTP validation)
     if (!authUser?.isVerified) {
       if (!checkFlagAgain) {
-        enqueueSnackbar('Veuillez d\'abord valider votre numéro de téléphone', { 
-          variant: 'warning',
-          anchorOrigin: {
-            vertical: 'top',
-            horizontal: 'center'
-          }
-        });
-        navigate('/login');
+      enqueueSnackbar('Veuillez d\'abord valider votre numéro de téléphone', { 
+        variant: 'warning',
+        anchorOrigin: {
+          vertical: 'top',
+          horizontal: 'center'
+        }
+      });
+      navigate('/login');
       }
       return;
     }
@@ -865,6 +865,15 @@ export default function IdentityVerification() {
       if (carteFellah.length > 0) {
         formData.append('carteFellah', carteFellah[0]);
       }
+      
+      // Append subscription plan if selected
+      const selectedPlan = sessionStorage.getItem('selectedSubscriptionPlan');
+      if (selectedPlan) {
+        formData.append('plan', selectedPlan);
+        console.log('✅ Adding subscription plan to formData (step 1):', selectedPlan);
+      } else {
+        console.log('⚠️ No subscription plan found in sessionStorage (step 1)');
+      }
 
       // Debug: Log what we're sending
       console.log('📤 Submitting required documents (step 1) with fields:');
@@ -1028,6 +1037,15 @@ export default function IdentityVerification() {
         formData.append('certificates', certificates[0]);
       }
 
+      // Append subscription plan if selected
+      const selectedPlan = sessionStorage.getItem('selectedSubscriptionPlan');
+      if (selectedPlan) {
+        formData.append('plan', selectedPlan);
+        console.log('✅ Adding subscription plan to formData (step 2):', selectedPlan);
+      } else {
+        console.log('⚠️ No subscription plan found in sessionStorage (step 2)');
+      }
+
       // Debug: Log what we're sending
       console.log('📤 Submitting identity documents with fields:');
       for (let pair of formData.entries()) {
@@ -1077,6 +1095,10 @@ export default function IdentityVerification() {
       
       console.log('IdentityVerification - User data after upload:', updatedUser);
       console.log('IdentityVerification - isHasIdentity status:', updatedUser?.isHasIdentity);
+      
+      // Clear stored subscription plan after successful submission
+      sessionStorage.removeItem('selectedSubscriptionPlan');
+      console.log('✅ Cleared stored subscription plan after successful submission');
       
       // Set flags to indicate documents have been submitted in this session
       localStorage.setItem('identityJustSubmitted', 'true');
@@ -1664,19 +1686,19 @@ export default function IdentityVerification() {
                   >
                     {isSubmitting ? 'Soumission en cours...' : 'Terminer'}
                   </ActionButton>
-                  <ActionButton 
-                    variant="contained" 
-                    onClick={handleNextStep}
-                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
-                    sx={{
-                      background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                      }
-                    }}
-                  >
-                    Suivant
-                  </ActionButton>
+                <ActionButton 
+                  variant="contained" 
+                  onClick={handleNextStep}
+                  endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                    }
+                  }}
+                >
+                  Suivant
+                </ActionButton>
                 </>
               ) : (
                 <ActionLoadingButton 

@@ -24,6 +24,7 @@ import {
 import useResponsive from '../hooks/useResponsive';
 // Utils
 import { fCurrency } from '../utils/formatNumber.js';
+import app, { API_BASE_URL } from '../config';
 
 // components
 import Page from '../components/Page';
@@ -65,6 +66,14 @@ export default function DashboardApp() {
   const { t } = useTranslation();
 
   const { auth: { user, tokens } } = useAuth();
+
+  const resolvedApiBaseUrl = (
+    API_BASE_URL && API_BASE_URL.trim() !== ''
+      ? API_BASE_URL.trim()
+      : (import.meta.env.MODE === 'production'
+        ? 'https://mazadclick-server.onrender.com/'
+        : 'http://localhost:3000/')
+  ).replace(/\/$/, '');
   
   // Responsive breakpoints
   const isMobile = useResponsive('down', 'sm');
@@ -106,7 +115,7 @@ export default function DashboardApp() {
       try {
         console.log('🧪 Testing API connection...');
         // const response = await fetch('http://localhost:3000/seller-stats/quick-summary', {
-        const response = await fetch('https://mazadclick-server.onrender.com/seller-stats/quick-summary', {
+        const response = await fetch(`${resolvedApiBaseUrl}/seller-stats/quick-summary`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens?.accessToken || 'test-token'}`,

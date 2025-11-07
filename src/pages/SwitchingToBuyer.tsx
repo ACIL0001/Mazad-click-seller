@@ -147,8 +147,7 @@ export default function SwitchingToBuyer() {
         let configured = app.buyerURL;
         console.log('[SwitchingToBuyer] Configured buyerURL:', configured);
         if (!configured || !/^https?:\/\//i.test(configured)) {
-          // configured = 'http://localhost:3001/';
-          configured = 'https://mazadclick.vercel.app/';
+          configured = 'http://localhost:3001/';
           console.log('[SwitchingToBuyer] buyerURL missing/invalid. Using default:', configured);
         }
         try {
@@ -167,8 +166,7 @@ export default function SwitchingToBuyer() {
           window.location.href = buyerAppUrl.toString();
         } catch (e) {
           console.error('[SwitchingToBuyer] Failed to build buyer URL from', configured, e);
-          // const fallback = new URL('http://localhost:3001/');
-          const fallback = new URL('https://mazadclick.vercel.app/');
+          const fallback = new URL('http://localhost:3001/');
           fallback.searchParams.append('token', accessToken);
           fallback.searchParams.append('refreshToken', refreshToken);
           fallback.searchParams.append('from', 'seller');

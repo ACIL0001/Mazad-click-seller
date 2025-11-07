@@ -256,9 +256,9 @@
       "failedToCreateChat": "Error creating conversation"
     },
     "nameVisibility": {
-      "title": "Hide my name",
-      "descriptionVisible": "Your name will be visible in this auction",
-      "descriptionHidden": "Your name will not be visible in this auction"
+      "title": "Anonymous Mode",
+      "descriptionVisible": "Your name will be publicly visible",
+      "descriptionHidden": "Your name will be hidden (Anonymous Mode)"
     },
     "identityPending": {
       "title": "Documents Under Review",

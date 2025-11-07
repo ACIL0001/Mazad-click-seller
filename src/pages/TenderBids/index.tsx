@@ -13,6 +13,13 @@ import {
   Chip,
   Avatar,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Card,
+  Paper,
+  Alert,
 } from '@mui/material';
 // components
 import Page from '../../components/Page';
@@ -36,7 +43,7 @@ export default function TenderBids() {
   const COLUMNS = [
     { id: 'bidder', label: 'Prestataire', alignRight: false, searchable: true, sortable: true },
     { id: 'tender', label: 'Appel d\'Offres', alignRight: false, searchable: true, sortable: true },
-    { id: 'bidAmount', label: 'Montant', alignRight: false, searchable: false, sortable: true },
+    { id: 'bidAmount', label: 'Montant/Proposition', alignRight: false, searchable: false, sortable: true },
     { id: 'deliveryTime', label: 'Délai', alignRight: false, searchable: false, sortable: true },
     { id: 'createdAt', label: 'Date', alignRight: false, searchable: false, sortable: true },
     { id: 'status', label: 'Statut', alignRight: false, searchable: false },
@@ -52,6 +59,8 @@ export default function TenderBids() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedBid, setSelectedBid] = useState<TenderBid | null>(null);
+  const [showBidDetailsDialog, setShowBidDetailsDialog] = useState(false);
 
   useEffect(() => {
     get();
@@ -186,14 +195,41 @@ export default function TenderBids() {
                 </Stack>
               </TableCell>
               <TableCell align="left">
-                <Typography variant="subtitle2" noWrap>
-                  {tender?.title || 'N/A'}
-                </Typography>
+                <Stack spacing={0.5}>
+                  <Typography variant="subtitle2" noWrap>
+                    {tender?.title || 'N/A'}
+                  </Typography>
+                  {tender?.evaluationType && (
+                    <Chip 
+                      label={tender.evaluationType === 'MIEUX_DISANT' ? 'Mieux disant' : 'Moins disant'}
+                      size="small"
+                      color={tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+                      sx={{ width: 'fit-content', fontSize: '0.7rem' }}
+                    />
+                  )}
+                </Stack>
               </TableCell>
               <TableCell align="left">
-                <Typography variant="h6" color="success.main">
-                  {bidAmount.toLocaleString()} DA
-                </Typography>
+                {/* Show proposal for MIEUX_DISANT, price for MOINS_DISANT */}
+                {tender?.evaluationType === 'MIEUX_DISANT' ? (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      maxWidth: 200,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontStyle: proposal ? 'normal' : 'italic',
+                      color: proposal ? 'text.primary' : 'text.secondary'
+                    }}
+                  >
+                    {proposal || 'Aucune proposition'}
+                  </Typography>
+                ) : (
+                  <Typography variant="h6" color="success.main">
+                    {bidAmount.toLocaleString()} DA
+                  </Typography>
+                )}
               </TableCell>
               <TableCell align="left">
                 {deliveryTime ? `${deliveryTime} jours` : '-'}
@@ -213,8 +249,8 @@ export default function TenderBids() {
                     size="small"
                     variant="outlined"
                     onClick={() => {
-                      // Show proposal details in modal or navigate to detail page
-                      console.log('Proposal:', proposal);
+                      setSelectedBid(row);
+                      setShowBidDetailsDialog(true);
                     }}
                   >
                     Voir détails
@@ -334,6 +370,222 @@ export default function TenderBids() {
           />
         )}
       </Container>
+
+      {/* Bid Details Dialog */}
+      <Dialog
+        open={showBidDetailsDialog}
+        onClose={() => setShowBidDetailsDialog(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 2 }}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Avatar sx={{ width: 48, height: 48, bgcolor: theme.palette.primary.main }}>
+              {selectedBid?.bidder?.firstName?.charAt(0) || '?'}
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Détails de l'offre
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {selectedBid?.bidder?.firstName} {selectedBid?.bidder?.lastName}
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+        
+        <DialogContent sx={{ px: 3, py: 2 }}>
+          <Stack spacing={3}>
+            {/* Provider Information */}
+            <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Informations du prestataire
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Nom:</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {selectedBid?.bidder?.firstName} {selectedBid?.bidder?.lastName}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Email:</Typography>
+                  <Typography variant="body2">{selectedBid?.bidder?.email}</Typography>
+                </Box>
+                {selectedBid?.bidder?.phone && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">Téléphone:</Typography>
+                    <Typography variant="body2">{selectedBid.bidder.phone}</Typography>
+                  </Box>
+                )}
+              </Stack>
+            </Card>
+
+            {/* Tender Information */}
+            <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Appel d'offres
+              </Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Titre:</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {selectedBid?.tender?.title || 'N/A'}
+                  </Typography>
+                </Box>
+                {selectedBid?.tender?.evaluationType && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">Type:</Typography>
+                    <Chip 
+                      label={selectedBid.tender.evaluationType === 'MIEUX_DISANT' ? 'Mieux disant' : 'Moins disant'}
+                      size="small"
+                      color={selectedBid.tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+                    />
+                  </Box>
+                )}
+              </Stack>
+            </Card>
+
+            {/* Bid Details */}
+            <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Détails de l'offre
+              </Typography>
+              <Stack spacing={2}>
+                {/* Show proposal for MIEUX_DISANT */}
+                {selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' ? (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Proposition détaillée:
+                    </Typography>
+                    <Paper 
+                      sx={{ 
+                        p: 2, 
+                        mt: 1,
+                        maxHeight: 300,
+                        overflowY: 'auto',
+                        bgcolor: 'white',
+                        border: '1px solid',
+                        borderColor: 'divider'
+                      }}
+                    >
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          whiteSpace: 'pre-wrap',
+                          wordWrap: 'break-word',
+                          lineHeight: 1.6,
+                          fontStyle: selectedBid?.proposal ? 'normal' : 'italic',
+                          color: selectedBid?.proposal ? 'text.primary' : 'text.secondary'
+                        }}
+                      >
+                        {selectedBid?.proposal || 'Aucune proposition fournie'}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                ) : (
+                  /* Show price for MOINS_DISANT */
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">Montant proposé:</Typography>
+                    <Typography variant="h6" color="primary.main" fontWeight={700}>
+                      {selectedBid?.bidAmount.toLocaleString()} DA
+                    </Typography>
+                  </Box>
+                )}
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Délai de livraison:</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {selectedBid?.deliveryTime ? `${selectedBid.deliveryTime} jours` : 'Non spécifié'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2" color="text.secondary">Date de soumission:</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {selectedBid?.createdAt ? formatDate(selectedBid.createdAt) : '-'}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">Statut:</Typography>
+                  <Chip
+                    label={getStatusLabel(selectedBid?.status || TenderBidStatus.PENDING)}
+                    color={getStatusColor(selectedBid?.status || TenderBidStatus.PENDING)}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+              </Stack>
+            </Card>
+
+            {/* Type indicator */}
+            <Alert 
+              severity={selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+              icon={
+                <Iconify 
+                  icon={selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' ? 'mdi:star-circle' : 'mdi:cash-multiple'} 
+                  width={24} 
+                />
+              }
+            >
+              <Typography variant="body2">
+                {selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' 
+                  ? 'Appel d\'offres de type Mieux Disant (évaluation par proposition)'
+                  : 'Appel d\'offres de type Moins Disant (évaluation par prix)'}
+              </Typography>
+            </Alert>
+          </Stack>
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          <Button
+            onClick={() => setShowBidDetailsDialog(false)}
+            variant="outlined"
+            sx={{ borderRadius: 2 }}
+          >
+            Fermer
+          </Button>
+          {selectedBid?.status === TenderBidStatus.PENDING && (
+            <>
+              <Button
+                variant="contained"
+                color="success"
+                sx={{ borderRadius: 2 }}
+                startIcon={<Iconify icon="mdi:check-circle" />}
+                onClick={() => {
+                  if (selectedBid?._id) {
+                    handleAcceptOffer(selectedBid._id);
+                    setShowBidDetailsDialog(false);
+                  }
+                }}
+              >
+                Accepter
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                sx={{ borderRadius: 2 }}
+                startIcon={<Iconify icon="mdi:close-circle" />}
+                onClick={() => {
+                  if (selectedBid?._id) {
+                    handleRejectOffer(selectedBid._id);
+                    setShowBidDetailsDialog(false);
+                  }
+                }}
+              >
+                Refuser
+              </Button>
+            </>
+          )}
+        </DialogActions>
+      </Dialog>
     </Page>
   );
 }
