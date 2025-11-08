@@ -2492,12 +2492,12 @@ export default function CreateAuction() {
                     label={
                       <Box>
                         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                          {t('auctions.nameVisibility.title')}
+                          {t('auctions.nameVisibility.title', { defaultValue: 'Mode Anonyme' })}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {formik.values.hidden 
-                            ? t('auctions.nameVisibility.descriptionHidden')
-                            : t('auctions.nameVisibility.descriptionVisible')
+                          {formik.values.hidden
+                            ? t('auctions.nameVisibility.descriptionHidden', { defaultValue: 'Votre nom sera masqué (Mode Anonyme)' })
+                            : t('auctions.nameVisibility.descriptionVisible', { defaultValue: 'Votre nom sera visible publiquement' })
                           }
                         </Typography>
                       </Box>

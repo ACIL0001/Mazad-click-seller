@@ -235,16 +235,6 @@ export default function Tenders() {
                   >
                     {t('view')}
                   </Button>
-                  <Button
-                    component={RouterLink}
-                    to={`/dashboard/tenders/update/${_id}`}
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Iconify icon="eva:edit-fill" />}
-                  >
-                    Modifier
-                  </Button>
                   {/* Delete button removed - users cannot delete tenders after creation */}
                   {/*
                   <Button

@@ -41,10 +41,16 @@ export default function Logo({ disabledLink = false, sx }) {
                 borderRadius: { xs: 1, sm: 1.5, md: 2 },
                 marginLeft: { xs: 2, sm: 3, md: 5 },
                 transition: 'all 0.3s ease',
-                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)',
+                padding: { xs: '6px 12px', sm: '8px 16px', md: '10px 18px', lg: '12px 22px' },
+                border: '1px solid rgba(255,255,255,0.3)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
                 '&:hover': {
                     transform: 'translateY(-2px)',
-                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15))',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.7)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.28)',
                 },
                 ...sx 
             }} 

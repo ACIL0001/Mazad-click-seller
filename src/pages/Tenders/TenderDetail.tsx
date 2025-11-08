@@ -220,6 +220,12 @@ export default function TenderDetail() {
     );
   }
 
+  const rawEvaluationType = (tender as any)?.evaluationType;
+  const evaluationType =
+    typeof rawEvaluationType === 'string'
+      ? (rawEvaluationType as 'MIEUX_DISANT' | 'MOINS_DISANT')
+      : undefined;
+
   const timeRemaining = calculateTimeRemaining();
   const progress = calculateProgress();
 
@@ -257,14 +263,6 @@ export default function TenderDetail() {
                     />
                   </Stack>
                 </Box>
-                <Button
-                  variant="outlined"
-                  startIcon={<Iconify icon="eva:edit-fill" />}
-                  onClick={() => navigate(`/dashboard/tenders/${tender._id}/edit`)}
-                  disabled={tender.status !== TENDER_STATUS.OPEN}
-                >
-                  Modifier
-                </Button>
               </Stack>
 
               {/* Progress Bar */}
@@ -376,7 +374,7 @@ export default function TenderDetail() {
                       <TableRow>
                         <TableCell>Prestataire</TableCell>
                         {/* Show Montant only for MOINS_DISANT, Proposition for MIEUX_DISANT */}
-                        {tender?.evaluationType === 'MIEUX_DISANT' ? (
+                        {evaluationType === 'MIEUX_DISANT' ? (
                           <TableCell align="left" sx={{ minWidth: 250 }}>Proposition</TableCell>
                         ) : (
                         <TableCell align="right">Montant proposé</TableCell>
@@ -392,7 +390,7 @@ export default function TenderDetail() {
                         .sort((a, b) => {
                           // For MIEUX_DISANT, sort by date (most recent first)
                           // For MOINS_DISANT, sort by price (lowest first)
-                          if (tender?.evaluationType === 'MIEUX_DISANT') {
+                          if (evaluationType === 'MIEUX_DISANT') {
                             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                           }
                           return a.bidAmount - b.bidAmount;
@@ -416,7 +414,7 @@ export default function TenderDetail() {
                           </TableCell>
                           
                           {/* Conditional column: Proposition for MIEUX_DISANT, Price for MOINS_DISANT */}
-                          {tender?.evaluationType === 'MIEUX_DISANT' ? (
+                          {evaluationType === 'MIEUX_DISANT' ? (
                             <TableCell align="left">
                               <Typography 
                                 variant="body2" 
@@ -536,42 +534,6 @@ export default function TenderDetail() {
               </Stack>
             </Card>
 
-            {/* Action Cards */}
-            {tender.status === TENDER_STATUS.OPEN && (
-              <Card sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Actions rapides
-                </Typography>
-                
-                <Stack spacing={2}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Iconify icon="eva:share-fill" />}
-                  >
-                    Partager l'appel d'offres
-                  </Button>
-                  
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<Iconify icon="eva:download-fill" />}
-                  >
-                    Exporter les offres
-                  </Button>
-                  
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    color="error"
-                    startIcon={<Iconify icon="eva:close-fill" />}
-                  >
-                    Fermer l'appel d'offres
-                  </Button>
-                </Stack>
-              </Card>
-            )}
-
             {/* Contact Info */}
             {tender.owner && (
               <Card sx={{ p: 3 }}>
@@ -593,13 +555,6 @@ export default function TenderDetail() {
                   </Box>
                 </Stack>
                 
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Iconify icon="eva:message-circle-fill" />}
-                >
-                  Contacter les prestataires
-                </Button>
               </Card>
             )}
           </Grid>
@@ -669,7 +624,7 @@ export default function TenderDetail() {
               </Typography>
               <Stack spacing={2}>
                 {/* Show proposal for MIEUX_DISANT */}
-                {tender?.evaluationType === 'MIEUX_DISANT' ? (
+                {evaluationType === 'MIEUX_DISANT' ? (
                   <Box>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Proposition détaillée:
@@ -737,16 +692,16 @@ export default function TenderDetail() {
 
             {/* Type indicator */}
             <Alert 
-              severity={tender?.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+              severity={evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
               icon={
                 <Iconify 
-                  icon={tender?.evaluationType === 'MIEUX_DISANT' ? 'mdi:star-circle' : 'mdi:cash-multiple'} 
+                  icon={evaluationType === 'MIEUX_DISANT' ? 'mdi:star-circle' : 'mdi:cash-multiple'} 
                   width={24} 
                 />
               }
             >
               <Typography variant="body2">
-                {tender?.evaluationType === 'MIEUX_DISANT' 
+                {evaluationType === 'MIEUX_DISANT' 
                   ? 'Appel d\'offres de type Mieux Disant (évaluation par proposition)'
                   : 'Appel d\'offres de type Moins Disant (évaluation par prix)'}
               </Typography>
