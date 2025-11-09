@@ -37,19 +37,15 @@ const RootStyle = styled('div')(({ theme }) => ({
   position: 'relative',
   overflow: 'hidden',
   background: theme.palette.common.white,
-  padding: '80px 0 20px',
-  
-  // Responsive top padding for header
+  padding: '60px 0 8px',
   '@media (max-width: 599px)': {
-    padding: '40px 0 16px',
+    padding: '32px 0 8px',
   },
-  
   '@media (min-width: 600px) and (max-width: 959px)': {
-    padding: '42px 0 20px',
+    padding: '36px 0 8px',
   },
-  
   '@media (min-width: 960px)': {
-    padding: '46px 0 24px',
+    padding: '48px 0 8px',
   },
 }));
 
@@ -63,48 +59,40 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
   border: 'none',
   boxShadow: `
-    0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)},
-    inset 0 1px 0 0 ${alpha(theme.palette.common.white, 0.5)},
-    inset 0 -1px 0 0 ${alpha(theme.palette.common.black, 0.05)}
+    0 6px 24px 0 ${alpha(theme.palette.common.black, 0.12)},
+    inset 0 1px 0 0 ${alpha(theme.palette.common.white, 0.4)},
+    inset 0 -1px 0 0 ${alpha(theme.palette.common.black, 0.04)}
   `,
-  borderRadius: '32px',
-  padding: theme.spacing(4),
-  paddingTop: '18px',
+  borderRadius: '28px',
+  padding: theme.spacing(3),
+  paddingTop: '16px',
   position: 'relative',
   zIndex: 10,
-  maxWidth: '540px',
+  maxWidth: '480px',
   width: '100%',
-  margin: theme.spacing(3),
-  
-  // Extra small devices (phones, < 480px)
+  margin: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(3),
-    margin: theme.spacing(2, 1.5),
+    padding: theme.spacing(2.5),
+    margin: theme.spacing(1.5, 1.5, 1.5, 1.5),
     borderRadius: '20px',
-    maxWidth: 'calc(100vw - 24px)',
+    maxWidth: 'calc(100vw - 20px)',
   },
-  
-  // Small devices (phones landscape, 480px - 639px)
   '@media (min-width: 480px) and (max-width: 639px)': {
-    padding: theme.spacing(4),
-    margin: theme.spacing(2.5, 2),
-    borderRadius: '24px',
+    padding: theme.spacing(3),
+    margin: theme.spacing(2, 1.8),
+    borderRadius: '22px',
   },
-  
-  // Medium devices (tablets, 640px - 767px)
   '@media (min-width: 640px) and (max-width: 767px)': {
-    padding: theme.spacing(5),
-    margin: theme.spacing(3),
-    borderRadius: '28px',
-    maxWidth: '500px',
+    padding: theme.spacing(3.5),
+    margin: theme.spacing(2),
+    borderRadius: '26px',
+    maxWidth: '460px',
   },
-  
-  // Large devices (tablets landscape, 768px+)
   '@media (min-width: 768px)': {
-    padding: theme.spacing(6),
-    margin: theme.spacing(3),
-    borderRadius: '32px',
-    maxWidth: '540px',
+    padding: theme.spacing(4),
+    margin: theme.spacing(2.5),
+    borderRadius: '30px',
+    maxWidth: '480px',
   },
 }));
 

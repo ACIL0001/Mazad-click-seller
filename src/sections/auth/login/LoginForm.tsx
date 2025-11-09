@@ -232,7 +232,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }}>
+        <Stack spacing={{ xs: 0.75, sm: 1.1, md: 1.6 }}>
           {loginError && (
             <Alert 
               severity="error" 
@@ -297,7 +297,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           alignItems="center" 
           justifyContent="space-between" 
           sx={{ 
-            my: { xs: 1.5, sm: 2 },
+            my: { xs: 1.2, sm: 1.6 },
           }}
         >
           <Link 
@@ -332,7 +332,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           loading={isSubmitting}
           sx={{ 
             borderRadius: { xs: 1.5, sm: 2 },
-            py: { xs: 1.5, sm: 1.8, md: 2 },
+            py: { xs: 1.25, sm: 1.5, md: 1.7 },
             fontSize: { xs: '1rem', sm: '1.05rem', md: '1.1rem' },
             fontWeight: 700,
             background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,

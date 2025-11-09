@@ -189,19 +189,19 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     },
   },
   
-  marginBottom: theme.spacing(2)
+  marginBottom: theme.spacing(1.5),
 }));
 
 // Terms Agreement Box - Glassmorphism style
 const TermsAgreementBox = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
+  padding: theme.spacing(2.5),
   borderRadius: 16,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
-  marginTop: theme.spacing(2),
-  marginBottom: theme.spacing(2),
+  marginTop: theme.spacing(1.5),
+  marginBottom: theme.spacing(1.5),
   boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.08)}`,
   position: 'relative',
   overflow: 'hidden',
@@ -229,12 +229,12 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
   '& .terms-card-header': {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: theme.spacing(2),
-    gap: theme.spacing(1.5),
+    marginBottom: theme.spacing(1.5),
+    gap: theme.spacing(1.25),
     
     [theme.breakpoints.down('sm')]: {
       gap: theme.spacing(1),
-      marginBottom: theme.spacing(1.5),
+      marginBottom: theme.spacing(1.2),
     },
   },
   '& .terms-card-icon': {
@@ -278,10 +278,10 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
   '& .terms-row': {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: theme.spacing(1.5),
+    gap: theme.spacing(1.25),
     cursor: 'pointer',
     margin: 0,
-    padding: theme.spacing(1),
+    padding: theme.spacing(0.8),
     borderRadius: 8,
     transition: 'background-color 0.2s ease',
     '&:hover': {
@@ -326,8 +326,8 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    marginTop: theme.spacing(1.5),
-    padding: theme.spacing(1.5),
+    marginTop: theme.spacing(1.2),
+    padding: theme.spacing(1.3),
     backgroundColor: theme.palette.warning.light,
     borderRadius: 8,
     border: `1px solid ${theme.palette.warning.main}`,
@@ -759,7 +759,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       >
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
 
-          <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }}>
+          <Stack spacing={{ xs: 0.75, sm: 1.25, md: 1.75 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -792,7 +792,7 @@ export default function RegisterForm(props: RegisterFormProps) {
               />
             </Box>
 
-            <Grid container spacing={{ xs: 0.75, sm: 1.25 }}>
+            <Grid container spacing={{ xs: 0.6, sm: 1.1 }}>
               <Grid item xs={12} sm={6}>
                 <StyledTextField
                   fullWidth
@@ -837,7 +837,7 @@ export default function RegisterForm(props: RegisterFormProps) {
                   fullWidth 
                   error={Boolean(touched.secteur && errors.secteur)}
                   sx={{ 
-                    mb: 2,
+                    mb: 1.5,
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 3,
                       backgroundColor: alpha(theme.palette.background.paper, 0.6),
