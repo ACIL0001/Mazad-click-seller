@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // @mui
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, keyframes } from '@mui/material/styles';
 import {
   Link,
   Container,
@@ -26,6 +26,11 @@ import useAuth from '../hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
+
+const shimmer = keyframes`
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+`;
 
 // Root container with white background
 const RootStyle = styled('div')(({ theme }) => ({
@@ -73,6 +78,25 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   maxWidth: '540px',
   width: '100%',
   margin: theme.spacing(3),
+  
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    background: `linear-gradient(45deg, 
+      transparent,
+      ${alpha(theme.palette.primary.main, 0.3)},
+      transparent
+    )`,
+    backgroundSize: '200% 200%',
+    borderRadius: '33px',
+    animation: `${shimmer} 6s linear infinite`,
+    zIndex: -1,
+    opacity: 0.6,
+  },
   
   // Extra small devices (phones, < 480px)
   [theme.breakpoints.down('sm')]: {
