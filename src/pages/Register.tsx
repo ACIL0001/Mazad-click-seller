@@ -159,12 +159,10 @@ export default function Register() {
     <Page title={t('pages.register.title')}>
       <RootStyle>
         {/* Header */}
-        <HeaderStyle>
-          {/* Logo only - scaled smaller for compact header */}
-          <Logo />
-          
-          {/* Right: Login link - Only on desktop */}
-          {smUp && (
+        {smUp ? (
+          <HeaderStyle>
+            <Logo />
+            
             <Typography 
               variant="body2" 
               sx={{ 
@@ -197,8 +195,25 @@ export default function Register() {
                 Connectez-vous
               </Link>
             </Typography>
-          )}
-        </HeaderStyle>
+          </HeaderStyle>
+        ) : (
+          <Box
+            sx={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              mb: 2,
+            }}
+          >
+            <Logo
+              sx={{
+                height: 44,
+                width: 'auto',
+                maxWidth: '120px',
+              }}
+            />
+          </Box>
+        )}
 
         {/* Glassmorphism Content Container */}
         <GlassContainer>
