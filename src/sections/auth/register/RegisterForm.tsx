@@ -770,7 +770,7 @@ export default function RegisterForm(props: RegisterFormProps) {
               <StyledTextField
                 fullWidth
                 label="Code promo"
-                placeholder="Code promo"
+                placeholder="Code promo (optionnel)"
                 {...getFieldProps('promoCode')}
                 error={Boolean(touched.promoCode && errors.promoCode)}
                 helperText={touched.promoCode && errors.promoCode}

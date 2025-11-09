@@ -55,8 +55,8 @@ const RootStyle = styled('div')(({ theme }) => ({
 // Glassmorphism container
 const GlassContainer = styled(Box)(({ theme }) => ({
   background: `linear-gradient(135deg, 
-    ${alpha(theme.palette.primary.main, 0.92)} 0%,
-    ${alpha(theme.palette.primary.dark, 0.92)} 100%
+    ${alpha(theme.palette.background.paper, 0.85)} 0%,
+    ${alpha(theme.palette.background.paper, 0.75)} 100%
   )`,
   backdropFilter: 'blur(20px) saturate(180%)',
   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
