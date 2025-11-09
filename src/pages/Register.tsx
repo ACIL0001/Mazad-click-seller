@@ -117,14 +117,14 @@ export default function Register() {
             width: '100%',
             display: 'flex',
             justifyContent: 'center',
-            mb: { xs: 2, sm: 3 },
+            mb: { xs: 1.5, sm: 2.5 },
           }}
         >
           <Logo
             sx={{
-              height: { xs: 36, sm: 46, md: 54 },
+              height: { xs: 40, sm: 52, md: 60 },
               width: 'auto',
-              maxWidth: { xs: 100, sm: 130, md: 150 },
+              maxWidth: { xs: 110, sm: 140, md: 160 },
             }}
           />
         </Box>
