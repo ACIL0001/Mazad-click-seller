@@ -107,41 +107,6 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const HeaderStyle = styled('header')(({ theme }) => ({
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 1000,
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  position: 'fixed',
-  padding: '2px 20px',
-  minHeight: '36px',
-  background: 'transparent',
-  
-  '@media (max-width: 599px)': {
-    padding: '2px 12px',
-    minHeight: '32px',
-  },
-  
-  '@media (min-width: 600px) and (max-width: 959px)': {
-    padding: '2px 16px',
-    minHeight: '34px',
-  },
-  
-  '@media (min-width: 960px)': {
-    padding: '3px 24px',
-    minHeight: '38px',
-  },
-  
-  '@media (min-width: 1280px)': {
-    padding: '4px 32px',
-    minHeight: '40px',
-  },
-}));
-
 // ----------------------------------------------------------------------
 
 export default function Register() {
@@ -158,62 +123,22 @@ export default function Register() {
   return (
     <Page title={t('pages.register.title')}>
       <RootStyle>
-        {/* Header */}
-        {smUp ? (
-          <HeaderStyle>
-            <Logo />
-            
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: 'primary.main',
-                fontSize: { 
-                  xs: '0.7rem',
-                  sm: '0.75rem',
-                  md: '0.8rem',
-                  lg: '0.85rem',
-                },
-                fontWeight: 600,
-              }}
-            >
-              Vous avez déjà un compte&nbsp;?&nbsp;
-              <Link 
-                variant="subtitle2" 
-                component={RouterLink} 
-                to="/login" 
-                sx={{ 
-                  color: 'primary.main', 
-                  textDecoration: 'underline',
-                  fontSize: 'inherit',
-                  fontWeight: 700,
-                  '&:hover': {
-                    textDecoration: 'none',
-                    opacity: 0.9,
-                  },
-                }}
-              >
-                Connectez-vous
-              </Link>
-            </Typography>
-          </HeaderStyle>
-        ) : (
-          <Box
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: { xs: 2, sm: 3 },
+          }}
+        >
+          <Logo
             sx={{
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 2,
+              height: { xs: 36, sm: 46, md: 54 },
+              width: 'auto',
+              maxWidth: { xs: 100, sm: 130, md: 150 },
             }}
-          >
-            <Logo
-              sx={{
-                height: 44,
-                width: 'auto',
-                maxWidth: '120px',
-              }}
-            />
-          </Box>
-        )}
+          />
+        </Box>
 
         {/* Glassmorphism Content Container */}
         <GlassContainer>
@@ -274,6 +199,37 @@ export default function Register() {
             </Typography>
           )}
         </GlassContainer>
+
+        {smUp && (
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{
+              mt: 2,
+              color: 'primary.main',
+              fontSize: { sm: '0.85rem', md: '0.9rem' },
+              fontWeight: 600,
+            }}
+          >
+            Vous avez déjà un compte ? 
+            <Link
+              variant="subtitle2"
+              component={RouterLink}
+              to="/login"
+              sx={{
+                color: 'primary.main',
+                textDecoration: 'underline',
+                fontWeight: 700,
+                '&:hover': {
+                  textDecoration: 'none',
+                  opacity: 0.9,
+                },
+              }}
+            >
+              Connectez-vous
+            </Link>
+          </Typography>
+        )}
       </RootStyle>
     </Page>
   );
