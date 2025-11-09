@@ -122,9 +122,9 @@ export default function Register() {
         >
           <Logo
             sx={{
-              height: { xs: 44, sm: 58, md: 66 },
+              height: { xs: 48, sm: 62, md: 70 },
               width: 'auto',
-              maxWidth: { xs: 120, sm: 150, md: 170 },
+              maxWidth: { xs: 130, sm: 160, md: 180 },
             }}
           />
         </Box>
