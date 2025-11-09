@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // @mui
-import { styled, alpha, keyframes } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 import {
   Link,
   Container,
@@ -26,11 +26,6 @@ import useAuth from '../hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
-
-const shimmer = keyframes`
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-`;
 
 // Root container with white background
 const RootStyle = styled('div')(({ theme }) => ({
@@ -78,25 +73,6 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   maxWidth: '540px',
   width: '100%',
   margin: theme.spacing(3),
-  
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: -2,
-    left: -2,
-    right: -2,
-    bottom: -2,
-    background: `linear-gradient(45deg, 
-      transparent,
-      ${alpha(theme.palette.primary.main, 0.3)},
-      transparent
-    )`,
-    backgroundSize: '200% 200%',
-    borderRadius: '33px',
-    animation: `${shimmer} 6s linear infinite`,
-    zIndex: -1,
-    opacity: 0.6,
-  },
   
   // Extra small devices (phones, < 480px)
   [theme.breakpoints.down('sm')]: {
@@ -191,32 +167,33 @@ export default function Register() {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: 'white',
+                color: 'primary.main',
                 fontSize: { 
                   xs: '0.7rem',
                   sm: '0.75rem',
                   md: '0.8rem',
                   lg: '0.85rem',
                 },
+                fontWeight: 600,
               }}
             >
-              {t('pages.register.alreadyHaveAccount')} &nbsp;
+              Vous avez déjà un compte&nbsp;?&nbsp;
               <Link 
                 variant="subtitle2" 
                 component={RouterLink} 
                 to="/login" 
                 sx={{ 
-                  color: 'white', 
+                  color: 'primary.main', 
                   textDecoration: 'underline',
                   fontSize: 'inherit',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   '&:hover': {
                     textDecoration: 'none',
                     opacity: 0.9,
                   },
                 }}
               >
-                {t('pages.register.signInLink')}
+                Connectez-vous
               </Link>
             </Typography>
           )}
@@ -247,24 +224,6 @@ export default function Register() {
             Créer un compte
           </Typography>
           
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'text.secondary', 
-              mb: 4, 
-              textAlign: 'center',
-              fontSize: {
-                xs: '0.9rem',
-                sm: '1rem',
-                md: '1.1rem',
-              },
-              lineHeight: 1.6,
-              px: { xs: 1, sm: 2 },
-            }}
-          >
-            Rejoignez notre plateforme et commencez à vendre en toute sécurité
-          </Typography>
-
           <RegisterForm />
 
           {!smUp && (
@@ -274,18 +233,27 @@ export default function Register() {
               sx={{ 
                 mt: 3,
                 fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                color: 'primary.main',
+                fontWeight: 600,
               }}
             >
-              {t('pages.register.alreadyHaveAccount')} &nbsp;
+              Vous avez déjà un compte&nbsp;?&nbsp;
               <Link 
                 variant="subtitle2" 
                 to="/login" 
                 component={RouterLink}
                 sx={{
                   fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                  color: 'primary.main',
+                  textDecoration: 'underline',
+                  fontWeight: 700,
+                  '&:hover': {
+                    textDecoration: 'none',
+                    opacity: 0.9,
+                  },
                 }}
               >
-                {t('pages.register.signInLink')}
+                Connectez-vous
               </Link>
             </Typography>
           )}

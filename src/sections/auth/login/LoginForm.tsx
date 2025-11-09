@@ -232,7 +232,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
+        <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }}>
           {loginError && (
             <Alert 
               severity="error" 

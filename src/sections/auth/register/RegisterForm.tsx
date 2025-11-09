@@ -759,7 +759,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       >
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
 
-          <Stack spacing={{ xs: 1.5, sm: 2, md: 2.5 }}>
+          <Stack spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -792,7 +792,7 @@ export default function RegisterForm(props: RegisterFormProps) {
               />
             </Box>
 
-            <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+            <Grid container spacing={{ xs: 0.75, sm: 1.25 }}>
               <Grid item xs={12} sm={6}>
                 <StyledTextField
                   fullWidth
