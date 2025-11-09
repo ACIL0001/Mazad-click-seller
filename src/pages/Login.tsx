@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Typography, styled, Box, Link, keyframes, alpha } from '@mui/material';
+import { Typography, styled, Box, Link, alpha } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import Page from '../components/Page';
@@ -11,13 +11,7 @@ import Logo from '../components/Logo';
 
 // ----------------------------------------------------------------------
 
-// Keyframe Animations
-const shimmer = keyframes`
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-`;
-
-// Root container with animated background
+// Root container with white background
 const RootStyle = styled('div')(({ theme }) => ({
   minHeight: '100vh',
   display: 'flex',
@@ -25,30 +19,8 @@ const RootStyle = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   position: 'relative',
   overflow: 'hidden',
-  background: `linear-gradient(135deg, 
-    ${theme.palette.primary.dark} 0%, 
-    ${theme.palette.primary.main} 50%, 
-    ${alpha(theme.palette.primary.light, 0.8)} 100%
-  )`,
+  background: theme.palette.common.white,
   padding: '80px 0 20px',
-  
-  // Animated gradient overlay
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `linear-gradient(45deg,
-      transparent 30%,
-      ${alpha(theme.palette.common.white, 0.1)} 50%,
-      transparent 70%
-    )`,
-    backgroundSize: '200% 200%',
-    animation: `${shimmer} 8s linear infinite`,
-    pointerEvents: 'none',
-  },
   
   // Responsive top padding for header
   '@media (max-width: 599px)': {
@@ -85,26 +57,6 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   maxWidth: '480px',
   width: '100%',
   margin: theme.spacing(3),
-  
-  // Animated border shimmer
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: -2,
-    left: -2,
-    right: -2,
-    bottom: -2,
-    background: `linear-gradient(45deg, 
-      transparent,
-      ${alpha(theme.palette.primary.main, 0.3)},
-      transparent
-    )`,
-    backgroundSize: '200% 200%',
-    borderRadius: '33px',
-    animation: `${shimmer} 6s linear infinite`,
-    zIndex: -1,
-    opacity: 0.6,
-  },
   
   // Extra small devices (phones, < 480px)
   [theme.breakpoints.down('sm')]: {
@@ -191,18 +143,7 @@ export default function Login() {
         {/* Header */}
         <HeaderStyle>
           {/* Logo only - scaled smaller for compact header */}
-          <Box sx={{
-            transform: {
-              xs: 'scale(0.65)',
-              sm: 'scale(0.7)',
-              md: 'scale(0.75)',
-              lg: 'scale(0.8)',
-            },
-            transformOrigin: 'left center',
-            transition: 'transform 0.3s ease',
-          }}>
-            <Logo />
-          </Box>
+          <Logo />
           
           {/* Right: Sign up link - Only on desktop */}
           {smUp && (
