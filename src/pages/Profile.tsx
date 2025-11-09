@@ -87,14 +87,38 @@ export default function Profile() {
 
     const optionalDocuments = [
         {
+            key: 'commercialRegister',
+            label: 'Ancien Registre de commerce',
+            description: 'Ancienne version du registre de commerce (si disponible)',
+            required: false,
+        },
+        {
+            key: 'carteAutoEntrepreneur',
+            label: 'Carte auto-entrepreneur',
+            description: 'Carte d\'auto-entrepreneur pour les activités concernées',
+            required: false,
+        },
+        {
+            key: 'nif',
+            label: 'Ancien NIF',
+            description: 'Version précédente du NIF (si disponible)',
+            required: false,
+        },
+        {
+            key: 'nis',
+            label: 'NIS',
+            description: 'Numéro d\'identification sociale',
+            required: false,
+        },
+        {
             key: 'numeroArticle',
             label: 'Numéro d\'article',
-            description: 'Numéro d\'article',
+            description: 'Numéro d\'article fiscal',
             required: false,
         },
         {
             key: 'c20',
-            label: 'C20',
+            label: 'Certificat C20',
             description: 'Document C20',
             required: false,
         },
@@ -102,6 +126,18 @@ export default function Profile() {
             key: 'misesAJourCnas',
             label: 'Mises à jour CNAS/CASNOS',
             description: 'Mises à jour CNAS/CASNOS et CACOBAPT',
+            required: false,
+        },
+        {
+            key: 'last3YearsBalanceSheet',
+            label: 'Bilans des 3 dernières années',
+            description: 'Bilans financiers des trois dernières années',
+            required: false,
+        },
+        {
+            key: 'certificates',
+            label: 'Certificats',
+            description: 'Certificats professionnels ou autres documents complémentaires',
             required: false,
         },
         {
