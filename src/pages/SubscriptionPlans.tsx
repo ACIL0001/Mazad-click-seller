@@ -43,6 +43,7 @@ import AllInclusiveIcon from '@mui/icons-material/AllInclusive';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { SubscriptionAPI, SubscriptionPlan } from '../api/subscription';
+import { UserAPI } from '../api/user';
 import { authStore } from '../contexts/authStore';
 
 // Real API is imported from '../api/subscription'
@@ -617,15 +618,33 @@ const SubscriptionPlans = () => {
     fetchPlans();
   }, []);
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (!selectedPlan) {
       setError('Veuillez sélectionner un plan avant de continuer.');
       return;
     }
-    
-    // Show success dialog instead of navigating to payment
-    setShowSuccessDialog(true);
-    setProcessingPayment(false);
+
+    const planName = selectedPlan?.name;
+    if (!planName) {
+      setError('Le plan sélectionné est invalide. Veuillez réessayer.');
+      return;
+    }
+
+    try {
+      setProcessingPayment(true);
+      await UserAPI.updateSubscriptionPlan(planName);
+      setError(null);
+      setShowSuccessDialog(true);
+    } catch (apiError: any) {
+      console.error('❌ Failed to persist subscription plan:', apiError);
+      const message =
+        apiError?.response?.data?.message ||
+        apiError?.message ||
+        'Impossible de sauvegarder votre abonnement. Veuillez réessayer.';
+      setError(message);
+    } finally {
+      setProcessingPayment(false);
+    }
   };
 
   // Countdown and redirect effect
