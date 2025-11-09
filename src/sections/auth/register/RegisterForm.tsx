@@ -445,6 +445,9 @@ export default function RegisterForm(props: RegisterFormProps) {
   const theme = useTheme();
 
   const RegisterSchema = Yup.object().shape({
+    promoCode: Yup.string()
+      .trim()
+      .max(50, 'Le code promo ne doit pas dépasser 50 caractères'),
     firstName: Yup.string()
       .required('Le prénom ne doit pas être vide')
       .min(2, 'Le prénom doit contenir au moins 2 caractères'),
@@ -493,6 +496,7 @@ export default function RegisterForm(props: RegisterFormProps) {
 
   const formik = useFormik({
     initialValues: {
+      promoCode: '',
       firstName: '',
       lastName: '',
       email: '',
@@ -514,6 +518,7 @@ export default function RegisterForm(props: RegisterFormProps) {
       try {
         // Transform values to match the User interface
         const userData = {
+          promoCode: values.promoCode?.trim() || undefined,
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
@@ -755,6 +760,38 @@ export default function RegisterForm(props: RegisterFormProps) {
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
 
           <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                width: '100%',
+              }}
+            >
+              <StyledTextField
+                fullWidth
+                label="Code promo"
+                placeholder="Code promo"
+                {...getFieldProps('promoCode')}
+                error={Boolean(touched.promoCode && errors.promoCode)}
+                helperText={touched.promoCode && errors.promoCode}
+                sx={{
+                  maxWidth: { xs: '100%', sm: '80%' },
+                  '& .MuiOutlinedInput-input': {
+                    textAlign: 'center',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px',
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="mdi:ticket-percent-outline" width={20} height={20} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
             <Grid container spacing={{ xs: 1.5, sm: 2 }}>
               <Grid item xs={12} sm={6}>
                 <StyledTextField
