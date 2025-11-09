@@ -769,8 +769,8 @@ export default function RegisterForm(props: RegisterFormProps) {
             >
               <StyledTextField
                 fullWidth
-                label="Code promo"
-                placeholder="Code promo (optionnel)"
+                label="Code promo (optionnel)"
+                placeholder="Enter code promo"
                 {...getFieldProps('promoCode')}
                 error={Boolean(touched.promoCode && errors.promoCode)}
                 helperText={touched.promoCode && errors.promoCode}
@@ -970,11 +970,11 @@ export default function RegisterForm(props: RegisterFormProps) {
 
                 <StyledTextField
                   fullWidth
-                  label="Post occupé"
-                  placeholder="Entrez votre poste (optionnel)"
+                  label="Post occupé (optionnel)"
+                  placeholder="Entrez votre poste"
                   {...getFieldProps('postOccupé')}
                   error={Boolean(touched.postOccupé && errors.postOccupé)}
-                  helperText={touched.postOccupé && errors.postOccupé || "Optionnel"}
+                  helperText={touched.postOccupé && errors.postOccupé}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">

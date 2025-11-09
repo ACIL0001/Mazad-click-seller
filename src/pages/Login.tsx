@@ -51,7 +51,7 @@ const GlassContainer = styled(Box)(({ theme }) => ({
     inset 0 -1px 0 0 ${alpha(theme.palette.common.black, 0.05)}
   `,
   borderRadius: '32px',
-  padding: theme.spacing(5),
+  padding: theme.spacing(4),
   paddingTop: '18px',
   position: 'relative',
   zIndex: 10,
