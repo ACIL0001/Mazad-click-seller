@@ -105,9 +105,9 @@ export default function Login() {
         >
           <Logo
             sx={{
-              height: { xs: 40, sm: 52, md: 60 },
+              height: { xs: 44, sm: 58, md: 66 },
               width: 'auto',
-              maxWidth: { xs: 110, sm: 140, md: 160 },
+              maxWidth: { xs: 120, sm: 150, md: 170 },
             }}
           />
         </Box>
