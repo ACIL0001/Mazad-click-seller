@@ -174,32 +174,33 @@ export default function Login() {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: 'white',
+                color: 'primary.main',
                 fontSize: { 
                   xs: '0.7rem',
                   sm: '0.75rem',
                   md: '0.8rem',
                   lg: '0.85rem',
                 },
+                fontWeight: 600,
               }}
             >
-              Pas encore de compte? &nbsp;
+              Pas encore de compte&nbsp;?&nbsp;
               <Link 
                 variant="subtitle2" 
                 component={RouterLink} 
                 to="/register" 
                 sx={{ 
-                  color: 'white', 
+                  color: 'primary.main', 
                   textDecoration: 'underline',
                   fontSize: 'inherit',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   '&:hover': {
                     textDecoration: 'none',
                     opacity: 0.9,
                   },
                 }}
               >
-                Créer un compte
+                Créez un compte
               </Link>
             </Typography>
           )}
@@ -230,24 +231,6 @@ export default function Login() {
               Se connecter
             </Typography>
             
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'text.secondary', 
-              mb: 4, 
-              textAlign: 'center',
-              fontSize: {
-                xs: '0.9rem',
-                sm: '1rem',
-                md: '1.1rem',
-              },
-              lineHeight: 1.6,
-              px: { xs: 1, sm: 2 },
-            }}
-          >
-              Connectez-vous à votre compte pour accéder à la plateforme
-            </Typography>
-
             <LoginForm />
 
             {!smUp && (
@@ -257,18 +240,27 @@ export default function Login() {
               sx={{ 
                 mt: 3,
                 fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                color: 'primary.main',
+                fontWeight: 600,
               }}
             >
-                Pas encore de compte? &nbsp;
+                Pas encore de compte&nbsp;?&nbsp;
               <Link 
                 variant="subtitle2" 
                 to="/register" 
                 component={RouterLink}
                 sx={{
                   fontSize: { xs: '0.85rem', sm: '0.875rem' },
+                  color: 'primary.main',
+                  textDecoration: 'underline',
+                  fontWeight: 700,
+                  '&:hover': {
+                    textDecoration: 'none',
+                    opacity: 0.9,
+                  },
                 }}
               >
-                    Créer un compte
+                    Créez un compte
               </Link>
               </Typography>
             )}

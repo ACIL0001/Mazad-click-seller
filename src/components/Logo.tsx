@@ -28,30 +28,15 @@ export default function Logo({ disabledLink = false, sx }) {
             src="/static/logo/logo.black.png" 
             alt="MazadClick Logo"
             onError={(e) => {
-                // Silently hide the image if it fails to load
                 e.currentTarget.style.display = 'none';
             }}
             sx={{ 
                 height: { xs: 60, sm: 80, md: 100, lg: 120 },
-                width: { xs: 90, sm: 120, md: 150, lg: 180 },
-                maxHeight: '120px',
+                width: 'auto',
                 maxWidth: '180px',
                 objectFit: 'contain',
-                objectPosition: 'center center',
-                borderRadius: { xs: 1, sm: 1.5, md: 2 },
-                marginLeft: { xs: 2, sm: 3, md: 5 },
-                transition: 'all 0.3s ease',
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 8px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6)',
-                padding: { xs: '6px 12px', sm: '8px 16px', md: '10px 18px', lg: '12px 22px' },
-                border: '1px solid rgba(255,255,255,0.3)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 12px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.7)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.28)',
-                },
+                objectPosition: 'center',
+                display: 'block',
                 ...sx 
             }} 
         />
