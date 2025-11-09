@@ -55,8 +55,8 @@ const RootStyle = styled('div')(({ theme }) => ({
 // Glassmorphism container
 const GlassContainer = styled(Box)(({ theme }) => ({
   background: `linear-gradient(135deg, 
-    ${alpha(theme.palette.background.paper, 0.85)} 0%,
-    ${alpha(theme.palette.background.paper, 0.75)} 100%
+    ${alpha(theme.palette.primary.main, 0.92)} 0%,
+    ${alpha(theme.palette.primary.dark, 0.92)} 100%
   )`,
   backdropFilter: 'blur(20px) saturate(180%)',
   WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -67,7 +67,8 @@ const GlassContainer = styled(Box)(({ theme }) => ({
     inset 0 -1px 0 0 ${alpha(theme.palette.common.black, 0.05)}
   `,
   borderRadius: '32px',
-  padding: theme.spacing(6),
+  padding: theme.spacing(5),
+  paddingTop: '18px',
   position: 'relative',
   zIndex: 10,
   maxWidth: '540px',
@@ -214,10 +215,10 @@ export default function Register() {
               WebkitTextFillColor: 'transparent',
               letterSpacing: '-0.02em',
               fontSize: {
-                xs: '1.75rem',
-                sm: '2rem',
-                md: '2.5rem',
-                lg: '3rem',
+                xs: '1.4rem',
+                sm: '1.65rem',
+                md: '2rem',
+                lg: '2.35rem',
               },
             }}
           >
