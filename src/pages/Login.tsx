@@ -15,6 +15,7 @@ import Logo from '../components/Logo';
 const RootStyle = styled('div')(({ theme }) => ({
   minHeight: '100vh',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',

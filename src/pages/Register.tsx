@@ -30,7 +30,8 @@ import { Navigate, useNavigate } from 'react-router-dom';
 // Root container with white background
 const RootStyle = styled('div')(({ theme }) => ({
   minHeight: '100vh',
-    display: 'flex',
+  display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
   position: 'relative',
