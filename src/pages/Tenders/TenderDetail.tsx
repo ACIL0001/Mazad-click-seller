@@ -256,11 +256,6 @@ export default function TenderDetail() {
                       label={tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
                       variant="outlined"
                     />
-                    <Chip
-                      label={tender.auctionType === 'CLASSIC' ? 'Classique' : 'Express'}
-                      color="primary"
-                      variant="outlined"
-                    />
                   </Stack>
                 </Box>
               </Stack>
@@ -268,19 +263,9 @@ export default function TenderDetail() {
               {/* Progress Bar */}
               {tender.status === TENDER_STATUS.OPEN && (
                 <Box sx={{ mb: 2 }}>
-                  <Stack direction="row" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>
                       Temps restant: {timeRemaining}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {progress.toFixed(0)}% écoulé
-                    </Typography>
-                  </Stack>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={progress} 
-                    sx={{ height: 8, borderRadius: 4 }}
-                  />
                 </Box>
               )}
 
@@ -534,29 +519,6 @@ export default function TenderDetail() {
               </Stack>
             </Card>
 
-            {/* Contact Info */}
-            {tender.owner && (
-              <Card sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Informations de contact
-                </Typography>
-                
-                <Stack direction="row" alignItems="center" spacing={2} mb={2}>
-                  <Avatar sx={{ width: 48, height: 48 }}>
-                    {auth.user?.firstName?.charAt(0) || '?'}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle1">
-                      {auth.user?.firstName} {auth.user?.lastName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Créateur de l'appel d'offres
-                    </Typography>
-                  </Box>
-                </Stack>
-                
-              </Card>
-            )}
           </Grid>
         </Grid>
       </Container>

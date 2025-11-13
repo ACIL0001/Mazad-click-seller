@@ -427,28 +427,12 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: t('pendingOffers') || 'Pending Offers',
-      total: sellerStats.pendingOffers || 0,
-      icon: 'mdi:clock-alert',
-      color: 'warning',
-      trend: 'neutral',
-      onClick: () => navigate('/dashboard/offers'),
-    },
-    {
       title: 'Tender Bids',
       total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
       trend: (sellerStats as any).tenderBids > 0 ? 'up' : 'neutral',
       trendValue: (sellerStats as any).tenderBids > 0 ? '+' + Math.floor(Math.random() * 20 + 3) + '%' : '0%',
-      onClick: () => navigate('/dashboard/tender-bids'),
-    },
-    {
-      title: 'Pending Tender Bids',
-      total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
-      icon: 'mdi:email-clock',
-      color: 'warning',
-      trend: 'neutral',
       onClick: () => navigate('/dashboard/tender-bids'),
     },
   ] : [];
@@ -915,105 +899,8 @@ useEffect(() => {
             spacing={2}
             sx={{ mb: 2 }}
           >
-            <Box>
-              <Typography 
-                variant={isMobile ? "h4" : "h3"} 
-                sx={{ 
-                  fontWeight: 800,
-                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${theme.palette.primary.main} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 1,
-                }}
-              >
-                {t('dashboard.welcome')}
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'text.secondary',
-                  opacity: 0.8,
-                }}
-              >
-                {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true
-                  ? t('professional Welcome') || 'Professional - Full Access'
-                  : t('dashboard.basic Welcome') || 'Basic - Limited Access'
-                }
-              </Typography>
-            </Box>
-            
-            {/* Status Indicators */}
-            <Stack direction="row" spacing={1} alignItems="center">
-              {/* Professional Status */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2,
-                py: 1,
-                borderRadius: 20,
-                background: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true
-                  ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`
-                  : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
-                border: `1px solid ${alpha(user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'success.main' : 'warning.main',
-                }}
-              />
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  fontWeight: 600,
-                  color: user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'success.dark' : 'warning.dark',
-                }}
-              >
-                {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? 'PRO' : 'BASIC'}
-              </Typography>
-            </Box>
-
-              {/* Data Source Indicator */}
-              {usingMockData && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 2,
-                    py: 1,
-                    borderRadius: 20,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: 'info.main',
-                    }}
-                  />
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      fontWeight: 600,
-                      color: 'info.dark',
-                    }}
-                  >
-                    DEMO DATA
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Live Timer */}
+            {/* Data Source Indicator */}
+            {usingMockData && (
               <Box
                 sx={{
                   display: 'flex',
@@ -1022,24 +909,29 @@ useEffect(() => {
                   px: 2,
                   py: 1,
                   borderRadius: 20,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                 }}
               >
-                <Iconify icon="mdi:clock-outline" width={16} height={16} sx={{ color: 'primary.main' }} />
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: 'info.main',
+                  }}
+                />
                 <Typography 
                   variant="caption" 
                   sx={{ 
                     fontWeight: 600,
-                    color: 'primary.dark',
-                    fontSize: '0.75rem',
-                    fontFamily: 'monospace'
+                    color: 'info.dark',
                   }}
                 >
-                  {currentTime.toLocaleTimeString()}
+                  DEMO DATA
                 </Typography>
               </Box>
-            </Stack>
+            )}
           </Stack>
         </Box>
 
@@ -1196,105 +1088,7 @@ useEffect(() => {
             </Grid>
                   </Box>
 
-                  {/* Charts Section with DYNAMIC DATA */}
-                  <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={6} lg={4} xl={4}>
-                      <Grow in={mounted} timeout={0}>
-                        <Box>
-              <AppCurrentVisits
-                            title="Category Distribution"
-                            subheader={`Dynamic data: ${categoryData.length} categories found`}
-                            chartData={categoryData.length > 0 ? categoryData.map((item) => ({ 
-                              label: item.name, 
-                              value: item.value 
-                            })) : [
-                              { label: 'No Data', value: 1 }
-                            ]}
-                chartColors={[
-                              theme.palette.primary.main,
-                              theme.palette.secondary.main,
-                              theme.palette.info.main,
-                              theme.palette.success.main,
-                              theme.palette.warning.main,
-                              theme.palette.error.main,
-                              theme.palette.primary.light,
-                            ]}
-                          />
-                        </Box>
-                      </Grow>
-            </Grid>
 
-            <Grid item xs={12} md={6} lg={8} xl={8}>
-                      <Grow in={mounted} timeout={0}>
-                        <Box>
-              <AppConversionRates
-                            title="Performance Metrics"
-                            subheader={`Based on ${sellerStats?.totalAuctions || 0} auctions`}
-                chartData={[
-                              { label: 'Conversion Rate', value: performanceMetrics?.conversionRate || sellerStats?.conversionRate || 0 },
-                              { label: 'Offer Acceptance Rate', value: performanceMetrics?.offerAcceptanceRate || 0 },
-                              { label: 'Avg. Response Time (h)', value: performanceMetrics?.avgResponseTime || 0 },
-                              { label: 'Views/Auction', value: Math.round((performanceMetrics?.totalViews || sellerStats?.viewsTotal || 0) / Math.max(sellerStats?.totalAuctions || 1, 1)) },
-                            ]}
-                          />
-                        </Box>
-                      </Grow>
-                    </Grid>
-            </Grid>
-
-                  {/* Top Categories Section */}
-                  {topCategories.length > 0 && (
-                    <Box sx={{ mb: 4 }}>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          mb: 3,
-                          fontWeight: 700,
-                          color: 'text.primary',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        }}
-                      >
-                        <Iconify icon="mdi:chart-pie" width={24} height={24} />
-                        Top Performing Categories
-                      </Typography>
-                      <Grid container spacing={{ xs: 2, sm: 3 }}>
-                        {topCategories.map((category, index) => (
-                          <Grid item xs={12} sm={6} md={4} key={index}>
-                            <Box
-                              sx={{
-                                p: 3,
-                                borderRadius: 3,
-                                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.light, 0.02)} 100%)`,
-                                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                  transform: 'translateY(-4px)',
-                                  boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
-                                },
-                              }}
-                            >
-                              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                                {category.name}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                {category.count} auctions
-                              </Typography>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, color: 'success.main' }}>
-                                  {category.totalRevenue?.toLocaleString()} DA
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  Avg: {Math.round(category.avgPrice || 0).toLocaleString()} DA
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )}
 
                   {/* Recent Activity Section */}
                   {recentActivity && (recentActivity.auctions.length > 0 || recentActivity.offers.length > 0) && (
@@ -1391,26 +1185,6 @@ useEffect(() => {
                       </Grid>
                     </Box>
                   )}
-                  {/* Modern Chart Analytics */}
-                  <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: 4 }}>
-                    <Grid item xs={12} lg={6}>
-                      <ModernChartContainer
-                        title="Auction Trends"
-                        subtitle="Track your auction performance over time"
-                        chartType="auction"
-                        defaultTimeframe={6}
-              />
-            </Grid>
-
-                    <Grid item xs={12} lg={6}>
-                      <ModernChartContainer
-                        title="Offer Analytics"
-                        subtitle="Monitor offer patterns and acceptance rates"
-                        chartType="offer"
-                        defaultTimeframe={6}
-              />
-            </Grid>
-          </Grid>
 
                   {/* Quick Action Cards */}
                   <Box sx={{ mt: 4 }}>
@@ -1429,35 +1203,6 @@ useEffect(() => {
                       Quick Actions - Auctions & Tenders
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Box
-                            onClick={() => navigate('/dashboard/auctions/create')}
-              sx={{ 
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
-                              },
-                            }}
-                          >
-                            <Iconify icon="mdi:plus-circle" width={48} height={48} sx={{ color: 'primary.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              Create Auction
-            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                      
                       <Grid item xs={12} sm={6} md={3}>
                         <motion.div
                           whileHover={{ scale: 1.02 }}
