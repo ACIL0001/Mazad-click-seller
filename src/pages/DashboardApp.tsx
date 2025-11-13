@@ -989,6 +989,141 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0 }}
                 >
+                  {/* Quick Action Cards */}
+                  <Box sx={{ mb: 4 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{
+                        mb: 3,
+                        fontWeight: 700,
+                        color: 'text.primary',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Iconify icon="mdi:rocket-launch" width={24} height={24} />
+                      Quick Actions - Auctions & Tenders
+                    </Typography>
+                    <Grid container spacing={{ xs: 2, sm: 3 }}>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/tenders/create')}
+                            sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.success.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:file-document-plus" width={48} height={48} sx={{ color: 'success.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              Créer Tenders
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/tenders')}
+                            sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.warning.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:file-document-multiple" width={48} height={48} sx={{ color: 'warning.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              Voir Tenders
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/auctions/create')}
+                            sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:plus-circle" width={48} height={48} sx={{ color: 'primary.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              Créer Auctions
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/auctions')}
+                            sx={{ 
+                              p: 3,
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:gavel" width={48} height={48} sx={{ color: 'info.main', mb: 2 }} />
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                              Voir Auctions
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
                   {/* Auction & Tender Statistics Section */}
                   <Box sx={{ mb: 4 }}>
                     <Typography 
@@ -1186,111 +1321,6 @@ useEffect(() => {
                     </Box>
                   )}
 
-                  {/* Quick Action Cards */}
-                  <Box sx={{ mt: 4 }}>
-                    <Typography 
-                      variant="h6" 
-            sx={{
-                        mb: 3,
-                        fontWeight: 700,
-                        color: 'text.primary',
-              display: 'flex',
-              alignItems: 'center',
-                        gap: 1,
-                      }}
-                    >
-                      <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      Quick Actions - Auctions & Tenders
-                    </Typography>
-                    <Grid container spacing={{ xs: 2, sm: 3 }}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Box
-                            onClick={() => navigate('/dashboard/offers')}
-              sx={{ 
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.15)}`,
-                              },
-                            }}
-                          >
-                            <Iconify icon="mdi:hand-coin" width={48} height={48} sx={{ color: 'info.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              View Offers
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6} md={3}>
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Box
-                            onClick={() => navigate('/dashboard/tenders/create')}
-              sx={{ 
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.success.main, 0.15)}`,
-                              },
-                            }}
-                          >
-                            <Iconify icon="mdi:file-document-plus" width={48} height={48} sx={{ color: 'success.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              Create Tender
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6} md={3}>
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Box
-                            onClick={() => navigate('/dashboard/tenders')}
-              sx={{ 
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                              cursor: 'pointer',
-                              textAlign: 'center',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.warning.main, 0.15)}`,
-                              },
-                            }}
-                          >
-                            <Iconify icon="mdi:file-document-multiple" width={48} height={48} sx={{ color: 'warning.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              My Tenders
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                    </Grid>
-          </Box>
                 </motion.div>
               </AnimatePresence>
             )
