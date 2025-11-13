@@ -82,19 +82,40 @@ export default function TenderDetail() {
         bidsArray = response.bids;
       }
       
-      // Filter to show only the current user's bids
+      // Filter to show only the current user's soumissions (bids they created/submitted)
       if (auth?.user?._id && bidsArray.length > 0) {
+        const currentUserId = auth.user._id;
         const userBids = bidsArray.filter((bid: TenderBid) => {
+          // Check if the bidder matches the current user
           const bidderId = bid.bidder?._id || bid.bidder;
-          return bidderId === auth.user._id;
+          const isUserBid = String(bidderId) === String(currentUserId);
+          
+          console.log('🔍 Filtering bid:', {
+            bidId: bid._id,
+            bidderId: bidderId,
+            currentUserId: currentUserId,
+            isUserBid: isUserBid,
+            bidderObject: bid.bidder
+          });
+          
+          return isUserBid;
         });
+        
+        console.log('📊 Filtered bids:', {
+          totalBids: bidsArray.length,
+          userBids: userBids.length,
+          userId: currentUserId
+        });
+        
         setTenderBids(userBids);
       } else {
-        setTenderBids(bidsArray);
+        // If no user is logged in or no bids, show empty array
+        setTenderBids([]);
       }
     } catch (error) {
       console.error('Error fetching tender bids:', error);
       enqueueSnackbar('Erreur lors du chargement des offres', { variant: 'error' });
+      setTenderBids([]);
     }
   };
 
@@ -344,7 +365,7 @@ export default function TenderDetail() {
             <Card sx={{ p: 3 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
                 <Typography variant="h6">
-                  Offres reçues ({tenderBids.length})
+                  Mes soumissions ({tenderBids.length})
                 </Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
                   {tender.status === TENDER_STATUS.OPEN && (

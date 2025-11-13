@@ -65,16 +65,15 @@ export default function Tenders() {
 
   const get = () => {
     setLoading(true);
-    // Prefer public endpoint that returns data from the database for all tenders.
-    // If needed later, we can switch back to my-tenders for owner-specific view.
-    TendersAPI.getAllTenders()
+    // Fetch only the user's own tenders (tenders they created)
+    TendersAPI.getTenders()
       .then((response) => {
         if (response && Array.isArray(response)) {
           setTenders(response);
-          console.log('tenders', response);
+          console.log('User tenders', response);
         } else if (response && response.data && Array.isArray(response.data)) {
           setTenders(response.data);
-          console.log('tenders', response.data);
+          console.log('User tenders', response.data);
         } else {
           console.error('Unexpected response format:', response);
           setTenders([]);
