@@ -117,8 +117,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         
         // ▼▼▼ CORRECTION HERE ▼▼▼
         // Trim whitespace from inputs before sending
+        // Convert email to lowercase (but keep phone numbers as-is since they may contain + prefix)
+        // The server's SignInDto will handle the lowercase transformation
+        const trimmedLogin = values.login.trim();
+        // Only lowercase if it looks like an email (contains @), otherwise keep as-is (phone number)
+        const normalizedLogin = trimmedLogin.includes('@') 
+          ? trimmedLogin.toLowerCase() 
+          : trimmedLogin;
+        
         const response = await AuthAPI.login({
-          login: values.login.trim(),
+          login: normalizedLogin,
           password: values.password.trim(),
         });
         // ▲▲▲ CORRECTION ENDS ▲▲▲
@@ -187,28 +195,45 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         }
       } catch (error: any) {
         console.error('❌ Login error:', error);
+        console.error('❌ Error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message,
+          config: {
+            url: error.config?.url,
+            method: error.config?.method,
+            headers: error.config?.headers
+          }
+        });
         
         let errorMessage = 'Une erreur est survenue lors de la connexion.';
         
-        if (error.response?.data?.message) {
-          const serverMessage = error.response.data.message;
-          if (serverMessage.includes('Invalid credentials - login')) {
-            errorMessage = 'Email ou numéro de téléphone incorrect.';
-          } else if (serverMessage.includes('Invalid credentials - password')) {
-            errorMessage = 'Mot de passe incorrect.';
-          } else if (serverMessage.includes('Phone number not verified')) {
-            errorMessage = 'Votre numéro de téléphone n\'est pas vérifié. Veuillez vérifier votre numéro avec le code OTP qui vous a été envoyé.';
-            // Redirect to OTP verification
-            navigate('/otp-verification', { 
-              state: { 
-                phone: values.login,
-                fromLogin: true 
-              } 
-            });
-            return;
+        if (error.response?.status === 401) {
+          if (error.response?.data?.message) {
+            const serverMessage = error.response.data.message;
+            if (serverMessage.includes('Invalid credentials - login')) {
+              errorMessage = 'Email ou numéro de téléphone incorrect.';
+            } else if (serverMessage.includes('Invalid credentials - password')) {
+              errorMessage = 'Mot de passe incorrect.';
+            } else if (serverMessage.includes('Phone number not verified')) {
+              errorMessage = 'Votre numéro de téléphone n\'est pas vérifié. Veuillez vérifier votre numéro avec le code OTP qui vous a été envoyé.';
+              // Redirect to OTP verification
+              navigate('/otp-verification', { 
+                state: { 
+                  phone: values.login,
+                  fromLogin: true 
+                } 
+              });
+              return;
+            } else {
+              errorMessage = serverMessage || 'Identifiants incorrects. Veuillez vérifier votre email/téléphone et mot de passe.';
+            }
           } else {
-            errorMessage = serverMessage;
+            errorMessage = 'Identifiants incorrects. Veuillez vérifier votre email/téléphone et mot de passe.';
           }
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
         } else if (error.message) {
           errorMessage = error.message;
         }

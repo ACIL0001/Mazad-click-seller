@@ -10,7 +10,9 @@ import { authStore } from '@/contexts/authStore';
 const instance = axios.create({
   baseURL: app.baseURL,
   timeout: app.timeout,
-  headers: {},
+  headers: {
+    'Content-Type': 'application/json',
+  },
   withCredentials: true,
 });
 
@@ -63,9 +65,16 @@ instance.interceptors.request.use(
     );
     
     // Add API key for ALL requests (required by SellerGuard)
+    // Use lowercase header name to match server expectations
     if (app.apiKey) {
       config.headers['x-access-key'] = app.apiKey;
-      console.log('✅ API Key attached to:', config.url);
+      console.log('✅ API Key attached to:', config.url, {
+        headerName: 'x-access-key',
+        hasKey: !!app.apiKey,
+        keyPreview: app.apiKey ? app.apiKey.substring(0, 10) + '...' : 'none'
+      });
+    } else {
+      console.warn('⚠️ No API key configured for request:', config.url);
     }
     
     // Add token for ALL requests except public endpoints
