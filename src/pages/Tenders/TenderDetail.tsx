@@ -55,7 +55,7 @@ export default function TenderDetail() {
       fetchTenderDetails();
       fetchTenderBids();
     }
-  }, [id]);
+  }, [id, auth?.user?._id]);
 
   const fetchTenderDetails = async () => {
     try {
@@ -72,7 +72,26 @@ export default function TenderDetail() {
   const fetchTenderBids = async () => {
     try {
       const response = await TendersAPI.getTenderBids(id!);
-      setTenderBids(response);
+      // Handle different response formats
+      let bidsArray: TenderBid[] = [];
+      if (Array.isArray(response)) {
+        bidsArray = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        bidsArray = response.data;
+      } else if (response?.bids && Array.isArray(response.bids)) {
+        bidsArray = response.bids;
+      }
+      
+      // Filter to show only the current user's bids
+      if (auth?.user?._id && bidsArray.length > 0) {
+        const userBids = bidsArray.filter((bid: TenderBid) => {
+          const bidderId = bid.bidder?._id || bid.bidder;
+          return bidderId === auth.user._id;
+        });
+        setTenderBids(userBids);
+      } else {
+        setTenderBids(bidsArray);
+      }
     } catch (error) {
       console.error('Error fetching tender bids:', error);
       enqueueSnackbar('Erreur lors du chargement des offres', { variant: 'error' });
