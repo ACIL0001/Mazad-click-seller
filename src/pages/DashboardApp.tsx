@@ -24,22 +24,18 @@ import {
 import useResponsive from '../hooks/useResponsive';
 // Utils
 import { fCurrency } from '../utils/formatNumber.js';
-import app, { API_BASE_URL } from '../config';
 
 // components
 import Page from '../components/Page';
 import Iconify from '../components/Iconify';
 // sections
 import {
-  AppCurrentVisits,
   AppTrafficBySite,
   AppWidgetSummary,
-  AppConversionRates,
   AppWebsiteVisits,
 } from '../sections/@dashboard/app';
 import ModernAppWidgetSummary from '../sections/@dashboard/app/ModernAppWidgetSummary';
 import ModernUpgradePrompt from '../sections/@dashboard/app/ModernUpgradePrompt';
-import ModernChartContainer from '../sections/@dashboard/app/ModernChartContainer';
 // Routing
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -66,14 +62,6 @@ export default function DashboardApp() {
   const { t } = useTranslation();
 
   const { auth: { user, tokens } } = useAuth();
-
-  const resolvedApiBaseUrl = (
-    API_BASE_URL && API_BASE_URL.trim() !== ''
-      ? API_BASE_URL.trim()
-      : (import.meta.env.MODE === 'production'
-        ? 'https://mazadclick-server.onrender.com/'
-        : 'http://localhost:3000/')
-  ).replace(/\/$/, '');
   
   // Responsive breakpoints
   const isMobile = useResponsive('down', 'sm');
@@ -92,7 +80,6 @@ export default function DashboardApp() {
   const [loading, setLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [totalTendersCount, setTotalTendersCount] = useState<number>(0);
   const [activeTendersCount, setActiveTendersCount] = useState<number>(0);
 
@@ -114,8 +101,7 @@ export default function DashboardApp() {
     const testApiConnection = async () => {
       try {
         console.log('🧪 Testing API connection...');
-        // const response = await fetch('http://localhost:3000/seller-stats/quick-summary', {
-        const response = await fetch(`${resolvedApiBaseUrl}/seller-stats/quick-summary`, {
+        const response = await fetch('http://localhost:3000/seller-stats/quick-summary', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${tokens?.accessToken || 'test-token'}`,
@@ -152,15 +138,6 @@ export default function DashboardApp() {
       });
     }
   }, [user]);
-
-  // Timer effect to update current time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
 useEffect(() => {
   console.log('🔍 Dashboard: Checking user role:', {
@@ -427,12 +404,28 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
+      title: t('pendingOffers') || 'Pending Offers',
+      total: sellerStats.pendingOffers || 0,
+      icon: 'mdi:clock-alert',
+      color: 'warning',
+      trend: 'neutral',
+      onClick: () => navigate('/dashboard/offers'),
+    },
+    {
       title: 'Tender Bids',
       total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
       trend: (sellerStats as any).tenderBids > 0 ? 'up' : 'neutral',
       trendValue: (sellerStats as any).tenderBids > 0 ? '+' + Math.floor(Math.random() * 20 + 3) + '%' : '0%',
+      onClick: () => navigate('/dashboard/tender-bids'),
+    },
+    {
+      title: 'Pending Tender Bids',
+      total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
+      icon: 'mdi:email-clock',
+      color: 'warning',
+      trend: 'neutral',
       onClick: () => navigate('/dashboard/tender-bids'),
     },
   ] : [];
@@ -899,39 +892,43 @@ useEffect(() => {
             spacing={2}
             sx={{ mb: 2 }}
           >
-            {/* Data Source Indicator */}
-            {usingMockData && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  px: 2,
-                  py: 1,
-                  borderRadius: 20,
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                }}
-              >
+            
+            {/* Status Indicators */}
+            <Stack direction="row" spacing={1} alignItems="center">
+              {/* Data Source Indicator */}
+              {usingMockData && (
                 <Box
                   sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: 'info.main',
-                  }}
-                />
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    fontWeight: 600,
-                    color: 'info.dark',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 20,
+                    background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                   }}
                 >
-                  DEMO DATA
-                </Typography>
-              </Box>
-            )}
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: 'info.main',
+                    }}
+                  />
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontWeight: 600,
+                      color: 'info.dark',
+                    }}
+                  >
+                    DEMO DATA
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
           </Stack>
         </Box>
 
@@ -993,12 +990,12 @@ useEffect(() => {
                   <Box sx={{ mb: 4 }}>
                     <Typography 
                       variant="h6" 
-                      sx={{
+            sx={{
                         mb: 3,
                         fontWeight: 700,
                         color: 'text.primary',
-                        display: 'flex',
-                        alignItems: 'center',
+              display: 'flex',
+              alignItems: 'center',
                         gap: 1,
                       }}
                     >
@@ -1006,15 +1003,15 @@ useEffect(() => {
                       Quick Actions - Auctions & Tenders
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={6} sm={6} md={3}>
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <Box
                             onClick={() => navigate('/dashboard/tenders/create')}
-                            sx={{ 
-                              p: 3,
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
                               borderRadius: 3,
                               background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
                               border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
@@ -1027,23 +1024,23 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:file-document-plus" width={48} height={48} sx={{ color: 'success.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              Créer Tenders
+                            <Iconify icon="mdi:file-document-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Create Tenders
                             </Typography>
                           </Box>
                         </motion.div>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={6} sm={6} md={3}>
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <Box
                             onClick={() => navigate('/dashboard/tenders')}
-                            sx={{ 
-                              p: 3,
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
                               borderRadius: 3,
                               background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
                               border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
@@ -1056,23 +1053,23 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:file-document-multiple" width={48} height={48} sx={{ color: 'warning.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            <Iconify icon="mdi:file-document-multiple" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'warning.main', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Voir Tenders
                             </Typography>
                           </Box>
                         </motion.div>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={6} sm={6} md={3}>
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <Box
                             onClick={() => navigate('/dashboard/auctions/create')}
-                            sx={{ 
-                              p: 3,
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
                               borderRadius: 3,
                               background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
                               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
@@ -1085,23 +1082,23 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:plus-circle" width={48} height={48} sx={{ color: 'primary.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                              Créer Auctions
-                            </Typography>
+                            <Iconify icon="mdi:plus-circle" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Create Auctions
+            </Typography>
                           </Box>
                         </motion.div>
                       </Grid>
                       
-                      <Grid item xs={12} sm={6} md={3}>
+                      <Grid item xs={6} sm={6} md={3}>
                         <motion.div
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           <Box
                             onClick={() => navigate('/dashboard/auctions')}
-                            sx={{ 
-                              p: 3,
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
                               borderRadius: 3,
                               background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
                               border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
@@ -1114,15 +1111,15 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:gavel" width={48} height={48} sx={{ color: 'info.main', mb: 2 }} />
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'info.main', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Voir Auctions
                             </Typography>
                           </Box>
                         </motion.div>
                       </Grid>
                     </Grid>
-                  </Box>
+          </Box>
 
                   {/* Auction & Tender Statistics Section */}
                   <Box sx={{ mb: 4 }}>
@@ -1142,7 +1139,7 @@ useEffect(() => {
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {auctionStatsData.map((stat, index) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={index}>
+                        <Grid item xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
                           <ModernAppWidgetSummary
                             title={stat.title}
                             total={stat.total}
@@ -1175,7 +1172,7 @@ useEffect(() => {
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {offersStatsData.map((stat, index) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={index}>
+                        <Grid item xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
                           <ModernAppWidgetSummary
                             title={stat.title}
                             total={stat.total}
@@ -1208,7 +1205,7 @@ useEffect(() => {
                     </Typography>
                     <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {financialStatsData.map((stat, index) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={index}>
+                        <Grid item xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
                           <ModernAppWidgetSummary
                             title={stat.title}
                             total={stat.total}
@@ -1320,7 +1317,6 @@ useEffect(() => {
                       </Grid>
                     </Box>
                   )}
-
                 </motion.div>
               </AnimatePresence>
             )
