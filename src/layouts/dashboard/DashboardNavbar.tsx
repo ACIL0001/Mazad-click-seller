@@ -94,38 +94,18 @@ export default function DashboardNavbar({ onOpenSidebar, onOpenRightSidebar }) {
     // Create navbar items that will be reordered based on RTL
     const navbarItems = [
         {
-            type: 'button',
-            order: isRTL ? 6 : 1,
-            component: (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<Iconify icon="mdi:gavel-plus" />}
-                    onClick={() => navigate('/dashboard/auctions/create')}
-                    sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        mr: isRTL ? 0 : 1,
-                        ml: isRTL ? 1 : 0
-                    }}
-                >
-                    {t('navigation.addAuction')}
-                </Button>
-            )
-        },
-        {
             type: 'component',
-            order: isRTL ? 5 : 2,
+            order: isRTL ? 4 : 1,
             component: <LanguagePopover />
         },
         {
             type: 'component',
-            order: isRTL ? 4 : 3,
+            order: isRTL ? 3 : 2,
             component: <MessagesPopover />
         },
         {
             type: 'component',
-            order: isRTL ? 3 : 4,
+            order: isRTL ? 2 : 3,
             component: (
                 <NotificationsPopover
                     notifications={notifications}
@@ -137,7 +117,7 @@ export default function DashboardNavbar({ onOpenSidebar, onOpenRightSidebar }) {
         },
         {
             type: 'component',
-            order: isRTL ? 1 : 6,
+            order: isRTL ? 1 : 4,
             component: isLogged ? <AccountPopover /> : null
         }
     ];
