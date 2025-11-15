@@ -25,6 +25,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
@@ -49,6 +52,7 @@ export default function TenderDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedBid, setSelectedBid] = useState<TenderBid | null>(null);
   const [showBidDetailsDialog, setShowBidDetailsDialog] = useState(false);
+  const [expandedDetails, setExpandedDetails] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -286,17 +290,6 @@ export default function TenderDetail() {
                   <Typography variant="h4" gutterBottom>
                     {tender.title}
                   </Typography>
-                  <Stack direction="row" spacing={1} mb={2}>
-                    <Chip
-                      label={getStatusLabel(tender.status)}
-                      color={getStatusColor(tender.status)}
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
-                      variant="outlined"
-                    />
-                  </Stack>
                 </Box>
               </Stack>
 
@@ -316,10 +309,29 @@ export default function TenderDetail() {
 
             {/* Details Card */}
             <Card sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
+              <Accordion 
+                expanded={expandedDetails} 
+                onChange={(e, isExpanded) => setExpandedDetails(isExpanded)}
+                sx={{ 
+                  boxShadow: 'none',
+                  '&:before': { display: 'none' },
+                  border: 'none'
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<Iconify icon="eva:chevron-down-fill" />}
+                  sx={{
+                    px: 0,
+                    '& .MuiAccordionSummary-content': {
+                      my: 0,
+                    },
+                  }}
+                >
+                  <Typography variant="h6">
                 Détails de l'appel d'offres
               </Typography>
-              
+                </AccordionSummary>
+                <AccordionDetails sx={{ px: 0, pt: 2 }}>
               <Grid container spacing={2}>
                 {tender.quantity && (
                   <Grid item xs={12} sm={6}>
@@ -358,7 +370,37 @@ export default function TenderDetail() {
                     {tender.location}, {tender.wilaya}
                   </Typography>
                 </Grid>
+
+                    {/* Statistics Section */}
+                    <Grid item xs={12}>
+                      <Divider sx={{ my: 2 }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                        Statistiques
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Nombre d'offres
+                      </Typography>
+                      <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
+                        {tenderBids.length}
+                      </Typography>
+                    </Grid>
+
+                    {tender.category && (
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          Catégorie
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          {tender.category.name}
+                        </Typography>
+                      </Grid>
+                    )}
               </Grid>
+                </AccordionDetails>
+              </Accordion>
             </Card>
 
             {/* Bids Table */}
@@ -530,35 +572,7 @@ export default function TenderDetail() {
 
           {/* Sidebar */}
           <Grid item xs={12} lg={4}>
-            {/* Statistics Card */}
-            <Card sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Statistiques
-              </Typography>
-              
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Nombre d'offres
-                  </Typography>
-                  <Typography variant="h4" color="primary">
-                    {tenderBids.length}
-                  </Typography>
-                </Box>
-
-                {tender.category && (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Catégorie
-                    </Typography>
-                    <Typography variant="body1">
-                      {tender.category.name}
-                    </Typography>
-                  </Box>
-                )}
-              </Stack>
-            </Card>
-
+            {/* Sidebar content can be added here if needed */}
           </Grid>
         </Grid>
       </Container>
