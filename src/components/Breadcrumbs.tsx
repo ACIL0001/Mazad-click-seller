@@ -47,6 +47,8 @@ function translatePath(name: string, t: any): string {
             return t('navigation.deliveries');
         case "auctions":
             return t('navigation.auctions');
+        case "tenders":
+            return t('navigation.tenders') || 'Appels d\'offres';
         case "create":
             return t('common.add');
         case "app":
@@ -60,8 +62,11 @@ function translatePath(name: string, t: any): string {
 ///    <para>  Breadcrumbs component to display page route. </para>
 /// </devdoc>
 
+interface BreadcrumbProps {
+    customPathNames?: { [key: string]: string };
+}
 
-export default function Breadcrumb() {
+export default function Breadcrumb({ customPathNames = {} }: BreadcrumbProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
@@ -74,8 +79,12 @@ export default function Breadcrumb() {
 
 
     paths = paths.map((name, i) => {
+        // Check if there's a custom name for this path segment
+        const customName = customPathNames[name];
+        const displayName = customName || translatePath(name, t);
+        
         return {
-            name: translatePath(name, t),
+            name: displayName,
             href: window.location.origin + "/" + paths.slice(0, i + 1).join('/'),
             path: paths.slice(0, i + 1).join('/')
         }

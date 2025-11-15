@@ -277,7 +277,7 @@ export default function TenderDetail() {
     <Page title={tender.title}>
       <Container maxWidth="xl">
         <Stack mb={3}>
-          <Breadcrumb />
+          <Breadcrumb customPathNames={id && tender?.title ? { [id]: tender.title } : undefined} />
         </Stack>
 
         <Grid container spacing={3}>
