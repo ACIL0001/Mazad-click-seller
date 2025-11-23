@@ -40,6 +40,10 @@ import Tenders from './pages/Tenders';
 import CreateTender from './pages/Tenders/CreateTender';
 import TenderDetail from './pages/Tenders/TenderDetail';
 import TenderBids from './pages/TenderBids';
+import DirectSales from './pages/DirectSales';
+import CreateDirectSale from './pages/DirectSales/CreateDirectSale';
+import Orders from './pages/DirectSales/Orders';
+import DirectSaleDetail from './pages/DirectSales/DirectSaleDetail';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import IdentityVerification from './pages/IdentityVerification';
 import WaitingForVerification from './pages/WaitingForVerification';
@@ -194,6 +198,10 @@ export default function Router() {
                 { path: 'tenders/update/:id', element: <RequirePhoneVerification><CreateTender /></RequirePhoneVerification> },
                 { path: 'tenders/:id', element: <RequirePhoneVerification><TenderDetail /></RequirePhoneVerification> },
                 { path: 'tender-bids', element: <RequirePhoneVerification><TenderBids /></RequirePhoneVerification> },
+                { path: 'direct-sales', element: <RequirePhoneVerification><DirectSales /></RequirePhoneVerification> },
+                { path: 'direct-sales/create', element: <RequirePhoneVerification><CreateDirectSale /></RequirePhoneVerification> },
+                { path: 'direct-sales/orders', element: <RequirePhoneVerification><Orders /></RequirePhoneVerification> },
+                { path: 'direct-sales/:id', element: <RequirePhoneVerification><DirectSaleDetail /></RequirePhoneVerification> },
                 { path: 'notifications', element: <RequirePhoneVerification><NotificationsPage /></RequirePhoneVerification> },
                 { path: 'chat', element: <RequirePhoneVerification><Allchat/></RequirePhoneVerification> },
                 { path: 'chat/:id', element: <RequirePhoneVerification><Chat /></RequirePhoneVerification> },

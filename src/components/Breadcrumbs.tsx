@@ -64,31 +64,35 @@ function translatePath(name: string, t: any): string {
 
 interface BreadcrumbProps {
     customPathNames?: { [key: string]: string };
+    links?: { name: string; href?: string }[];
 }
 
-export default function Breadcrumb({ customPathNames = {} }: BreadcrumbProps) {
+export default function Breadcrumb({ customPathNames = {}, links }: BreadcrumbProps) {
     const navigate = useNavigate();
     const { t } = useTranslation();
 
-    let paths: any[] = window.location.pathname.split('/').filter(x => x).slice()
+    let paths: any[] = [];
 
-
-    /// <summary>
-    /// reformat data
-    /// </summary>
-
-
-    paths = paths.map((name, i) => {
-        // Check if there's a custom name for this path segment
-        const customName = customPathNames[name];
-        const displayName = customName || translatePath(name, t);
-        
-        return {
-            name: displayName,
-            href: window.location.origin + "/" + paths.slice(0, i + 1).join('/'),
-            path: paths.slice(0, i + 1).join('/')
-        }
-    })
+    if (links) {
+        paths = links.map(link => ({
+            name: link.name,
+            href: link.href,
+            path: link.href ? link.href.replace(/^\//, '') : ''
+        }));
+    } else {
+        const pathNames = window.location.pathname.split('/').filter(x => x);
+        paths = pathNames.map((name, i) => {
+            // Check if there's a custom name for this path segment
+            const customName = customPathNames[name];
+            const displayName = customName || translatePath(name, t);
+            
+            return {
+                name: displayName,
+                href: window.location.origin + "/" + pathNames.slice(0, i + 1).join('/'),
+                path: pathNames.slice(0, i + 1).join('/')
+            }
+        });
+    }
 
 
     /// <summary>

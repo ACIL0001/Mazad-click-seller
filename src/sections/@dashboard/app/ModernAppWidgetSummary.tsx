@@ -141,7 +141,22 @@ ModernAppWidgetSummary.propTypes = {
   sx: PropTypes.object,
   onClick: PropTypes.func,
   delay: PropTypes.number,
+  customIconComponent: PropTypes.element,
 };
+
+interface ModernAppWidgetSummaryProps {
+  title: string;
+  total: string | number;
+  icon: string;
+  color?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendValue?: string;
+  sx?: object;
+  onClick?: () => void;
+  delay?: number;
+  customIconComponent?: React.ReactNode;
+  [key: string]: any;
+}
 
 export default function ModernAppWidgetSummary({ 
   title, 
@@ -153,8 +168,9 @@ export default function ModernAppWidgetSummary({
   sx = {}, 
   onClick,
   delay = 0,
+  customIconComponent,
   ...other 
-}) {
+}: ModernAppWidgetSummaryProps) {
   const theme = useTheme();
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -220,17 +236,33 @@ export default function ModernAppWidgetSummary({
 
         {/* Icon Container */}
         <IconContainer className="icon-container" color={color}>
-          <Iconify 
-            icon={icon} 
-            width={28}
-            height={28}
-            sx={{ 
-              color: (theme.palette as any)[color]?.main || theme.palette.primary.main,
-              filter: `drop-shadow(0 4px 8px ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.3)})`,
-              width: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
-              height: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
-            }} 
-          />
+          {customIconComponent ? (
+            <Box
+              sx={{
+                color: (theme.palette as any)[color]?.main || theme.palette.primary.main,
+                filter: `drop-shadow(0 4px 8px ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.3)})`,
+                width: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
+                height: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {customIconComponent}
+            </Box>
+          ) : (
+            <Iconify 
+              icon={icon} 
+              width={28}
+              height={28}
+              sx={{ 
+                color: (theme.palette as any)[color]?.main || theme.palette.primary.main,
+                filter: `drop-shadow(0 4px 8px ${alpha((theme.palette as any)[color]?.main || theme.palette.primary.main, 0.3)})`,
+                width: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
+                height: { xs: 28, sm: 32, md: 36, lg: 40, xl: 44 },
+              }} 
+            />
+          )}
         </IconContainer>
 
         {/* Stats Number with Animation */}

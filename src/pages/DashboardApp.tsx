@@ -43,8 +43,165 @@ import useAuth from '@/hooks/useAuth';
 import useServerStats from '@/hooks/useServerStats';
 import SellerStatsService, { QuickSummary, CategoryDistribution } from '../api/sellerStatsService';
 import { TendersAPI } from '@/api/tenders';
+import { DirectSaleAPI } from '@/api/direct-sale';
 import ProfessionalRestriction from '../components/ProfessionalRestriction';
 import { ACCOUNT_TYPE } from '../types/User';
+
+// Custom Gavel Plus Icon Component - Single fused icon like mdi:email-plus and mdi:store-plus
+const GavelPlusIcon = ({ size = 48, color = 'currentColor' }: { size?: number; color?: string }) => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+      }}
+    >
+      <Iconify 
+        icon="mdi:gavel" 
+        width={size} 
+        height={size} 
+        sx={{ color }} 
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: size * 0.08,
+          right: size * 0.08,
+          width: size * 0.38,
+          height: size * 0.38,
+          borderRadius: '50%',
+          background: color,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `2px solid ${theme.palette.background.paper || 'white'}`,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+        }}
+      >
+        <Box
+          component="span"
+          sx={{
+            width: size * 0.18,
+            height: size * 0.04,
+            background: theme.palette.background.paper || 'white',
+            position: 'relative',
+            borderRadius: '1px',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: size * 0.04,
+              height: size * 0.18,
+              background: theme.palette.background.paper || 'white',
+              borderRadius: '1px',
+            },
+          }}
+        />
+      </Box>
+    </Box>
+  );
+};
+
+// Custom Gavel Check Icon Component - Single fused icon like mdi:store-check
+const GavelCheckIcon = ({ size = 44, color = 'currentColor' }: { size?: number; color?: string }) => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+      }}
+    >
+      <Iconify 
+        icon="mdi:gavel" 
+        width={size} 
+        height={size} 
+        sx={{ color }} 
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: size * 0.05,
+          right: size * 0.05,
+          width: size * 0.35,
+          height: size * 0.35,
+          borderRadius: '50%',
+          background: color,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `2px solid ${theme.palette.background.paper || 'white'}`,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+        }}
+      >
+        <Iconify 
+          icon="mdi:check" 
+          width={size * 0.18} 
+          height={size * 0.18} 
+          sx={{ color: theme.palette.background.paper || 'white' }} 
+        />
+      </Box>
+    </Box>
+  );
+};
+
+// Custom Email Check Icon Component - Single fused icon like mdi:store-check
+const EmailCheckIcon = ({ size = 44, color = 'currentColor' }: { size?: number; color?: string }) => {
+  const theme = useTheme();
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+      }}
+    >
+      <Iconify 
+        icon="mdi:email" 
+        width={size} 
+        height={size} 
+        sx={{ color }} 
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: size * 0.05,
+          right: size * 0.05,
+          width: size * 0.35,
+          height: size * 0.35,
+          borderRadius: '50%',
+          background: color,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `2px solid ${theme.palette.background.paper || 'white'}`,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+        }}
+      >
+        <Iconify 
+          icon="mdi:check" 
+          width={size * 0.18} 
+          height={size * 0.18} 
+          sx={{ color: theme.palette.background.paper || 'white' }} 
+        />
+      </Box>
+    </Box>
+  );
+};
 
 // ----------------------------------------------------------------------
 
@@ -82,6 +239,8 @@ export default function DashboardApp() {
   const [refreshError, setRefreshError] = useState<string | null>(null);
   const [totalTendersCount, setTotalTendersCount] = useState<number>(0);
   const [activeTendersCount, setActiveTendersCount] = useState<number>(0);
+  const [totalDirectSalesCount, setTotalDirectSalesCount] = useState<number>(0);
+  const [activeDirectSalesCount, setActiveDirectSalesCount] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
@@ -165,6 +324,20 @@ useEffect(() => {
       })
       .catch((e: any) => {
         console.warn('⚠️ Dashboard: Failed to fetch tenders list for counts', e?.message || e);
+      });
+    
+    // Fetch direct sales counts from database immediately
+    DirectSaleAPI.getMyDirectSales()
+      .then((res: any) => {
+        const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const total = list.length;
+        const active = list.filter((ds: any) => (ds.status || '').toUpperCase() === 'ACTIVE').length;
+        setTotalDirectSalesCount(total);
+        setActiveDirectSalesCount(active);
+        console.log('📊 Dashboard: Direct sales counts', { total, active });
+      })
+      .catch((e: any) => {
+        console.warn('⚠️ Dashboard: Failed to fetch direct sales list for counts', e?.message || e);
       });
   } else {
     // All other cases (clients, professionals without identity, etc.)
@@ -367,8 +540,8 @@ useEffect(() => {
     {
       title: t('activeAuctions') || 'Active Auctions',
       total: sellerStats.activeAuctions || 0,
-      icon: 'mdi:timer-sand',
-      color: 'success',
+      icon: 'mdi:gavel',
+      color: 'primary',
       trend: sellerStats.activeAuctions > 0 ? 'up' : 'neutral',
       trendValue: sellerStats.activeAuctions > 0 ? '+' + Math.floor(Math.random() * 15 + 3) + '%' : '0%',
       onClick: () => navigate('/dashboard/auctions'),
@@ -376,8 +549,8 @@ useEffect(() => {
     {
       title: 'Total Tenders',
       total: totalTendersCount || (sellerStats as any).totalTenders || 0,
-      icon: 'mdi:file-document-multiple',
-      color: 'secondary',
+      icon: 'mdi:email',
+      color: 'success',
       trend: (totalTendersCount || (sellerStats as any).totalTenders || 0) > 0 ? 'up' : 'neutral',
       trendValue: (totalTendersCount || (sellerStats as any).totalTenders || 0) > 0 ? '+' + Math.floor(Math.random() * 18 + 4) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
@@ -385,11 +558,29 @@ useEffect(() => {
     {
       title: 'Active Tenders',
       total: activeTendersCount || (sellerStats as any).activeTenders || 0,
-      icon: 'mdi:file-document-edit',
-      color: 'info',
+      icon: 'mdi:email-check',
+      color: 'success',
       trend: (activeTendersCount || (sellerStats as any).activeTenders || 0) > 0 ? 'up' : 'neutral',
       trendValue: (activeTendersCount || (sellerStats as any).activeTenders || 0) > 0 ? '+' + Math.floor(Math.random() * 12 + 2) + '%' : '0%',
       onClick: () => navigate('/dashboard/tenders'),
+    },
+    {
+      title: 'Total Direct Sales',
+      total: totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0,
+      icon: 'mdi:store',
+      color: 'warning',
+      trend: (totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0) > 0 ? 'up' : 'neutral',
+      trendValue: (totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0) > 0 ? '+' + Math.floor(Math.random() * 15 + 3) + '%' : '0%',
+      onClick: () => navigate('/dashboard/direct-sales'),
+    },
+    {
+      title: 'Active Direct Sales',
+      total: activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0,
+      icon: 'mdi:store-check',
+      color: 'warning',
+      trend: (activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0) > 0 ? 'up' : 'neutral',
+      trendValue: (activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0) > 0 ? '+' + Math.floor(Math.random() * 10 + 2) + '%' : '0%',
+      onClick: () => navigate('/dashboard/direct-sales'),
     },
   ] : [];
 
@@ -986,7 +1177,7 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0 }}
                 >
-                  {/* Quick Action Cards */}
+                      {/* Quick Action Cards */}
                   <Box sx={{ mb: 4 }}>
                     <Typography 
                       variant="h6" 
@@ -1000,7 +1191,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      Quick Actions - Auctions & Tenders
+                      Quick Actions - Auctions, Tenders & Direct Sales
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={6} sm={6} md={3}>
@@ -1024,7 +1215,7 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:file-document-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
+                            <Iconify icon="mdi:email-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Create Tenders
                             </Typography>
@@ -1042,18 +1233,18 @@ useEffect(() => {
               sx={{ 
                               p: { xs: 2, sm: 3 },
                               borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
                               cursor: 'pointer',
                               textAlign: 'center',
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.warning.main, 0.15)}`,
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.success.main, 0.15)}`,
                               },
                             }}
                           >
-                            <Iconify icon="mdi:file-document-multiple" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'warning.main', mb: { xs: 1, sm: 2 } }} />
+                            <Iconify icon="mdi:email" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Voir Tenders
                             </Typography>
@@ -1082,7 +1273,7 @@ useEffect(() => {
                               },
                             }}
                           >
-                            <Iconify icon="mdi:plus-circle" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
+                            <GavelPlusIcon size={isMobile ? 36 : 48} color={theme.palette.primary.main} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Create Auctions
             </Typography>
@@ -1100,20 +1291,78 @@ useEffect(() => {
               sx={{ 
                               p: { xs: 2, sm: 3 },
                               borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.light, 0.05)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+                              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                               cursor: 'pointer',
                               textAlign: 'center',
                               transition: 'all 0.3s ease',
                               '&:hover': {
                                 transform: 'translateY(-4px)',
-                                boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.15)}`,
+                                boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
                               },
                             }}
                           >
-                            <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'info.main', mb: { xs: 1, sm: 2 } }} />
+                            <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
                               Voir Auctions
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={6} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/direct-sales/create')}
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha('#f59e0b', 0.1)} 0%, ${alpha('#d97706', 0.05)} 100%)`,
+                              border: `1px solid ${alpha('#f59e0b', 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha('#f59e0b', 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:store-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#f59e0b', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Create Direct Sales
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                      
+                      <Grid item xs={6} sm={6} md={3}>
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Box
+                            onClick={() => navigate('/dashboard/direct-sales')}
+              sx={{ 
+                              p: { xs: 2, sm: 3 },
+                              borderRadius: 3,
+                              background: `linear-gradient(135deg, ${alpha('#d97706', 0.1)} 0%, ${alpha('#b45309', 0.05)} 100%)`,
+                              border: `1px solid ${alpha('#d97706', 0.1)}`,
+                              cursor: 'pointer',
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                boxShadow: `0 12px 30px ${alpha('#d97706', 0.15)}`,
+                              },
+                            }}
+                          >
+                            <Iconify icon="mdi:store" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#d97706', mb: { xs: 1, sm: 2 } }} />
+                            <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                              Voir Direct Sales
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1121,7 +1370,7 @@ useEffect(() => {
                     </Grid>
           </Box>
 
-                  {/* Auction & Tender Statistics Section */}
+                  {/* Auction, Tender & Direct Sales Statistics Section */}
                   <Box sx={{ mb: 4 }}>
                     <Typography 
                       variant="h6" 
@@ -1135,22 +1384,36 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:gavel" width={24} height={24} />
-                      Auction & Tender Performance
+                      Auction, Tender & Direct Sales Performance
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
-                      {auctionStatsData.map((stat, index) => (
-                        <Grid item xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
-                          <ModernAppWidgetSummary
-                            title={stat.title}
-                            total={stat.total}
-                            icon={stat.icon}
-                            color={stat.color}
-                            trend={stat.trend}
-                            trendValue={stat.trendValue}
-                            onClick={stat.onClick}
-              />
-            </Grid>
-                      ))}
+                      {auctionStatsData.map((stat, index) => {
+                        // Use custom icon components for Active cards (with check mark)
+                        let customIcon = undefined;
+                        const activeAuctionsTitle = t('activeAuctions') || 'Active Auctions';
+                        const activeTendersTitle = 'Active Tenders';
+                        
+                        if (stat.title === activeAuctionsTitle) {
+                          customIcon = <GavelCheckIcon size={44} color={theme.palette.primary.main} />;
+                        } else if (stat.title === activeTendersTitle) {
+                          customIcon = <EmailCheckIcon size={44} color={theme.palette.success.main} />;
+                        }
+                        
+                        return (
+                          <Grid item xs={6} sm={6} md={4} lg={3} xl={3} key={index}>
+                            <ModernAppWidgetSummary
+                              title={stat.title}
+                              total={stat.total}
+                              icon={stat.icon}
+                              color={stat.color}
+                              trend={stat.trend as 'up' | 'down' | 'neutral'}
+                              trendValue={stat.trendValue}
+                              onClick={stat.onClick}
+                              customIconComponent={customIcon}
+                            />
+                          </Grid>
+                        );
+                      })}
             </Grid>
                   </Box>
 
@@ -1178,7 +1441,7 @@ useEffect(() => {
                             total={stat.total}
                             icon={stat.icon}
                             color={stat.color}
-                            trend={stat.trend}
+                            trend={stat.trend as 'up' | 'down' | 'neutral'}
                             trendValue={stat.trendValue}
                             onClick={stat.onClick}
               />
@@ -1211,7 +1474,7 @@ useEffect(() => {
                             total={stat.total}
                             icon={stat.icon}
                             color={stat.color}
-                            trend={stat.trend}
+                            trend={stat.trend as 'up' | 'down' | 'neutral'}
                             trendValue={stat.trendValue}
                             onClick={() => {}} // Add empty onClick handler
               />
@@ -1222,101 +1485,6 @@ useEffect(() => {
 
 
 
-                  {/* Recent Activity Section */}
-                  {recentActivity && (recentActivity.auctions.length > 0 || recentActivity.offers.length > 0) && (
-                    <Box sx={{ mb: 4 }}>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
-                          mb: 3,
-                          fontWeight: 700,
-                          color: 'text.primary',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                        }}
-                      >
-                        <Iconify icon="mdi:clock-outline" width={24} height={24} />
-                        Recent Activity
-                      </Typography>
-                      <Grid container spacing={{ xs: 2, sm: 3 }}>
-                        <Grid item xs={12} md={6}>
-                          <Box
-                            sx={{
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.05)} 0%, ${alpha(theme.palette.info.light, 0.02)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
-                            }}
-                          >
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Iconify icon="mdi:gavel" width={20} height={20} />
-                              Recent Auctions
-                            </Typography>
-                            {recentActivity?.auctions?.slice(0, 5).map((auction: any, index: number) => (
-                              <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < 4 ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none' }}>
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  {auction.title || 'Untitled Auction'}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {auction.category || 'Unknown Category'} • {new Date(auction.createdAt).toLocaleDateString()}
-                                </Typography>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                                  <Typography variant="caption" color="primary.main">
-                                    {auction.status}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {auction.currentPrice?.toLocaleString()} DA
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            )) || (
-                              <Typography variant="body2" color="text.secondary">
-                                No recent auctions found
-                              </Typography>
-                            )}
-                          </Box>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          <Box
-                            sx={{
-                              p: 3,
-                              borderRadius: 3,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.05)} 0%, ${alpha(theme.palette.success.light, 0.02)} 100%)`,
-                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                            }}
-                          >
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Iconify icon="mdi:hand-coin" width={20} height={20} />
-                              Recent Offers
-                            </Typography>
-                            {recentActivity?.offers?.slice(0, 5).map((offer: any, index: number) => (
-                              <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < 4 ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none' }}>
-                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                  {offer.auctionTitle || 'Untitled Auction'}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {offer.buyerName || 'Unknown Buyer'} • {offer.price?.toLocaleString()} DA
-                                </Typography>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                                  <Typography variant="caption" color={offer.status === 'accepted' ? 'success.main' : offer.status === 'declined' ? 'error.main' : 'warning.main'}>
-                                    {offer.status?.toUpperCase()}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {new Date(offer.createdAt).toLocaleDateString()}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            )) || (
-                              <Typography variant="body2" color="text.secondary">
-                                No recent offers found
-                              </Typography>
-                            )}
-                          </Box>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  )}
                 </motion.div>
               </AnimatePresence>
             )

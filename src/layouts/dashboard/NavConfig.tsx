@@ -101,6 +101,28 @@ const useNavConfig = () => {
       ],
     },
     {
+      title: 'Ventes Directes',
+      path: '/dashboard/direct-sales',
+      icon: getIcon('mdi:store'),
+      children: [
+        {
+          title: 'Mes Ventes Directes',
+          path: '/dashboard/direct-sales',
+          icon: getIcon('mdi:package-variant'),
+        },
+        {
+          title: 'Créer une Vente Directe',
+          path: '/dashboard/direct-sales/create',
+          icon: getIcon('mdi:plus-circle'),
+        },
+        {
+          title: 'Mes Commandes',
+          path: '/dashboard/direct-sales/orders',
+          icon: getIcon('mdi:cart'),
+        },
+      ],
+    },
+    {
       title: t('navigation.deliveries'),
       path: '/dashboard/deliveries',
       icon: getIcon('mdi:bike-fast'),
