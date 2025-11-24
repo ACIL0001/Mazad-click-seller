@@ -4,7 +4,9 @@ export const DirectSaleAPI = {
   getDirectSales: (): Promise<any> => requests.get('direct-sale'),
   getMyDirectSales: (): Promise<any> => requests.get('direct-sale/my-sales'),
   getDirectSaleById: (id: string): Promise<any> => requests.get(`direct-sale/${id}`),
-  create: (data: any): Promise<any> => requests.post('direct-sale', data),
+  create: (data: FormData): Promise<any> => {
+    return requests.post('direct-sale', data);
+  },
   update: (id: string, data: any): Promise<any> => requests.put(`direct-sale/${id}`, data),
   delete: (id: string): Promise<any> => requests.delete(`direct-sale/${id}`),
   purchase: (data: { directSaleId: string; quantity: number; paymentMethod?: string; paymentReference?: string }): Promise<any> =>
@@ -16,4 +18,3 @@ export const DirectSaleAPI = {
   getPurchasesByDirectSale: (id: string): Promise<any> =>
     requests.get(`direct-sale/${id}/purchases`),
 };
-

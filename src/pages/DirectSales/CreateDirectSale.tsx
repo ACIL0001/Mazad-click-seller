@@ -571,6 +571,12 @@ export default function CreateDirectSale() {
     const values = formik.values;
 
     try {
+      // Validate required fields
+      if (!auth.user?._id) {
+        throw new Error('Utilisateur non authentifié');
+      }
+
+      // Prepare the data payload
       const dataPayload = {
         owner: auth.user._id,
         title: values.title,
@@ -587,25 +593,58 @@ export default function CreateDirectSale() {
         hidden: values.hidden,
       };
 
-      const formData = new FormData();
-      formData.append('data', JSON.stringify(dataPayload));
+      console.log('Creating direct sale with data:', dataPayload);
 
-      mediaFiles.forEach((file) => {
+      const formData = new FormData();
+      
+      // Append data as JSON string - THIS IS CORRECT
+      formData.append('data', JSON.stringify(dataPayload));
+      
+      // CORRECTED: Use the exact field names that the backend expects
+      mediaFiles.forEach((file, index) => {
         if (file.type.startsWith('image/')) {
+          // Backend expects 'thumbs[]' with brackets
           formData.append('thumbs[]', file);
         } else if (file.type.startsWith('video/')) {
+          // Backend expects 'videos[]' with brackets
           formData.append('videos[]', file);
         }
       });
 
-      await DirectSaleAPI.create(formData);
+      // Log FormData contents for debugging
+      console.log('FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`FormData - ${key}:`, value instanceof File ? `File: ${value.name}` : value);
+      }
+
+      const response = await DirectSaleAPI.create(formData);
+      
+      console.log('Direct sale created successfully:', response);
 
       enqueueSnackbar('Vente directe créée avec succès!', { variant: 'success' });
+      
       setTimeout(() => {
         navigate('/dashboard/direct-sales');
       }, 1000);
+      
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erreur lors de la création de la vente directe';
+      console.error('Error creating direct sale:', error);
+      
+      let errorMessage = 'Erreur lors de la création de la vente directe';
+      
+      if (error.response) {
+        // Server responded with error status
+        errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
+        console.error('Server error response:', error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+        console.error('No response received:', error.request);
+      } else {
+        // Something else happened
+        errorMessage = error.message || errorMessage;
+      }
+      
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
