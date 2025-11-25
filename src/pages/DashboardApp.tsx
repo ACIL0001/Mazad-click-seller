@@ -529,7 +529,7 @@ useEffect(() => {
   // Statistics data for modern widgets using REAL BACKEND DATA
   const auctionStatsData = sellerStats ? [
     {
-      title: t('totalAuctions') || 'Total Auctions',
+      title: 'Total Enchères',
       total: sellerStats.totalAuctions || 0,
       icon: 'mdi:gavel',
       color: 'primary',
@@ -538,7 +538,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: t('activeAuctions') || 'Active Auctions',
+      title: 'Enchères Actives',
       total: sellerStats.activeAuctions || 0,
       icon: 'mdi:gavel',
       color: 'primary',
@@ -547,7 +547,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: t('totalTenders') || 'Total Tenders',
+      title: 'Total Soumissions',
       total: totalTendersCount || (sellerStats as any).totalTenders || 0,
       icon: 'mdi:email',
       color: 'success',
@@ -556,7 +556,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: t('activeTenders') || 'Active Tenders',
+      title: 'Soumissions Actives',
       total: activeTendersCount || (sellerStats as any).activeTenders || 0,
       icon: 'mdi:email-check',
       color: 'success',
@@ -565,7 +565,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: t('totalDirectSales') || 'Total Direct Sales',
+      title: 'Total Ventes Directes',
       total: totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0,
       icon: 'mdi:store',
       color: 'warning',
@@ -574,7 +574,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/direct-sales'),
     },
     {
-      title: t('activeDirectSales') || 'Active Direct Sales',
+      title: 'Ventes Directes Actives',
       total: activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0,
       icon: 'mdi:store-check',
       color: 'warning',
@@ -603,7 +603,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: t('tenderBids') || 'Tender Bids',
+      title: 'Soumissions d\'Appels d\'Offres',
       total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
@@ -612,7 +612,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tender-bids'),
     },
     {
-      title: t('pendingTenderBids') || 'Pending Tender Bids',
+      title: 'Soumissions d\'Appels d\'Offres en Attente',
       total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-clock',
       color: 'warning',
@@ -1217,7 +1217,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('createTenders') || 'Create Tenders'}
+                              Créer Soumissions
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1246,7 +1246,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('viewTenders') || 'Voir Tenders'}
+                              Voir Soumissions
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1275,7 +1275,7 @@ useEffect(() => {
                           >
                             <GavelPlusIcon size={isMobile ? 36 : 48} color={theme.palette.primary.main} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('createAuctions') || 'Create Auctions'}
+                              Créer Enchères
             </Typography>
                           </Box>
                         </motion.div>
@@ -1304,7 +1304,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('viewAuctions') || 'Voir Auctions'}
+                              Voir Enchères
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1333,7 +1333,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#f59e0b', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('createDirectSales') || 'Create Direct Sales'}
+                              Créer Ventes Directes
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1362,7 +1362,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#d97706', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              {t('viewDirectSales') || 'Voir Direct Sales'}
+                              Voir Ventes Directes
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1390,8 +1390,8 @@ useEffect(() => {
                       {auctionStatsData.map((stat, index) => {
                         // Use custom icon components for Active cards (with check mark)
                         let customIcon = undefined;
-                        const activeAuctionsTitle = t('activeAuctions') || 'Active Auctions';
-                        const activeTendersTitle = t('activeTenders') || 'Active Tenders';
+                        const activeAuctionsTitle = t('activeAuctions') || 'Enchères Actives';
+                        const activeTendersTitle = 'Soumissions Actives';
                         
                         if (stat.title === activeAuctionsTitle) {
                           customIcon = <GavelCheckIcon size={44} color={theme.palette.primary.main} />;
