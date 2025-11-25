@@ -586,7 +586,7 @@ useEffect(() => {
 
   const offersStatsData = sellerStats ? [
     {
-      title: t('totalOffers') || 'Total Offers',
+      title: 'Total Offres',
       total: sellerStats.totalOffers || 0,
       icon: 'mdi:hand-coin',
       color: 'info',
@@ -595,7 +595,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: t('pendingOffers') || 'Pending Offers',
+      title: 'Offres en Attente',
       total: sellerStats.pendingOffers || 0,
       icon: 'mdi:clock-alert',
       color: 'warning',
@@ -626,7 +626,7 @@ useEffect(() => {
 
   const financialStatsData = sellerStats ? [
     {
-      title: t('totalEarnings') || 'Total Earnings',
+      title: 'Gains Totaux',
       total: `${(sellerStats.totalEarnings || 0).toLocaleString()} DA`,
       icon: 'mdi:cash-multiple',
       color: 'success',
@@ -634,7 +634,7 @@ useEffect(() => {
       trendValue: sellerStats.totalEarnings > 0 ? '+' + Math.floor(Math.random() * 30 + 10) + '%' : '0%',
     },
     {
-      title: t('averagePrice') || 'Average Price',
+      title: 'Prix Moyen',
       total: `${(sellerStats.averagePrice || 0).toLocaleString()} DA`,
       icon: 'mdi:chart-line',
       color: 'primary',
@@ -642,7 +642,7 @@ useEffect(() => {
       trendValue: sellerStats.averagePrice > 0 ? '+' + Math.floor(Math.random() * 10 + 2) + '%' : '0%',
     },
     {
-      title: t('totalViews') || 'Total Views',
+      title: 'Vues Totales',
       total: sellerStats.viewsTotal || 0,
       icon: 'mdi:eye',
       color: 'info',
@@ -650,7 +650,7 @@ useEffect(() => {
       trendValue: sellerStats.viewsTotal > 0 ? '+' + Math.floor(Math.random() * 20 + 5) + '%' : '0%',
     },
     {
-      title: t('conversionRate') || 'Conversion Rate',
+      title: 'Taux de Conversion',
       total: `${(sellerStats.conversionRate || 0).toFixed(1)}%`,
       icon: 'mdi:trending-up',
       color: 'secondary',
