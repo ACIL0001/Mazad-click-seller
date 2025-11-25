@@ -982,7 +982,18 @@ export default function CreateAuction() {
       .required('Le prix de départ est requis'),
     reservePrice: Yup.number()
       .min(1, 'Le prix de réserve doit être positif')
-      .required('Le prix de réserve est requis'),
+      .required('Le prix de réserve est requis')
+      .test(
+        'is-greater-than-starting',
+        'Le prix de réserve doit être supérieur au prix de départ',
+        function(value) {
+          const { startingPrice } = this.parent;
+          if (!value || !startingPrice) return true; // Let required validation handle empty values
+          const startingPriceNum = typeof startingPrice === 'string' ? parseFloat(startingPrice) : Number(startingPrice);
+          const reservePriceNum = Number(value);
+          return reservePriceNum > startingPriceNum;
+        }
+      ),
     duration: Yup.object()
       .nullable()
       .required('La durée est requise'),
@@ -1024,6 +1035,13 @@ export default function CreateAuction() {
       await handleSubmit(values);
     },
   });
+
+  // Revalidate reservePrice when startingPrice changes
+  useEffect(() => {
+    if (formik.values.startingPrice && formik.values.reservePrice && formik.touched.reservePrice) {
+      formik.validateField('reservePrice');
+    }
+  }, [formik.values.startingPrice]);
 
   // Helper function to get formatted selection text for each step
   const getStepSelectionText = (stepIndex: number): string | null => {
@@ -2183,8 +2201,16 @@ export default function CreateAuction() {
                   name="reservePrice"
                   value={formik.values.reservePrice}
                   onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  placeholder="Ce prix doit être supérieur au prix de départ"
                   error={formik.touched.reservePrice && !!formik.errors.reservePrice}
-                  helperText={formik.touched.reservePrice && formik.errors.reservePrice ? formik.errors.reservePrice : "Prix minimum pour accepter l'enchère"}
+                  helperText={
+                    formik.touched.reservePrice && formik.errors.reservePrice ? 
+                      <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
+                        {formik.errors.reservePrice}
+                      </Alert> : 
+                      "Ce prix doit être supérieur au prix de départ"
+                  }
                   required
                   InputProps={{
                     endAdornment: <InputAdornment position="end">DA</InputAdornment>,
