@@ -1191,7 +1191,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      {t('quickActions') || 'Quick Actions - Auctions, Tenders & Direct Sales'}
+                      Actions Rapides - Enchères, Soumissions & Ventes Directes
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={6} sm={6} md={3}>
@@ -1384,7 +1384,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:gavel" width={24} height={24} />
-                      {t('auctionTenderDirectSalesPerformance') || 'Auction, Tender & Direct Sales Performance'}
+                      Performance des Enchères, Soumissions & Ventes Directes
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {auctionStatsData.map((stat, index) => {
@@ -1431,7 +1431,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:email-multiple" width={24} height={24} />
-                      {t('offersBidsOverview') || 'Offers & Bids Overview'}
+                      Aperçu des Offres & Soumissions
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {offersStatsData.map((stat, index) => (
@@ -1464,7 +1464,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:cash-multiple" width={24} height={24} />
-                      {t('financialOverview') || 'Financial Overview'}
+                      Aperçu Financier
                     </Typography>
                     <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {financialStatsData.map((stat, index) => (
