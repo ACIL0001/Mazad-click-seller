@@ -547,7 +547,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: 'Total Tenders',
+      title: t('totalTenders') || 'Total Tenders',
       total: totalTendersCount || (sellerStats as any).totalTenders || 0,
       icon: 'mdi:email',
       color: 'success',
@@ -556,7 +556,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: 'Active Tenders',
+      title: t('activeTenders') || 'Active Tenders',
       total: activeTendersCount || (sellerStats as any).activeTenders || 0,
       icon: 'mdi:email-check',
       color: 'success',
@@ -565,7 +565,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: 'Total Direct Sales',
+      title: t('totalDirectSales') || 'Total Direct Sales',
       total: totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0,
       icon: 'mdi:store',
       color: 'warning',
@@ -574,7 +574,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/direct-sales'),
     },
     {
-      title: 'Active Direct Sales',
+      title: t('activeDirectSales') || 'Active Direct Sales',
       total: activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0,
       icon: 'mdi:store-check',
       color: 'warning',
@@ -603,7 +603,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: 'Tender Bids',
+      title: t('tenderBids') || 'Tender Bids',
       total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
@@ -612,7 +612,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tender-bids'),
     },
     {
-      title: 'Pending Tender Bids',
+      title: t('pendingTenderBids') || 'Pending Tender Bids',
       total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-clock',
       color: 'warning',
@@ -1191,7 +1191,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      Quick Actions - Auctions, Tenders & Direct Sales
+                      {t('quickActions') || 'Quick Actions - Auctions, Tenders & Direct Sales'}
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={6} sm={6} md={3}>
@@ -1217,7 +1217,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Create Tenders
+                              {t('createTenders') || 'Create Tenders'}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1246,7 +1246,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Tenders
+                              {t('viewTenders') || 'Voir Tenders'}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1275,7 +1275,7 @@ useEffect(() => {
                           >
                             <GavelPlusIcon size={isMobile ? 36 : 48} color={theme.palette.primary.main} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Create Auctions
+                              {t('createAuctions') || 'Create Auctions'}
             </Typography>
                           </Box>
                         </motion.div>
@@ -1304,7 +1304,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Auctions
+                              {t('viewAuctions') || 'Voir Auctions'}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1333,7 +1333,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#f59e0b', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Create Direct Sales
+                              {t('createDirectSales') || 'Create Direct Sales'}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1362,7 +1362,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#d97706', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Direct Sales
+                              {t('viewDirectSales') || 'Voir Direct Sales'}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1384,14 +1384,14 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:gavel" width={24} height={24} />
-                      Auction, Tender & Direct Sales Performance
+                      {t('auctionTenderDirectSalesPerformance') || 'Auction, Tender & Direct Sales Performance'}
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {auctionStatsData.map((stat, index) => {
                         // Use custom icon components for Active cards (with check mark)
                         let customIcon = undefined;
                         const activeAuctionsTitle = t('activeAuctions') || 'Active Auctions';
-                        const activeTendersTitle = 'Active Tenders';
+                        const activeTendersTitle = t('activeTenders') || 'Active Tenders';
                         
                         if (stat.title === activeAuctionsTitle) {
                           customIcon = <GavelCheckIcon size={44} color={theme.palette.primary.main} />;
@@ -1431,7 +1431,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:email-multiple" width={24} height={24} />
-                      Offers & Bids Overview
+                      {t('offersBidsOverview') || 'Offers & Bids Overview'}
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {offersStatsData.map((stat, index) => (
@@ -1464,7 +1464,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:cash-multiple" width={24} height={24} />
-                      Financial Overview
+                      {t('financialOverview') || 'Financial Overview'}
                     </Typography>
                     <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {financialStatsData.map((stat, index) => (
