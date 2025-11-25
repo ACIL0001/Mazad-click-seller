@@ -210,38 +210,6 @@ export default function CreateDirectSale() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
-  // Dynamic steps that show selected values - recalculated when formik values or selectedCategory change
-  const steps = useMemo(() => {
-    const getStepTitle = (stepIndex: number) => {
-      switch (stepIndex) {
-        case 0:
-          // Show selected type if available, otherwise show "Type"
-          if (formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT) {
-            return 'Produit';
-          } else if (formik.values.saleType === DIRECT_SALE_TYPES.SERVICE) {
-            return 'Service';
-          }
-          return 'Type';
-        case 1:
-          // Show selected category name if available, otherwise show "Catégorie"
-          if (selectedCategory && selectedCategory.name) {
-            return selectedCategory.name;
-          }
-          return 'Catégorie';
-        case 2:
-          return 'Détails';
-        default:
-          return '';
-      }
-    };
-
-    return [
-      { title: getStepTitle(0), description: 'Choisissez le type' },
-      { title: getStepTitle(1), description: 'Sélectionnez la catégorie' },
-      { title: getStepTitle(2), description: 'Remplissez les informations' },
-    ];
-  }, [formik.values.saleType, selectedCategory]);
-
   const validationSchema = Yup.object().shape({
     title: Yup.string().min(3, 'Le titre doit contenir au moins 3 caractères').required('Le titre est requis'),
     description: Yup.string().min(10, 'La description doit contenir au moins 10 caractères').required('La description est requise'),
@@ -273,6 +241,38 @@ export default function CreateDirectSale() {
       await handleSubmit(values);
     },
   });
+
+  // Dynamic steps that show selected values - recalculated when formik values or selectedCategory change
+  const steps = useMemo(() => {
+    const getStepTitle = (stepIndex: number) => {
+      switch (stepIndex) {
+        case 0:
+          // Show selected type if available, otherwise show "Type"
+          if (formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT) {
+            return 'Produit';
+          } else if (formik.values.saleType === DIRECT_SALE_TYPES.SERVICE) {
+            return 'Service';
+          }
+          return 'Type';
+        case 1:
+          // Show selected category name if available, otherwise show "Catégorie"
+          if (selectedCategory && selectedCategory.name) {
+            return selectedCategory.name;
+          }
+          return 'Catégorie';
+        case 2:
+          return 'Détails';
+        default:
+          return '';
+      }
+    };
+
+    return [
+      { title: getStepTitle(0), description: 'Choisissez le type' },
+      { title: getStepTitle(1), description: 'Sélectionnez la catégorie' },
+      { title: getStepTitle(2), description: 'Remplissez les informations' },
+    ];
+  }, [formik.values.saleType, selectedCategory]);
 
   // Fetch categories when sale type changes
   useEffect(() => {
