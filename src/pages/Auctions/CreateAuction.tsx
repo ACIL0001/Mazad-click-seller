@@ -980,6 +980,9 @@ export default function CreateAuction() {
     startingPrice: Yup.number()
       .min(1, 'Le prix de départ doit être positif')
       .required('Le prix de départ est requis'),
+    reservePrice: Yup.number()
+      .min(1, 'Le prix de réserve doit être positif')
+      .required('Le prix de réserve est requis'),
     duration: Yup.object()
       .nullable()
       .required('La durée est requise'),
@@ -1685,7 +1688,7 @@ export default function CreateAuction() {
         isPro: values.isPro,
         hidden: values.hidden,
         quantity: values.quantity || '',
-        reservePrice: parseFloat(values.reservePrice) || undefined,
+        reservePrice: parseFloat(values.reservePrice), // Required field
       };
 
       const formData = new FormData();
@@ -2176,11 +2179,13 @@ export default function CreateAuction() {
                 <StyledTextField
                   fullWidth
                   type="number"
-                  label="Prix de réserve (optionnel)"
+                  label="Prix de réserve *"
                   name="reservePrice"
                   value={formik.values.reservePrice}
                   onChange={formik.handleChange}
-                  helperText="Prix minimum pour accepter l'enchère"
+                  error={formik.touched.reservePrice && !!formik.errors.reservePrice}
+                  helperText={formik.touched.reservePrice && formik.errors.reservePrice ? formik.errors.reservePrice : "Prix minimum pour accepter l'enchère"}
+                  required
                   InputProps={{
                     endAdornment: <InputAdornment position="end">DA</InputAdornment>,
                   }}
