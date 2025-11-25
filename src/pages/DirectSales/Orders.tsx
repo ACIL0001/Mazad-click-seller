@@ -29,15 +29,15 @@ import { LoadingButton } from '@mui/lab';
 
 interface Order {
   _id: string;
-  directSale: {
+  directSale?: {
     _id: string;
     title: string;
-  };
-  buyer: {
+  } | null;
+  buyer?: {
     firstName: string;
     lastName: string;
     email: string;
-  };
+  } | null;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -163,12 +163,12 @@ export default function Orders() {
               <TableBody>
                 {orders.map((order) => (
                   <TableRow key={order._id}>
-                    <TableCell>{order.directSale.title}</TableCell>
+                    <TableCell>{order.directSale?.title || 'Produit inconnu'}</TableCell>
                     <TableCell>
-                      {order.buyer.firstName} {order.buyer.lastName}
+                      {order.buyer ? `${order.buyer.firstName || ''} ${order.buyer.lastName || ''}`.trim() || 'Acheteur inconnu' : 'Acheteur inconnu'}
                       <br />
                       <Typography variant="caption" color="text.secondary">
-                        {order.buyer.email}
+                        {order.buyer?.email || 'Email non disponible'}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">{order.quantity}</TableCell>
@@ -218,8 +218,8 @@ export default function Orders() {
           <DialogTitle>Confirmer la commande</DialogTitle>
           <DialogContent>
             <Typography>
-              Êtes-vous sûr de vouloir confirmer la commande de {selectedOrder?.buyer.firstName}{' '}
-              {selectedOrder?.buyer.lastName} pour "{selectedOrder?.directSale.title}" ?
+              Êtes-vous sûr de vouloir confirmer la commande de {selectedOrder?.buyer ? `${selectedOrder.buyer.firstName || ''} ${selectedOrder.buyer.lastName || ''}`.trim() || 'Acheteur inconnu' : 'Acheteur inconnu'}{' '}
+              pour "{selectedOrder?.directSale?.title || 'Produit inconnu'}" ?
             </Typography>
             <Box sx={{ mt: 2 }}>
               <Typography variant="body2" color="text.secondary">

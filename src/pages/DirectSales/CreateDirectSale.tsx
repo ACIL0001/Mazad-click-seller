@@ -325,6 +325,10 @@ export default function CreateDirectSale() {
     formik.setFieldValue('productCategory', category._id);
     // Clear subcategory field since we're using a single category field now
     formik.setFieldValue('productSubCategory', '');
+    // Automatically advance to the next step after the formik values are updated
+    setTimeout(() => {
+      setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }, 0);
   };
 
   const handleTypeSelection = (type: string) => {
@@ -333,6 +337,10 @@ export default function CreateDirectSale() {
     formik.setFieldValue('productCategory', '');
     setSelectedCategory(null);
     setSelectedCategoryPath([]);
+    // Automatically advance to the next step after the formik values are updated
+    setTimeout(() => {
+      setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
+    }, 0);
   };
 
   // Recursive category hierarchy renderer
@@ -396,7 +404,13 @@ export default function CreateDirectSale() {
                   backgroundColor: alpha(theme.palette.error.main, 0.05),
                 }),
               }}
-              onClick={() => hasSubcategories ? toggleCategory(categoryId) : selectCategory(category, parentPath)}
+              onClick={() => {
+                if (hasSubcategories) {
+                  toggleCategory(categoryId);
+                } else {
+                  selectCategory(category, parentPath);
+                }
+              }}
             >
               {/* Level Indicator */}
               {level > 0 && (
@@ -571,12 +585,6 @@ export default function CreateDirectSale() {
     const values = formik.values;
 
     try {
-      // Validate required fields
-      if (!auth.user?._id) {
-        throw new Error('Utilisateur non authentifié');
-      }
-
-      // Prepare the data payload
       const dataPayload = {
         owner: auth.user._id,
         title: values.title,
@@ -593,58 +601,25 @@ export default function CreateDirectSale() {
         hidden: values.hidden,
       };
 
-      console.log('Creating direct sale with data:', dataPayload);
-
       const formData = new FormData();
-      
-      // Append data as JSON string - THIS IS CORRECT
       formData.append('data', JSON.stringify(dataPayload));
-      
-      // CORRECTED: Use the exact field names that the backend expects
-      mediaFiles.forEach((file, index) => {
+
+      mediaFiles.forEach((file) => {
         if (file.type.startsWith('image/')) {
-          // Backend expects 'thumbs[]' with brackets
           formData.append('thumbs[]', file);
         } else if (file.type.startsWith('video/')) {
-          // Backend expects 'videos[]' with brackets
           formData.append('videos[]', file);
         }
       });
 
-      // Log FormData contents for debugging
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`FormData - ${key}:`, value instanceof File ? `File: ${value.name}` : value);
-      }
-
-      const response = await DirectSaleAPI.create(formData);
-      
-      console.log('Direct sale created successfully:', response);
+      await DirectSaleAPI.create(formData);
 
       enqueueSnackbar('Vente directe créée avec succès!', { variant: 'success' });
-      
       setTimeout(() => {
         navigate('/dashboard/direct-sales');
       }, 1000);
-      
     } catch (error: any) {
-      console.error('Error creating direct sale:', error);
-      
-      let errorMessage = 'Erreur lors de la création de la vente directe';
-      
-      if (error.response) {
-        // Server responded with error status
-        errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
-        console.error('Server error response:', error.response.data);
-      } else if (error.request) {
-        // Request was made but no response received
-        errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
-        console.error('No response received:', error.request);
-      } else {
-        // Something else happened
-        errorMessage = error.message || errorMessage;
-      }
-      
+      const errorMessage = error.response?.data?.message || 'Erreur lors de la création de la vente directe';
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -933,7 +908,7 @@ export default function CreateDirectSale() {
                 Précédent
               </Button>
 
-              {activeStep === steps.length - 1 ? (
+              {activeStep === steps.length - 1 && (
                 <LoadingButton
                   type="submit"
                   variant="contained"
@@ -942,10 +917,6 @@ export default function CreateDirectSale() {
                 >
                   Créer la vente directe
                 </LoadingButton>
-              ) : (
-                <Button onClick={handleNext} variant="contained" size="large">
-                  Suivant
-                </Button>
               )}
             </Box>
           </form>
