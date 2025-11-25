@@ -1902,202 +1902,6 @@ export default function CreateAuction() {
         );
 
       case 1:
-        // Recursive category hierarchy renderer
-        const renderCategoryHierarchy = (categories: any[], level = 0, parentPath: any[] = []): JSX.Element[] => {
-          return categories
-            .filter(category => {
-              // Filter by type only for root level categories
-              if (level === 0) {
-                // Log for debugging
-                console.log('Auction Category filtering debug:', {
-                  categoryName: category.name,
-                  categoryType: category.type,
-                  selectedBidType: formik.values.bidType,
-                  match: category.type === formik.values.bidType
-                });
-                
-                // For now, show all categories regardless of type to debug the issue
-                // TODO: Fix category type mapping
-                return true; // Temporarily show all categories
-                // return category.type === formik.values.bidType;
-              }
-              return true;
-            })
-            .map((category) => {
-              const categoryId = category._id;
-              const hasSubcategories = hasChildren(category);
-              const isExpanded = expandedCategories[categoryId];
-              const isSelected = selectedCategory?._id === categoryId;
-              const currentPath = [...parentPath, category];
-              const hasError = formik.touched.productCategory && formik.errors.productCategory;
-
-              return (
-                <Box key={categoryId} sx={{ mb: 1 }}>
-                  {/* Category Item */}
-                  <Paper
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      p: 2,
-                      ml: level * 3,
-                      background: level === 0 
-                        ? 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)' 
-                        : 'rgba(255, 255, 255, 0.8)',
-                      borderRadius: 2,
-                      border: level === 0 ? '2px solid #e2e8f0' : '1px solid #f1f5f9',
-                      transition: 'all 0.3s ease',
-                      cursor: 'pointer',
-                      position: 'relative',
-                      boxShadow: isSelected 
-                        ? `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}` 
-                        : hasError
-                        ? `0 2px 8px ${alpha(theme.palette.error.main, 0.2)}`
-                        : '0 2px 8px rgba(0, 0, 0, 0.05)',
-                      transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
-                      ...(isSelected && {
-                        borderColor: theme.palette.primary.main,
-                        backgroundColor: alpha(theme.palette.primary.light, 0.05),
-                      }),
-                      ...(hasError && !isSelected && {
-                        borderColor: theme.palette.error.main,
-                        backgroundColor: alpha(theme.palette.error.main, 0.05),
-                      }),
-                    }}
-                    onClick={() => hasSubcategories ? toggleCategory(categoryId) : selectCategory(category, parentPath)}
-                  >
-                    {/* Level Indicator */}
-                    {level > 0 && (
-                      <Box sx={{
-                        position: 'absolute',
-                        left: -12,
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: 24,
-                        height: 1,
-                        bgcolor: '#cbd5e1',
-                      }} />
-                    )}
-                    
-                    {/* Expand/Collapse Icon */}
-                    {hasSubcategories && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCategory(categoryId);
-                        }}
-                        sx={{
-                          mr: 2,
-                          bgcolor: isExpanded ? theme.palette.primary.main : 
-                                    hasError ? theme.palette.error.main : '#f1f5f9',
-                          color: isExpanded ? 'white' : 
-                                 hasError ? 'white' : '#64748b',
-                          transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            bgcolor: isExpanded ? theme.palette.primary.dark : 
-                                      hasError ? theme.palette.error.dark : theme.palette.primary.light,
-                          },
-                        }}
-                      >
-                        <Iconify icon="eva:arrow-right-fill" width={16} />
-                      </IconButton>
-                    )}
-
-                    {/* Category Icon */}
-                    <Box
-                      sx={{
-                        width: level === 0 ? 48 : 40,
-                        height: level === 0 ? 48 : 40,
-                        borderRadius: '50%',
-                        bgcolor: isSelected 
-                          ? theme.palette.primary.main 
-                          : hasError
-                          ? theme.palette.error.main
-                          : alpha(theme.palette.primary.main, 0.1),
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mr: 2,
-                        transition: 'all 0.3s ease',
-                      }}
-                    >
-                      <Iconify
-                        icon={level === 0 ? "mdi:shape" : "mdi:subdirectory-arrow-right"}
-                        width={level === 0 ? 24 : 20}
-                        sx={{ color: isSelected || hasError ? 'white' : theme.palette.primary.main }}
-                      />
-                    </Box>
-
-                    {/* Category Info */}
-                    <Box sx={{ flex: 1 }}>
-                      <Typography
-                        variant={level === 0 ? 'h6' : 'subtitle1'}
-                        sx={{
-                          fontWeight: level === 0 ? 700 : 600,
-                          color: '#1e293b',
-                          mb: 0.5,
-                        }}
-                      >
-                        {category.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {hasSubcategories 
-                          ? `${category.children.length} sous-catégories` 
-                          : category.description || 'Cliquer pour sélectionner'
-                        }
-                      </Typography>
-                    </Box>
-
-                    {/* Subcategory Count Badge */}
-                    {hasSubcategories && (
-                      <Chip
-                        label={category.children.length}
-                        size="small"
-                        sx={{
-                          bgcolor: hasError ? theme.palette.error.main : theme.palette.primary.main,
-                          color: 'white',
-                          fontWeight: 600,
-                          ml: 1,
-                        }}
-                      />
-                    )}
-
-                    {/* Selection Indicator */}
-                    {isSelected && (
-                      <Box
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          bgcolor: theme.palette.primary.main,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          ml: 1,
-                        }}
-                      >
-                        <Iconify icon="eva:checkmark-fill" width={16} sx={{ color: 'white' }} />
-                      </Box>
-                    )}
-                  </Paper>
-
-                  {/* Recursive Subcategories */}
-                  {hasSubcategories && isExpanded && (
-                    <Box sx={{
-                      mt: 1,
-                      pl: 2,
-                      borderLeft: level < 2 ? '2px solid #f1f5f9' : 'none',
-                      ml: level * 3 + 2,
-                    }}>
-                      {renderCategoryHierarchy(category.children, level + 1, currentPath)}
-                    </Box>
-                  )}
-                </Box>
-              );
-            });
-        };
-
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
@@ -2135,10 +1939,112 @@ export default function CreateAuction() {
               </Box>
             )}
 
-            {/* Category Tree */}
+            {/* Category Grid - Circular Layout */}
             <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
               {categories.length > 0 ? (
-                renderCategoryHierarchy(categories)
+                <Grid container spacing={3} sx={{ mt: 2 }}>
+                  {categories
+                    .filter(category => {
+                      // Filter by type for root level categories
+                      return category.type === formik.values.bidType || !category.type;
+                    })
+                    .map((category) => {
+                      const isSelected = selectedCategory?._id === category._id;
+                      const hasError = formik.touched.productCategory && formik.errors.productCategory && !isSelected;
+
+                      return (
+                        <Grid item xs={6} sm={4} md={3} key={category._id}>
+                          <Box
+                            onClick={() => selectCategory(category, [])}
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: 3,
+                              borderRadius: 3,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              border: `2px solid ${isSelected ? theme.palette.primary.main : hasError ? theme.palette.error.main : 'transparent'}`,
+                              backgroundColor: isSelected 
+                                ? alpha(theme.palette.primary.main, 0.05)
+                                : hasError
+                                ? alpha(theme.palette.error.main, 0.05)
+                                : 'transparent',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                backgroundColor: isSelected 
+                                  ? alpha(theme.palette.primary.main, 0.08)
+                                  : alpha(theme.palette.primary.main, 0.03),
+                                borderColor: isSelected 
+                                  ? theme.palette.primary.main
+                                  : alpha(theme.palette.primary.main, 0.3),
+                              },
+                            }}
+                          >
+                            {/* Circular Icon */}
+                            <Box
+                              sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: '50%',
+                                backgroundColor: isSelected 
+                                  ? theme.palette.primary.main
+                                  : hasError
+                                  ? theme.palette.error.main
+                                  : alpha(theme.palette.grey[300], 0.5),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: 2,
+                                transition: 'all 0.3s ease',
+                                boxShadow: isSelected 
+                                  ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
+                                  : 'none',
+                                '&:hover': {
+                                  transform: 'scale(1.1)',
+                                },
+                              }}
+                            >
+                              {isSelected ? (
+                                <Iconify icon="eva:checkmark-fill" width={32} sx={{ color: 'white' }} />
+                              ) : (
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: isSelected ? 'white' : theme.palette.text.secondary,
+                                    fontSize: '0.7rem',
+                                    textAlign: 'center',
+                                    px: 1
+                                  }}
+                                >
+                                  Category
+                                </Typography>
+                              )}
+                            </Box>
+                            
+                            {/* Category Name */}
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textAlign: 'center',
+                                fontWeight: isSelected ? 600 : 500,
+                                color: isSelected 
+                                  ? theme.palette.primary.main
+                                  : hasError
+                                  ? theme.palette.error.main
+                                  : theme.palette.text.primary,
+                                wordBreak: 'break-word',
+                                maxWidth: '100%',
+                              }}
+                            >
+                              {category.name}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                </Grid>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <Typography variant="h6" color="text.secondary">

@@ -27,7 +27,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 import { useFormik, FormikProvider } from 'formik';
@@ -211,11 +211,37 @@ export default function CreateDirectSale() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
 
-  const steps = [
-    { title: 'Type', description: 'Choisissez le type' },
-    { title: 'Catégorie', description: 'Sélectionnez la catégorie' },
-    { title: 'Détails', description: 'Remplissez les informations' },
-  ];
+  // Dynamic steps that show selected values - recalculated when formik values or selectedCategory change
+  const steps = useMemo(() => {
+    const getStepTitle = (stepIndex: number) => {
+      switch (stepIndex) {
+        case 0:
+          // Show selected type if available, otherwise show "Type"
+          if (formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT) {
+            return 'Produit';
+          } else if (formik.values.saleType === DIRECT_SALE_TYPES.SERVICE) {
+            return 'Service';
+          }
+          return 'Type';
+        case 1:
+          // Show selected category name if available, otherwise show "Catégorie"
+          if (selectedCategory && selectedCategory.name) {
+            return selectedCategory.name;
+          }
+          return 'Catégorie';
+        case 2:
+          return 'Détails';
+        default:
+          return '';
+      }
+    };
+
+    return [
+      { title: getStepTitle(0), description: 'Choisissez le type' },
+      { title: getStepTitle(1), description: 'Sélectionnez la catégorie' },
+      { title: getStepTitle(2), description: 'Remplissez les informations' },
+    ];
+  }, [formik.values.saleType, selectedCategory]);
 
   const validationSchema = Yup.object().shape({
     title: Yup.string().min(3, 'Le titre doit contenir au moins 3 caractères').required('Le titre est requis'),
@@ -709,10 +735,112 @@ export default function CreateDirectSale() {
               </Box>
             )}
 
-            {/* Category Tree */}
+            {/* Category Grid - Circular Layout */}
             <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
               {categories.length > 0 ? (
-                renderCategoryHierarchy(categories)
+                <Grid container spacing={3} sx={{ mt: 2 }}>
+                  {categories
+                    .filter(category => {
+                      // Filter by type for root level categories
+                      return category.type === formik.values.saleType || !category.type;
+                    })
+                    .map((category) => {
+                      const isSelected = selectedCategory?._id === category._id;
+                      const hasError = formik.touched.productCategory && formik.errors.productCategory && !isSelected;
+
+                      return (
+                        <Grid item xs={6} sm={4} md={3} key={category._id}>
+                          <Box
+                            onClick={() => selectCategory(category, [])}
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              padding: 3,
+                              borderRadius: 3,
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease',
+                              border: `2px solid ${isSelected ? theme.palette.primary.main : hasError ? theme.palette.error.main : 'transparent'}`,
+                              backgroundColor: isSelected 
+                                ? alpha(theme.palette.primary.main, 0.05)
+                                : hasError
+                                ? alpha(theme.palette.error.main, 0.05)
+                                : 'transparent',
+                              '&:hover': {
+                                transform: 'translateY(-4px)',
+                                backgroundColor: isSelected 
+                                  ? alpha(theme.palette.primary.main, 0.08)
+                                  : alpha(theme.palette.primary.main, 0.03),
+                                borderColor: isSelected 
+                                  ? theme.palette.primary.main
+                                  : alpha(theme.palette.primary.main, 0.3),
+                              },
+                            }}
+                          >
+                            {/* Circular Icon */}
+                            <Box
+                              sx={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: '50%',
+                                backgroundColor: isSelected 
+                                  ? theme.palette.primary.main
+                                  : hasError
+                                  ? theme.palette.error.main
+                                  : alpha(theme.palette.grey[300], 0.5),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: 2,
+                                transition: 'all 0.3s ease',
+                                boxShadow: isSelected 
+                                  ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
+                                  : 'none',
+                                '&:hover': {
+                                  transform: 'scale(1.1)',
+                                },
+                              }}
+                            >
+                              {isSelected ? (
+                                <Iconify icon="eva:checkmark-fill" width={32} sx={{ color: 'white' }} />
+                              ) : (
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: isSelected ? 'white' : theme.palette.text.secondary,
+                                    fontSize: '0.7rem',
+                                    textAlign: 'center',
+                                    px: 1
+                                  }}
+                                >
+                                  Category
+                                </Typography>
+                              )}
+                            </Box>
+                            
+                            {/* Category Name */}
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                textAlign: 'center',
+                                fontWeight: isSelected ? 600 : 500,
+                                color: isSelected 
+                                  ? theme.palette.primary.main
+                                  : hasError
+                                  ? theme.palette.error.main
+                                  : theme.palette.text.primary,
+                                wordBreak: 'break-word',
+                                maxWidth: '100%',
+                              }}
+                            >
+                              {category.name}
+                            </Typography>
+                          </Box>
+                        </Grid>
+                      );
+                    })}
+                </Grid>
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <Typography variant="h6" color="text.secondary">
