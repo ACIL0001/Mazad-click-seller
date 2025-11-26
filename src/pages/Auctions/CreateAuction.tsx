@@ -937,7 +937,7 @@ declare global {
 export default function CreateAuction() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { t, enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const { auth, isLogged } = useAuth();
 
