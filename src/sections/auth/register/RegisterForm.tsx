@@ -855,7 +855,11 @@ export default function RegisterForm(props: RegisterFormProps) {
                       label="Secteur d'activité"
                       placeholder="Choisir vos secteurs d'activité"
                       error={Boolean(touched.secteur && errors.secteur)}
-                      helperText={touched.secteur && errors.secteur}
+                      helperText={
+                        touched.secteur && errors.secteur
+                          ? String(errors.secteur as any)
+                          : ''
+                      }
                     />
                   )}
                   renderTags={(value, getTagProps) => (
