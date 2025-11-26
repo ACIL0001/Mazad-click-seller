@@ -30,6 +30,13 @@
     "bills": "الفواتير",
     "reports": "البلاغات",
     "directSales": "المبيعات المباشرة",
+    "tenders": "طلبات العروض",
+    "myTenders": "طلبات العروض الخاصة بي",
+    "newTender": "طلب عروض جديد",
+    "receivedOffers": "العروض المستلمة",
+    "myDirectSales": "مبيعاتي المباشرة",
+    "createDirectSale": "إنشاء بيع مباشر",
+    "myOrders": "طلباتي",
     "switchToBuyer": "التبديل إلى وضع المشتري",
     "currentlyInSellerMode": "أنت حاليًا في وضع البائع"
   },
@@ -1098,5 +1105,270 @@
       "completeStep": "يرجى إكمال {stepName}"
     },
     "confirm": "تأكيد وإنشاء"
+  },
+  "directSales": {
+    "createTitle": "إنشاء بيع مباشر",
+    "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
+    "step": "الخطوة {{current}} من {{total}}",
+    "progress": "{{percent}}% مكتمل",
+    "myDirectSales": "مبيعاتي المباشرة",
+    "loadError": "خطأ في تحميل المبيعات المباشرة"
+  },
+  "tenders": {
+    "mySubmissions": "طلبات العروض الخاصة بي",
+    "submissionDate": "تاريخ التقديم",
+    "pageTitle": "طلبات العروض",
+    "currentOffer": "العرض الحالي",
+    "noTenders": "لا توجد طلبات عروض في الوقت الحالي",
+    "noTendersDescription": "لم تقم بإنشاء أي طلبات عروض بعد. قم بإنشاء أول طلب عروض لبدء تلقي المقترحات.",
+    "createFirstTender": "إنشاء أول طلب عروض",
+    "errors": {
+      "sessionExpired": "انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.",
+      "accessDenied": "تم رفض الوصول إلى طلبات العروض.",
+      "genericError": "خطأ: {message}",
+      "loadFailed": "تعذر تحميل طلبات العروض. يرجى المحاولة مرة أخرى."
+    },
+    "auctionType": {
+      "classic": "كلاسيكي",
+      "express": "سريع"
+    }
+  },
+  "orders": {
+    "title": "طلباتي",
+    "description": "إدارة الطلبات المستلمة لمبيعاتك المباشرة",
+    "loading": "جاري التحميل...",
+    "noOrders": "لا توجد طلبات",
+    "noOrdersDescription": "لم تستلم أي طلبات بعد",
+    "table": {
+      "product": "المنتج",
+      "buyer": "المشتري",
+      "quantity": "الكمية",
+      "unitPrice": "سعر الوحدة",
+      "total": "الإجمالي",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "cancelled": "ملغى",
+      "completed": "مكتمل"
+    },
+    "unknownProduct": "منتج غير معروف",
+    "unknownBuyer": "مشتري غير معروف",
+    "emailNotAvailable": "البريد الإلكتروني غير متاح",
+    "confirm": "تأكيد",
+    "confirmOrder": "تأكيد الطلب",
+    "confirmOrderMessage": "هل أنت متأكد من أنك تريد تأكيد الطلب من {buyer} لـ \"{product}\"؟",
+    "quantity": "الكمية:",
+    "total": "الإجمالي:",
+    "cancel": "إلغاء",
+    "loadError": "خطأ في تحميل الطلبات",
+    "confirmError": "خطأ في تأكيد الطلب",
+    "confirmSuccess": "تم تأكيد الطلب بنجاح"
+  },
+  "directSales": {
+    "createTitle": "إنشاء بيع مباشر",
+    "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
+    "step": "الخطوة {{current}} من {{total}}",
+    "progress": "{{percent}}% مكتمل",
+    "myDirectSales": "مبيعاتي المباشرة",
+    "loadError": "خطأ في تحميل المبيعات المباشرة",
+    "createDirectSale": "إنشاء بيع مباشر",
+    "loading": "جاري التحميل...",
+    "noDirectSales": "لا توجد مبيعات مباشرة",
+    "noDirectSalesDescription": "ابدأ بإنشاء أول بيع مباشر",
+    "table": {
+      "title": "العنوان",
+      "description": "الوصف",
+      "price": "السعر",
+      "quantity": "الكمية",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "soldOut": "نفدت الكمية",
+      "inactive": "غير نشط"
+    },
+    "viewDetails": "عرض التفاصيل",
+    "deleteTitle": "حذف البيع المباشر",
+    "deleteMessage": "هل أنت متأكد من أنك تريد حذف \"{title}\"؟ هذا الإجراء لا يمكن التراجع عنه.",
+    "unlimited": "غير محدود",
+    "deleteSuccess": "تم حذف البيع المباشر بنجاح",
+    "deleteError": "خطأ في حذف البيع المباشر"
+  },
+  "tenderBids": {
+    "pageTitle": "العروض المستلمة",
+    "table": {
+      "provider": "مقدم الخدمة",
+      "tender": "طلب العروض",
+      "amountProposal": "المبلغ/المقترح",
+      "deliveryTime": "وقت التسليم",
+      "date": "التاريخ",
+      "status": "الحالة"
+    },
+    "status": {
+      "pending": "قيد الانتظار",
+      "accepted": "مقبول",
+      "declined": "مرفوض"
+    },
+    "viewDetails": "عرض التفاصيل",
+    "accept": "قبول",
+    "reject": "رفض",
+    "close": "إغلاق",
+    "dialog": {
+      "title": "تفاصيل العرض",
+      "providerInfo": "معلومات مقدم الخدمة",
+      "tenderInfo": "طلب العروض",
+      "bidDetails": "تفاصيل العرض",
+      "name": "الاسم:",
+      "email": "البريد الإلكتروني:",
+      "phone": "الهاتف:",
+      "title": "العنوان:",
+      "type": "النوع:",
+      "detailedProposal": "المقترح التفصيلي:",
+      "noProposal": "لم يتم تقديم مقترح",
+      "proposedAmount": "المبلغ المقترح:",
+      "deliveryTime": "وقت التسليم:",
+      "notSpecified": "غير محدد",
+      "status": "الحالة:"
+    },
+    "evaluationType": {
+      "bestOffer": "أفضل عرض",
+      "lowestPrice": "أقل سعر"
+    },
+    "alert": {
+      "bestOfferType": "طلب عروض من نوع أفضل عرض (التقييم حسب المقترح)",
+      "lowestPriceType": "طلب عروض من نوع أقل سعر (التقييم حسب السعر)"
+    },
+    "errors": {
+      "unexpectedFormat": "تنسيق استجابة غير متوقع.",
+      "loadFailed": "فشل التحميل.",
+      "acceptFailed": "خطأ في قبول العرض.",
+      "rejectFailed": "خطأ في رفض العرض."
+    },
+    "success": {
+      "accepted": "تم قبول العرض بنجاح!"
+    },
+    "info": {
+      "rejected": "تم رفض العرض."
+    },
+    "notAvailable": "غير متاح",
+    "noProposal": "لا يوجد مقترح",
+    "days": "أيام"
+  },
+  "auctions": {
+    "filterByStatus": "تصفية حسب الحالة",
+    "filter": {
+      "all": "جميع المزادات",
+      "active": "المزادات النشطة",
+      "finished": "المزادات المنتهية"
+    },
+    "relaunch": "إعادة الإطلاق",
+    "createNewAuction": "إنشاء مزاد جديد",
+    "empty": {
+      "active": "لا توجد مزادات نشطة",
+      "finished": "لا توجد مزادات منتهية",
+      "all": "لم يتم العثور على مزادات",
+      "activeDescription": "ليس لديك أي مزادات نشطة في الوقت الحالي.",
+      "finishedDescription": "ليس لديك أي مزادات منتهية ومغلقة لإعادة إطلاقها بعد.",
+      "allDescription": "ابدأ بإنشاء أول مزاد."
+    },
+    "relaunchDialog": {
+      "title": "إعادة إطلاق المزاد",
+      "auctionTitle": "عنوان المزاد",
+      "description": "الوصف",
+      "place": "المكان",
+      "quantity": "الكمية",
+      "startingPrice": "سعر البداية (دج)",
+      "auctionType": "نوع المزاد",
+      "type": {
+        "classic": "كلاسيكي",
+        "express": "سريع (مزروب)",
+        "automatic": "تلقائي"
+      },
+      "timing": {
+        "title": "تكوين التوقيت",
+        "startDelay": "تأخير البداية",
+        "startUnit": "وحدة التأخير",
+        "duration": "مدة المزاد",
+        "durationUnit": "وحدة المدة",
+        "units": {
+          "minutes": "دقائق",
+          "hours": "ساعات",
+          "days": "أيام",
+          "months": "أشهر"
+        }
+      },
+      "updateDates": "تحديث التواريخ",
+      "calculatedStartDate": "تاريخ البداية المحسوب",
+      "calculatedEndDate": "تاريخ النهاية المحسوب",
+      "cancel": "إلغاء",
+      "confirm": "إعادة إطلاق المزاد"
+    },
+    "validation": {
+      "titleRequired": "العنوان مطلوب",
+      "descriptionRequired": "الوصف مطلوب",
+      "placeRequired": "المكان مطلوب",
+      "startingPriceRequired": "يجب أن يكون سعر البداية أكبر من 0",
+      "startingDateRequired": "يجب أن يكون تاريخ البداية في المستقبل",
+      "endingDateRequired": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية",
+      "durationRequired": "يجب أن تكون مدة المزاد ساعة واحدة على الأقل"
+    },
+    "success": {
+      "relaunched": "تم إعادة إطلاق المزاد بنجاح!"
+    },
+    "errors": {
+      "relaunchFailed": "خطأ في إعادة إطلاق المزاد.",
+      "unexpectedFormat": "تنسيق استجابة غير متوقع.",
+      "loadFailed": "فشل التحميل."
+    },
+    "type": {
+      "classic": "كلاسيكي",
+      "express": "سريع (مزروب)",
+      "automatic": "تلقائي"
+    }
+  },
+  "offers": {
+    "receivedOffers": "العروض المستلمة",
+    "myOffers": "عروضي",
+    "deleteSelection": "حذف التحديد ({count})",
+    "refresh": "تحديث",
+    "accept": "قبول",
+    "reject": "رفض",
+    "delete": "حذف",
+    "tab": {
+      "received": "عرض مستلم",
+      "my": "عرضي"
+    },
+    "empty": {
+      "received": "لا توجد عروض مستلمة",
+      "my": "لم يتم تقديم عروض",
+      "receivedDescription": "لم تستلم أي عروض بعد.",
+      "myDescription": "لم تقم بتقديم أي عروض بعد."
+    },
+    "status": {
+      "accepted": "مقبول",
+      "rejected": "مرفوض"
+    },
+    "info": {
+      "noOffersFound": "لم يتم العثور على عروض",
+      "rejected": "تم رفض العرض."
+    },
+    "errors": {
+      "loadFailed": "خطأ في تحميل العروض",
+      "acceptFailed": "خطأ في قبول العرض.",
+      "rejectFailed": "خطأ في رفض العرض.",
+      "deleteFailed": "خطأ في حذف العرض.",
+      "bulkDeleteFailed": "خطأ أثناء الحذف المتعدد."
+    },
+    "success": {
+      "accepted": "تم قبول العرض بنجاح!",
+      "deleted": "تم حذف العرض بنجاح",
+      "bulkDeleted": "تم حذف {count} عرض(عروض)"
+    }
   }
 } 

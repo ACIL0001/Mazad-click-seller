@@ -30,6 +30,13 @@
     "bills": "Factures",
     "reports": "Rapports",
     "directSales": "Ventes Directes",
+    "tenders": "Soumission",
+    "myTenders": "Mes Soumissions",
+    "newTender": "Nouvel Soumission",
+    "receivedOffers": "Offres Reçues",
+    "myDirectSales": "Mes Ventes Directes",
+    "createDirectSale": "Créer une Vente Directe",
+    "myOrders": "Mes Commandes",
     "switchToBuyer": "Passer au mode acheteur",
     "currentlyInSellerMode": "Vous êtes actuellement en mode vendeur"
   },
@@ -495,7 +502,13 @@
     "createTitle": "Créer une vente directe",
     "createSubtitle": "Vendez vos produits et services à prix fixe",
     "step": "Étape {{current}} sur {{total}}",
-    "progress": "{{percent}}% terminé"
+    "progress": "{{percent}}% terminé",
+    "myDirectSales": "Mes ventes directes",
+    "loadError": "Erreur lors du chargement des ventes directes"
+  },
+  "tenders": {
+    "mySubmissions": "Mes soumissions",
+    "submissionDate": "Date de soumission"
   },
   "createTender": {
     "title": "Créer un appel d'offres",
@@ -555,5 +568,262 @@
       "completeStep": "Veuillez compléter {stepName}"
     },
     "confirm": "Confirmer et Créer"
+  },
+  "orders": {
+    "title": "Mes commandes",
+    "description": "Gérez les commandes reçues pour vos ventes directes",
+    "loading": "Chargement...",
+    "noOrders": "Aucune commande",
+    "noOrdersDescription": "Vous n'avez reçu aucune commande pour le moment",
+    "table": {
+      "product": "Produit",
+      "buyer": "Acheteur",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "total": "Total",
+      "status": "Statut",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "confirmed": "Confirmé",
+      "pending": "En attente",
+      "cancelled": "Annulé",
+      "completed": "Terminé"
+    },
+    "unknownProduct": "Produit inconnu",
+    "unknownBuyer": "Acheteur inconnu",
+    "emailNotAvailable": "Email non disponible",
+    "confirm": "Confirmer",
+    "confirmOrder": "Confirmer la commande",
+    "confirmOrderMessage": "Êtes-vous sûr de vouloir confirmer la commande de {buyer} pour \"{product}\" ?",
+    "quantity": "Quantité:",
+    "total": "Total:",
+    "cancel": "Annuler",
+    "loadError": "Erreur lors du chargement des commandes",
+    "confirmError": "Erreur lors de la confirmation",
+    "confirmSuccess": "Commande confirmée avec succès"
+  },
+  "directSales": {
+    "createTitle": "Créer une vente directe",
+    "createSubtitle": "Vendez vos produits et services à prix fixe",
+    "step": "Étape {{current}} sur {{total}}",
+    "progress": "{{percent}}% terminé",
+    "myDirectSales": "Mes ventes directes",
+    "loadError": "Erreur lors du chargement des ventes directes",
+    "createDirectSale": "Créer une vente directe",
+    "loading": "Chargement...",
+    "noDirectSales": "Aucune vente directe",
+    "noDirectSalesDescription": "Commencez par créer votre première vente directe",
+    "table": {
+      "title": "Titre",
+      "description": "Description",
+      "price": "Prix",
+      "quantity": "Quantité",
+      "status": "Statut",
+      "createdAt": "Date de création",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "soldOut": "Épuisé",
+      "inactive": "Inactif"
+    },
+    "viewDetails": "Voir détails",
+    "deleteTitle": "Supprimer la vente directe",
+    "deleteMessage": "Êtes-vous sûr de vouloir supprimer \"{title}\" ? Cette action est irréversible.",
+    "unlimited": "Illimité",
+    "deleteSuccess": "Vente directe supprimée avec succès",
+    "deleteError": "Erreur lors de la suppression"
+  },
+  "tenders": {
+    "mySubmissions": "Mes soumissions",
+    "submissionDate": "Date de soumission",
+    "pageTitle": "Appels d'Offres",
+    "currentOffer": "Offre Actuelle",
+    "noTenders": "Aucun appel d'offres pour le moment",
+    "noTendersDescription": "Vous n'avez pas encore créé d'appels d'offres. Créez votre premier appel d'offres pour commencer à recevoir des propositions.",
+    "createFirstTender": "Créer mon premier appel d'offres",
+    "errors": {
+      "sessionExpired": "Session expirée. Veuillez vous reconnecter.",
+      "accessDenied": "Accès refusé aux appels d'offres.",
+      "genericError": "Erreur: {message}",
+      "loadFailed": "Impossible de charger les appels d'offres. Veuillez réessayer."
+    },
+    "auctionType": {
+      "classic": "Classique",
+      "express": "Express"
+    }
+  },
+  "tenderBids": {
+    "pageTitle": "Offres Reçues",
+    "table": {
+      "provider": "Prestataire",
+      "tender": "Appel d'Offres",
+      "amountProposal": "Montant/Proposition",
+      "deliveryTime": "Délai",
+      "date": "Date",
+      "status": "Statut"
+    },
+    "status": {
+      "pending": "En attente",
+      "accepted": "Acceptée",
+      "declined": "Refusée"
+    },
+    "viewDetails": "Voir détails",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "close": "Fermer",
+    "dialog": {
+      "title": "Détails de l'offre",
+      "providerInfo": "Informations du prestataire",
+      "tenderInfo": "Appel d'offres",
+      "bidDetails": "Détails de l'offre",
+      "name": "Nom:",
+      "email": "Email:",
+      "phone": "Téléphone:",
+      "title": "Titre:",
+      "type": "Type:",
+      "detailedProposal": "Proposition détaillée:",
+      "noProposal": "Aucune proposition fournie",
+      "proposedAmount": "Montant proposé:",
+      "deliveryTime": "Délai de livraison:",
+      "notSpecified": "Non spécifié",
+      "status": "Statut:"
+    },
+    "evaluationType": {
+      "bestOffer": "Mieux disant",
+      "lowestPrice": "Moins disant"
+    },
+    "alert": {
+      "bestOfferType": "Appel d'offres de type Mieux Disant (évaluation par proposition)",
+      "lowestPriceType": "Appel d'offres de type Moins Disant (évaluation par prix)"
+    },
+    "errors": {
+      "unexpectedFormat": "Format de réponse inattendu.",
+      "loadFailed": "Chargement échoué.",
+      "acceptFailed": "Erreur lors de l'acceptation de l'offre.",
+      "rejectFailed": "Erreur lors du refus de l'offre."
+    },
+    "success": {
+      "accepted": "Offre acceptée avec succès!"
+    },
+    "info": {
+      "rejected": "Offre refusée."
+    },
+    "notAvailable": "N/A",
+    "noProposal": "Aucune proposition",
+    "days": "jours"
+  },
+  "auctions": {
+    "filterByStatus": "Filtrer par statut",
+    "filter": {
+      "all": "Toutes les enchères",
+      "active": "Enchères en cours",
+      "finished": "Enchères terminées"
+    },
+    "relaunch": "Relancer",
+    "createNewAuction": "Créer une nouvelle enchère",
+    "empty": {
+      "active": "Aucune enchère en cours",
+      "finished": "Aucune enchère terminée",
+      "all": "Aucune enchère trouvée",
+      "activeDescription": "Vous n'avez pas d'enchères actuellement en cours.",
+      "finishedDescription": "Vous n'avez pas encore d'enchères terminées et fermées à relancer.",
+      "allDescription": "Commencez par créer votre première enchère."
+    },
+    "relaunchDialog": {
+      "title": "Relancer l'Enchère",
+      "auctionTitle": "Titre de l'enchère",
+      "description": "Description",
+      "place": "Lieu",
+      "quantity": "Quantité",
+      "startingPrice": "Prix de départ (DA)",
+      "auctionType": "Type d'enchère",
+      "type": {
+        "classic": "Classique",
+        "express": "Express (MEZROUB)",
+        "automatic": "Automatique"
+      },
+      "timing": {
+        "title": "Configuration du timing",
+        "startDelay": "Délai de début",
+        "startUnit": "Unité de délai",
+        "duration": "Durée de l'enchère",
+        "durationUnit": "Unité de durée",
+        "units": {
+          "minutes": "Minutes",
+          "hours": "Heures",
+          "days": "Jours",
+          "months": "Mois"
+        }
+      },
+      "updateDates": "Mettre à jour les dates",
+      "calculatedStartDate": "Date de début calculée",
+      "calculatedEndDate": "Date de fin calculée",
+      "cancel": "Annuler",
+      "confirm": "Relancer l'Enchère"
+    },
+    "validation": {
+      "titleRequired": "Le titre est requis",
+      "descriptionRequired": "La description est requise",
+      "placeRequired": "Le lieu est requis",
+      "startingPriceRequired": "Le prix de départ doit être supérieur à 0",
+      "startingDateRequired": "La date de début doit être dans le futur",
+      "endingDateRequired": "La date de fin doit être après la date de début",
+      "durationRequired": "La durée de l'enchère doit être d'au moins 1 heure"
+    },
+    "success": {
+      "relaunched": "Enchère relancée avec succès!"
+    },
+    "errors": {
+      "relaunchFailed": "Erreur lors de la relance de l'enchère.",
+      "unexpectedFormat": "Format de réponse inattendu.",
+      "loadFailed": "Chargement échoué."
+    },
+    "type": {
+      "classic": "Classique",
+      "express": "Express (MEZROUB)",
+      "automatic": "Automatique"
+    }
+  },
+  "offers": {
+    "receivedOffers": "Offres reçues",
+    "myOffers": "Mes offres",
+    "deleteSelection": "Supprimer la sélection ({count})",
+    "refresh": "Actualiser",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "delete": "Supprimer",
+    "tab": {
+      "received": "Offre reçue",
+      "my": "Mon offre"
+    },
+    "empty": {
+      "received": "Aucune offre reçue",
+      "my": "Aucune offre faite",
+      "receivedDescription": "Vous n'avez reçu aucune offre pour le moment.",
+      "myDescription": "Vous n'avez fait aucune offre pour le moment."
+    },
+    "status": {
+      "accepted": "Acceptée",
+      "rejected": "Refusée"
+    },
+    "info": {
+      "noOffersFound": "No offers found",
+      "rejected": "Offre refusée."
+    },
+    "errors": {
+      "loadFailed": "Error loading offers",
+      "acceptFailed": "Erreur lors de l'acceptation de l'offre.",
+      "rejectFailed": "Erreur lors du refus de l'offre.",
+      "deleteFailed": "Erreur lors de la suppression de l'offre.",
+      "bulkDeleteFailed": "Erreur lors de la suppression multiple."
+    },
+    "success": {
+      "accepted": "Offre acceptée avec succès!",
+      "deleted": "Offre supprimée avec succès",
+      "bulkDeleted": "{count} offre(s) supprimée(s)"
+    }
   }
 }

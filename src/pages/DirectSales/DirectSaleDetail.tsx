@@ -257,7 +257,7 @@ export default function DirectSaleDetail() {
     <Page title={`Détails - ${directSale.title}`}>
       <Container maxWidth="xl">
         <Breadcrumb links={[
-          { name: 'Ventes Directes', href: '/dashboard/direct-sales' },
+          { name: t('navigation.directSales'), href: '/dashboard/direct-sales' },
           { name: directSale.title }
         ]} />
 

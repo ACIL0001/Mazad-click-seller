@@ -37,7 +37,7 @@ export default function Tenders() {
     { id: 'title', label: t('title'), alignRight: false, searchable: true, sortable: true },
     { id: 'tenderType', label: t('type'), alignRight: false, searchable: false },
     { id: 'auctionType', label: t('mode'), alignRight: false, searchable: false },
-    { id: 'currentLowestBid', label: 'Offre Actuelle', alignRight: false, searchable: false, sortable: true },
+    { id: 'currentLowestBid', label: t('tenders.currentOffer'), alignRight: false, searchable: false, sortable: true },
     { id: 'endingAt', label: t('endsAt'), alignRight: false, searchable: false, sortable: true },
     { id: 'status', label: t('status'), alignRight: false, searchable: false },
     { id: 'actions', label: '', alignRight: true, searchable: false }
@@ -86,13 +86,13 @@ export default function Tenders() {
         
         // Provide clearer guidance depending on error
         if (e.response?.status === 401) {
-          enqueueSnackbar('Session expirée. Veuillez vous reconnecter.', { variant: 'warning' });
+          enqueueSnackbar(t('tenders.errors.sessionExpired'), { variant: 'warning' });
         } else if (e.response?.status === 403) {
-          enqueueSnackbar("Accès refusé aux appels d'offres.", { variant: 'warning' });
+          enqueueSnackbar(t('tenders.errors.accessDenied'), { variant: 'warning' });
         } else if (e.response?.data?.message) {
-          enqueueSnackbar(`Erreur: ${e.response.data.message}`, { variant: 'error' });
+          enqueueSnackbar(t('tenders.errors.genericError', { message: e.response.data.message }), { variant: 'error' });
         } else {
-          enqueueSnackbar("Impossible de charger les appels d'offres. Veuillez réessayer.", { variant: 'error' });
+          enqueueSnackbar(t('tenders.errors.loadFailed'), { variant: 'error' });
         }
       })
       .finally(() => setLoading(false));
@@ -116,9 +116,9 @@ export default function Tenders() {
   const getAuctionTypeLabel = (type: TENDER_AUCTION_TYPE) => {
     switch (type) {
       case TENDER_AUCTION_TYPE.CLASSIC:
-        return 'Classique';
+        return t('tenders.auctionType.classic');
       case TENDER_AUCTION_TYPE.EXPRESS:
-        return 'Express';
+        return t('tenders.auctionType.express');
       default:
         return type;
     }
@@ -264,7 +264,7 @@ export default function Tenders() {
   };
 
   return (
-    <Page title="Appels d'Offres">
+    <Page title={t('tenders.pageTitle')}>
       <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
         <Box
           sx={{
@@ -295,7 +295,7 @@ export default function Tenders() {
                 textAlign: { xs: 'center', sm: 'left' }
               }}
             >
-              Appels d'Offres
+              {t('tenders.pageTitle')}
             </Typography>
             <Button
               variant="contained"
@@ -307,7 +307,7 @@ export default function Tenders() {
                 py: { xs: 1.5, sm: 1 }
               }}
             >
-              Nouvel Appel d'Offres
+              {t('navigation.newTender')}
             </Button>
           </Stack>
         </Box>
@@ -337,10 +337,10 @@ export default function Tenders() {
               sx={{ color: 'text.secondary', opacity: 0.5 }}
             />
             <Typography variant="h5" color="text.secondary">
-              Aucun appel d'offres pour le moment
+              {t('tenders.noTenders')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
-              Vous n'avez pas encore créé d'appels d'offres. Créez votre premier appel d'offres pour commencer à recevoir des propositions.
+              {t('tenders.noTendersDescription')}
             </Typography>
             <Button
               variant="contained"
@@ -349,7 +349,7 @@ export default function Tenders() {
               startIcon={<Iconify icon="eva:plus-fill" />}
               sx={{ px: 4, py: 1.5 }}
             >
-              Créer mon premier appel d'offres
+              {t('tenders.createFirstTender')}
             </Button>
           </Stack>
         ) : (

@@ -133,12 +133,12 @@ export default function Offers() {
       console.log(`${offersData.length} offers loaded successfully`);
       
       if (offersData.length === 0) {
-        enqueueSnackbar('No offers found', { variant: 'info' });
+        enqueueSnackbar(t('offers.info.noOffersFound'), { variant: 'info' });
       }
       
     } catch (error: any) {
       console.error("Error fetching offers:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Error loading offers';
+      const errorMessage = error?.response?.data?.message || error?.message || t('offers.errors.loadFailed');
       setError(errorMessage);
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
@@ -158,11 +158,11 @@ export default function Offers() {
       const response = await OffersAPI.acceptOffer(offerId);
       console.log('Offer accepted:', response);
       
-      enqueueSnackbar('Offre acceptée avec succès!', { variant: 'success' });
+      enqueueSnackbar(t('offers.success.accepted'), { variant: 'success' });
       getOffers(true);
     } catch (error: any) {
       console.error('Error accepting offer:', error);
-      const errorMessage = error.response?.data?.message || 'Erreur lors de l\'acceptation de l\'offre.';
+      const errorMessage = error.response?.data?.message || t('offers.errors.acceptFailed');
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setLoading(false);
@@ -177,11 +177,11 @@ export default function Offers() {
       const response = await OffersAPI.rejectOffer(offerId);
       console.log('Offer rejected:', response);
       
-      enqueueSnackbar('Offre refusée.', { variant: 'info' });
+      enqueueSnackbar(t('offers.info.rejected'), { variant: 'info' });
       getOffers(true);
     } catch (error: any) {
       console.error('Error rejecting offer:', error);
-      enqueueSnackbar('Erreur lors du refus de l\'offre.', { variant: 'error' });
+      enqueueSnackbar(t('offers.errors.rejectFailed'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -191,11 +191,11 @@ export default function Offers() {
     try {
       setLoading(true);
       await OffersAPI.deleteOffer(offerId);
-      enqueueSnackbar('Offre supprimée avec succès', { variant: 'success' });
+      enqueueSnackbar(t('offers.success.deleted'), { variant: 'success' });
       getOffers(true);
     } catch (error: any) {
       console.error('Error deleting offer:', error);
-      enqueueSnackbar('Erreur lors de la suppression de l\'offre.', { variant: 'error' });
+      enqueueSnackbar(t('offers.errors.deleteFailed'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -206,12 +206,12 @@ export default function Offers() {
     try {
       setLoading(true);
       await Promise.all(selected.map((id) => OffersAPI.deleteOffer(id)));
-      enqueueSnackbar(`${selected.length} offre(s) supprimée(s)`, { variant: 'success' });
+      enqueueSnackbar(t('offers.success.bulkDeleted', { count: selected.length }), { variant: 'success' });
       setSelected([]);
       getOffers(true);
     } catch (error: any) {
       console.error('Error bulk deleting offers:', error);
-      enqueueSnackbar('Erreur lors de la suppression multiple.', { variant: 'error' });
+      enqueueSnackbar(t('offers.errors.bulkDeleteFailed'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -345,7 +345,7 @@ export default function Offers() {
                             onClick={() => handleAcceptOffer(_id)}
                             disabled={loading}
                           >
-                            Accepter
+                            {t('offers.accept')}
                           </Button>
                           <Button
                             size="small"
@@ -354,14 +354,14 @@ export default function Offers() {
                             onClick={() => handleRejectOffer(_id)}
                             disabled={loading}
                           >
-                            Refuser
+                            {t('offers.reject')}
                           </Button>
                         </>
                       )}
                       
                       {(row.status || 'PENDING') !== 'PENDING' && (
                         <Chip
-                          label={(row.status || 'PENDING') === 'ACCEPTED' ? 'Acceptée' : 'Refusée'}
+                          label={(row.status || 'PENDING') === 'ACCEPTED' ? t('offers.status.accepted') : t('offers.status.rejected')}
                           color={(row.status || 'PENDING') === 'ACCEPTED' ? 'success' : 'error'}
                           variant="outlined"
                           size="small"
@@ -377,7 +377,7 @@ export default function Offers() {
                       onClick={() => handleDeleteOffer(_id)}
                       disabled={loading}
                     >
-                      Supprimer
+                      {t('offers.delete')}
                     </Button>
                   )}
                 </Stack>
@@ -438,12 +438,12 @@ export default function Offers() {
       return (
         <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            {filterTab === 'received' ? 'Aucune offre reçue' : 'Aucune offre faite'}
+            {filterTab === 'received' ? t('offers.empty.received') : t('offers.empty.my')}
           </Typography>
           <Typography variant="body2" color="text.secondary" textAlign="center">
             {filterTab === 'received' 
-              ? 'Vous n\'avez reçu aucune offre pour le moment.' 
-              : 'Vous n\'avez fait aucune offre pour le moment.'}
+              ? t('offers.empty.receivedDescription')
+              : t('offers.empty.myDescription')}
           </Typography>
         </Stack>
       );
@@ -495,7 +495,7 @@ export default function Offers() {
           >
             <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2}>
               <Typography variant="h4" sx={{ m: 0 }}>
-                {filterTab === 'received' ? 'Offres reçues' : 'Mes offres'}
+                {filterTab === 'received' ? t('offers.receivedOffers') : t('offers.myOffers')}
               </Typography>
               {selected.length > 0 && filterTab === 'my' && (
                 <Button
@@ -505,7 +505,7 @@ export default function Offers() {
                   disabled={loading}
                   sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
                 >
-                  Supprimer la sélection ({selected.length})
+                  {t('offers.deleteSelection', { count: selected.length })}
                 </Button>
               )}
               <Button
@@ -516,7 +516,7 @@ export default function Offers() {
                 startIcon={<RefreshIcon />}
                 sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
               >
-                Actualiser
+                {t('offers.refresh')}
               </Button>
             </Stack>
             
@@ -527,7 +527,7 @@ export default function Offers() {
               startIcon={loading ? <CircularProgress size={16} /> : undefined}
               sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
             >
-              {loading ? t('refreshing') : t('refresh')}
+              {loading ? t('refreshing') : t('offers.refresh')}
             </Button>
           </Stack>
         </Box>
@@ -558,11 +558,11 @@ export default function Offers() {
             }}
           >
             <Tab 
-              label={`Offre reçue (${offers.filter(offer => offer.user._id !== auth?.user?._id).length})`} 
+              label={`${t('offers.tab.received')} (${offers.filter(offer => offer.user._id !== auth?.user?._id).length})`} 
               value="received" 
             />
             <Tab 
-              label={`Mon offre (${offers.filter(offer => offer.user._id === auth?.user?._id).length})`} 
+              label={`${t('offers.tab.my')} (${offers.filter(offer => offer.user._id === auth?.user?._id).length})`} 
               value="my" 
             />
           </Tabs>

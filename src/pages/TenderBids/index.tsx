@@ -41,12 +41,12 @@ export default function TenderBids() {
   const { auth } = useAuth();
   
   const COLUMNS = [
-    { id: 'bidder', label: 'Prestataire', alignRight: false, searchable: true, sortable: true },
-    { id: 'tender', label: 'Appel d\'Offres', alignRight: false, searchable: true, sortable: true },
-    { id: 'bidAmount', label: 'Montant/Proposition', alignRight: false, searchable: false, sortable: true },
-    { id: 'deliveryTime', label: 'Délai', alignRight: false, searchable: false, sortable: true },
-    { id: 'createdAt', label: 'Date', alignRight: false, searchable: false, sortable: true },
-    { id: 'status', label: 'Statut', alignRight: false, searchable: false },
+    { id: 'bidder', label: t('tenderBids.table.provider'), alignRight: false, searchable: true, sortable: true },
+    { id: 'tender', label: t('tenderBids.table.tender'), alignRight: false, searchable: true, sortable: true },
+    { id: 'bidAmount', label: t('tenderBids.table.amountProposal'), alignRight: false, searchable: false, sortable: true },
+    { id: 'deliveryTime', label: t('tenderBids.table.deliveryTime'), alignRight: false, searchable: false, sortable: true },
+    { id: 'createdAt', label: t('tenderBids.table.date'), alignRight: false, searchable: false, sortable: true },
+    { id: 'status', label: t('tenderBids.table.status'), alignRight: false, searchable: false },
     { id: 'actions', label: '', alignRight: true, searchable: false }
   ];
   const { enqueueSnackbar } = useSnackbar();
@@ -77,12 +77,12 @@ export default function TenderBids() {
           console.log("tender bids", response);
         } else {
           console.error("Unexpected response format:", response);
-          enqueueSnackbar('Format de réponse inattendu.', { variant: 'error' });
+          enqueueSnackbar(t('tenderBids.errors.unexpectedFormat'), { variant: 'error' });
         }
       })
       .catch((e) => {
         console.error("Error fetching tender bids:", e);
-        enqueueSnackbar('Chargement échoué.', { variant: 'error' });
+        enqueueSnackbar(t('tenderBids.errors.loadFailed'), { variant: 'error' });
       })
       .finally(() => setLoading(false));
   };
@@ -95,13 +95,13 @@ export default function TenderBids() {
       const response = await TendersAPI.acceptTenderBid(bidId);
       console.log('Tender bid accepted:', response);
       
-      enqueueSnackbar('Offre acceptée avec succès!', { variant: 'success' });
+      enqueueSnackbar(t('tenderBids.success.accepted'), { variant: 'success' });
       
       // Refresh the data
       get();
     } catch (error) {
       console.error('Error accepting tender bid:', error);
-      enqueueSnackbar('Erreur lors de l\'acceptation de l\'offre.', { variant: 'error' });
+      enqueueSnackbar(t('tenderBids.errors.acceptFailed'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -115,13 +115,13 @@ export default function TenderBids() {
       const response = await TendersAPI.rejectTenderBid(bidId);
       console.log('Tender bid rejected:', response);
       
-      enqueueSnackbar('Offre refusée.', { variant: 'info' });
+      enqueueSnackbar(t('tenderBids.info.rejected'), { variant: 'info' });
       
       // Refresh the data
       get();
     } catch (error) {
       console.error('Error rejecting tender bid:', error);
-      enqueueSnackbar('Erreur lors du refus de l\'offre.', { variant: 'error' });
+      enqueueSnackbar(t('tenderBids.errors.rejectFailed'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -145,11 +145,11 @@ export default function TenderBids() {
   const getStatusLabel = (status: TenderBidStatus) => {
     switch (status) {
       case TenderBidStatus.PENDING:
-        return 'En attente';
+        return t('tenderBids.status.pending');
       case TenderBidStatus.ACCEPTED:
-        return 'Acceptée';
+        return t('tenderBids.status.accepted');
       case TenderBidStatus.DECLINED:
-        return 'Refusée';
+        return t('tenderBids.status.declined');
       default:
         return status;
     }
@@ -197,11 +197,11 @@ export default function TenderBids() {
               <TableCell align="left">
                 <Stack spacing={0.5}>
                   <Typography variant="subtitle2" noWrap>
-                    {tender?.title || 'N/A'}
+                    {tender?.title || t('tenderBids.notAvailable')}
                   </Typography>
                   {tender?.evaluationType && (
                     <Chip 
-                      label={tender.evaluationType === 'MIEUX_DISANT' ? 'Mieux disant' : 'Moins disant'}
+                      label={tender.evaluationType === 'MIEUX_DISANT' ? t('tenderBids.evaluationType.bestOffer') : t('tenderBids.evaluationType.lowestPrice')}
                       size="small"
                       color={tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
                       sx={{ width: 'fit-content', fontSize: '0.7rem' }}
@@ -223,7 +223,7 @@ export default function TenderBids() {
                       color: proposal ? 'text.primary' : 'text.secondary'
                     }}
                   >
-                    {proposal || 'Aucune proposition'}
+                    {proposal || t('tenderBids.noProposal')}
                   </Typography>
                 ) : (
                   <Typography variant="h6" color="success.main">
@@ -232,7 +232,7 @@ export default function TenderBids() {
                 )}
               </TableCell>
               <TableCell align="left">
-                {deliveryTime ? `${deliveryTime} jours` : '-'}
+                {deliveryTime ? `${deliveryTime} ${t('tenderBids.days')}` : '-'}
               </TableCell>
               <TableCell align="left">{formatDate(createdAt)}</TableCell>
               <TableCell align="left">
@@ -253,7 +253,7 @@ export default function TenderBids() {
                       setShowBidDetailsDialog(true);
                     }}
                   >
-                    Voir détails
+                    {t('tenderBids.viewDetails')}
                   </Button>
                   {status === TenderBidStatus.PENDING && (
                     <>
@@ -264,7 +264,7 @@ export default function TenderBids() {
                         onClick={() => handleAcceptOffer(_id)}
                         disabled={loading}
                       >
-                        Accepter
+                        {t('tenderBids.accept')}
                       </Button>
                       <Button
                         size="small"
@@ -273,7 +273,7 @@ export default function TenderBids() {
                         onClick={() => handleRejectOffer(_id)}
                         disabled={loading}
                       >
-                        Refuser
+                        {t('tenderBids.reject')}
                       </Button>
                     </>
                   )}
@@ -293,7 +293,7 @@ export default function TenderBids() {
   };
 
   return (
-    <Page title="Offres Reçues">
+    <Page title={t('tenderBids.pageTitle')}>
       <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
         <Box
           sx={{
@@ -324,7 +324,7 @@ export default function TenderBids() {
                 textAlign: { xs: 'center', sm: 'left' }
               }}
             >
-              Offres Reçues
+              {t('tenderBids.pageTitle')}
             </Typography>
             <Stack direction="row" spacing={2}>
             {/* Bulk delete removed to match tenders API capabilities */}
@@ -338,7 +338,7 @@ export default function TenderBids() {
                   py: { xs: 1.5, sm: 1 }
                 }}
               >
-                Nouvel Appel d'Offres
+                {t('navigation.newTender')}
               </Button>
             </Stack>
           </Stack>
@@ -391,7 +391,7 @@ export default function TenderBids() {
             </Avatar>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Détails de l'offre
+                {t('tenderBids.dialog.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {selectedBid?.bidder?.firstName} {selectedBid?.bidder?.lastName}
@@ -405,22 +405,22 @@ export default function TenderBids() {
             {/* Provider Information */}
             <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Informations du prestataire
+                {t('tenderBids.dialog.providerInfo')}
               </Typography>
               <Stack spacing={1}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Nom:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.name')}</Typography>
                   <Typography variant="body2" fontWeight={600}>
                     {selectedBid?.bidder?.firstName} {selectedBid?.bidder?.lastName}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Email:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.email')}</Typography>
                   <Typography variant="body2">{selectedBid?.bidder?.email}</Typography>
                 </Box>
                 {selectedBid?.bidder?.phone && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" color="text.secondary">Téléphone:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.phone')}</Typography>
                     <Typography variant="body2">{selectedBid.bidder.phone}</Typography>
                   </Box>
                 )}
@@ -430,20 +430,20 @@ export default function TenderBids() {
             {/* Tender Information */}
             <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Appel d'offres
+                {t('tenderBids.dialog.tenderInfo')}
               </Typography>
               <Stack spacing={1}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Titre:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.title')}</Typography>
                   <Typography variant="body2" fontWeight={600}>
-                    {selectedBid?.tender?.title || 'N/A'}
+                    {selectedBid?.tender?.title || t('tenderBids.notAvailable')}
                   </Typography>
                 </Box>
                 {selectedBid?.tender?.evaluationType && (
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">Type:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.type')}</Typography>
                     <Chip 
-                      label={selectedBid.tender.evaluationType === 'MIEUX_DISANT' ? 'Mieux disant' : 'Moins disant'}
+                      label={selectedBid.tender.evaluationType === 'MIEUX_DISANT' ? t('tenderBids.evaluationType.bestOffer') : t('tenderBids.evaluationType.lowestPrice')}
                       size="small"
                       color={selectedBid.tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
                     />
@@ -455,14 +455,14 @@ export default function TenderBids() {
             {/* Bid Details */}
             <Card sx={{ p: 2, bgcolor: 'background.neutral' }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Détails de l'offre
+                {t('tenderBids.dialog.bidDetails')}
               </Typography>
               <Stack spacing={2}>
                 {/* Show proposal for MIEUX_DISANT */}
                 {selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' ? (
                   <Box>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Proposition détaillée:
+                      {t('tenderBids.dialog.detailedProposal')}
                     </Typography>
                     <Paper 
                       sx={{ 
@@ -485,14 +485,14 @@ export default function TenderBids() {
                           color: selectedBid?.proposal ? 'text.primary' : 'text.secondary'
                         }}
                       >
-                        {selectedBid?.proposal || 'Aucune proposition fournie'}
+                        {selectedBid?.proposal || t('tenderBids.dialog.noProposal')}
                       </Typography>
                     </Paper>
                   </Box>
                 ) : (
                   /* Show price for MOINS_DISANT */
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">Montant proposé:</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.proposedAmount')}</Typography>
                     <Typography variant="h6" color="primary.main" fontWeight={700}>
                       {selectedBid?.bidAmount.toLocaleString()} DA
                     </Typography>
@@ -500,21 +500,21 @@ export default function TenderBids() {
                 )}
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Délai de livraison:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.deliveryTime')}</Typography>
                   <Typography variant="body2" fontWeight={600}>
-                    {selectedBid?.deliveryTime ? `${selectedBid.deliveryTime} jours` : 'Non spécifié'}
+                    {selectedBid?.deliveryTime ? `${selectedBid.deliveryTime} ${t('tenderBids.days')}` : t('tenderBids.dialog.notSpecified')}
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Date de soumission:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenders.submissionDate')}:</Typography>
                   <Typography variant="body2" fontWeight={600}>
                     {selectedBid?.createdAt ? formatDate(selectedBid.createdAt) : '-'}
                   </Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">Statut:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenderBids.dialog.status')}</Typography>
                   <Chip
                     label={getStatusLabel(selectedBid?.status || TenderBidStatus.PENDING)}
                     color={getStatusColor(selectedBid?.status || TenderBidStatus.PENDING)}
@@ -537,8 +537,8 @@ export default function TenderBids() {
             >
               <Typography variant="body2">
                 {selectedBid?.tender?.evaluationType === 'MIEUX_DISANT' 
-                  ? 'Appel d\'offres de type Mieux Disant (évaluation par proposition)'
-                  : 'Appel d\'offres de type Moins Disant (évaluation par prix)'}
+                  ? t('tenderBids.alert.bestOfferType')
+                  : t('tenderBids.alert.lowestPriceType')}
               </Typography>
             </Alert>
           </Stack>
@@ -550,7 +550,7 @@ export default function TenderBids() {
             variant="outlined"
             sx={{ borderRadius: 2 }}
           >
-            Fermer
+            {t('tenderBids.close')}
           </Button>
           {selectedBid?.status === TenderBidStatus.PENDING && (
             <>
@@ -566,7 +566,7 @@ export default function TenderBids() {
                   }
                 }}
               >
-                Accepter
+                {t('tenderBids.accept')}
               </Button>
               <Button
                 variant="outlined"
@@ -580,7 +580,7 @@ export default function TenderBids() {
                   }
                 }}
               >
-                Refuser
+                {t('tenderBids.reject')}
               </Button>
             </>
           )}

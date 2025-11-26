@@ -79,44 +79,44 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Soumission',
+      title: t('navigation.tenders'),
       path: '/dashboard/tenders',
       icon: getIcon('mdi:file-document-multiple'),
       children: [
         {
-          title: 'Mes Soumissions',
+          title: t('navigation.myTenders'),
           path: '/dashboard/tenders',
           icon: getIcon('mdi:file-document-multiple-outline'),
         },
         {
-          title: 'Nouvel Soumission',
+          title: t('navigation.newTender'),
           path: '/dashboard/tenders/create',
           icon: getIcon('mdi:file-document-plus'),
         },
         {
-          title: 'Offres Reçues',
+          title: t('navigation.receivedOffers'),
           path: '/dashboard/tender-bids',
           icon: getIcon('mdi:email-receive'),
         },
       ],
     },
     {
-      title: 'Ventes Directes',
+      title: t('navigation.directSales'),
       path: '/dashboard/direct-sales',
       icon: getIcon('mdi:store'),
       children: [
         {
-          title: 'Mes Ventes Directes',
+          title: t('navigation.myDirectSales'),
           path: '/dashboard/direct-sales',
           icon: getIcon('mdi:package-variant'),
         },
         {
-          title: 'Créer une Vente Directe',
+          title: t('navigation.createDirectSale'),
           path: '/dashboard/direct-sales/create',
           icon: getIcon('mdi:plus-circle'),
         },
         {
-          title: 'Mes Commandes',
+          title: t('navigation.myOrders'),
           path: '/dashboard/direct-sales/orders',
           icon: getIcon('mdi:cart'),
         },

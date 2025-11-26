@@ -22,6 +22,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import Page from '@/components/Page';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
@@ -43,6 +44,7 @@ interface DirectSale {
 }
 
 export default function MyDirectSales() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { auth } = useAuth();
@@ -62,7 +64,7 @@ export default function MyDirectSales() {
       setDirectSales(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching direct sales:', error);
-      enqueueSnackbar('Erreur lors du chargement des ventes directes', { variant: 'error' });
+      enqueueSnackbar(t('directSales.loadError'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -73,12 +75,12 @@ export default function MyDirectSales() {
 
     try {
       await DirectSaleAPI.delete(selectedSale._id);
-      enqueueSnackbar('Vente directe supprimée avec succès', { variant: 'success' });
+      enqueueSnackbar(t('directSales.deleteSuccess'), { variant: 'success' });
       setDeleteDialogOpen(false);
       setSelectedSale(null);
       fetchDirectSales();
     } catch (error: any) {
-      enqueueSnackbar('Erreur lors de la suppression', { variant: 'error' });
+      enqueueSnackbar(t('directSales.deleteError'), { variant: 'error' });
     }
   };
 
@@ -98,11 +100,11 @@ export default function MyDirectSales() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'Active';
+        return t('directSales.status.active');
       case 'SOLD_OUT':
-        return 'Épuisé';
+        return t('directSales.status.soldOut');
       case 'INACTIVE':
-        return 'Inactif';
+        return t('directSales.status.inactive');
       default:
         return status;
     }
@@ -113,46 +115,46 @@ export default function MyDirectSales() {
   };
 
   const getAvailableQuantity = (sale: DirectSale) => {
-    if (sale.quantity === 0) return 'Illimité';
+    if (sale.quantity === 0) return t('directSales.unlimited');
     return `${sale.quantity - sale.soldQuantity} / ${sale.quantity}`;
   };
 
   return (
-    <Page title="Mes ventes directes">
+    <Page title={t('directSales.myDirectSales')}>
       <Container maxWidth="xl">
-        <Breadcrumb links={[{ name: 'Ventes Directes', href: '/dashboard/direct-sales' }]} />
+        <Breadcrumb links={[{ name: t('navigation.directSales'), href: '/dashboard/direct-sales' }]} />
 
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h3" sx={{ fontWeight: 700 }}>
-            Mes ventes directes
+            {t('directSales.myDirectSales')}
           </Typography>
           <Button
             variant="contained"
             startIcon={<Iconify icon="eva:plus-fill" />}
             onClick={() => navigate('/dashboard/direct-sales/create')}
           >
-            Créer une vente directe
+            {t('directSales.createDirectSale')}
           </Button>
         </Box>
 
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography>Chargement...</Typography>
+            <Typography>{t('directSales.loading')}</Typography>
           </Box>
         ) : directSales.length === 0 ? (
           <Card sx={{ p: 4, textAlign: 'center' }}>
             <Iconify icon="mdi:package-variant-closed" width={64} height={64} sx={{ color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
-              Aucune vente directe
+              {t('directSales.noDirectSales')}
             </Typography>
             <Typography color="text.secondary" sx={{ mb: 3 }}>
-              Commencez par créer votre première vente directe
+              {t('directSales.noDirectSalesDescription')}
             </Typography>
             <Button
               variant="contained"
               onClick={() => navigate('/dashboard/direct-sales/create')}
             >
-              Créer une vente directe
+              {t('directSales.createDirectSale')}
             </Button>
           </Card>
         ) : (
@@ -160,13 +162,13 @@ export default function MyDirectSales() {
             <Table sx={{ minWidth: 650 }} aria-label="table des ventes directes">
               <TableHead>
                 <TableRow>
-                  <TableCell>Titre</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Prix</TableCell>
-                  <TableCell>Quantité</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell>Date de création</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{t('directSales.table.title')}</TableCell>
+                  <TableCell>{t('directSales.table.description')}</TableCell>
+                  <TableCell>{t('directSales.table.price')}</TableCell>
+                  <TableCell>{t('directSales.table.quantity')}</TableCell>
+                  <TableCell>{t('directSales.table.status')}</TableCell>
+                  <TableCell>{t('directSales.table.createdAt')}</TableCell>
+                  <TableCell align="center">{t('directSales.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -216,7 +218,7 @@ export default function MyDirectSales() {
                           variant="outlined"
                           onClick={() => navigate(`/dashboard/direct-sales/${sale._id}`)}
                         >
-                          Voir détails
+                          {t('directSales.viewDetails')}
                         </Button>
                         <IconButton
                           size="small"
@@ -238,16 +240,16 @@ export default function MyDirectSales() {
         )}
 
         <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-          <DialogTitle>Supprimer la vente directe</DialogTitle>
+          <DialogTitle>{t('directSales.deleteTitle')}</DialogTitle>
           <DialogContent>
             <Typography>
-              Êtes-vous sûr de vouloir supprimer "{selectedSale?.title}" ? Cette action est irréversible.
+              {t('directSales.deleteMessage', { title: selectedSale?.title || '' })}
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Annuler</Button>
+            <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel') || t('orders.cancel')}</Button>
             <Button onClick={handleDelete} color="error" variant="contained">
-              Supprimer
+              {t('common.delete') || 'Supprimer'}
             </Button>
           </DialogActions>
         </Dialog>

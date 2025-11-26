@@ -407,7 +407,7 @@ export default function TenderDetail() {
             <Card sx={{ p: 3 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
                 <Typography variant="h6">
-                  Mes soumissions ({tenderBids.length})
+                  {t('tenders.mySubmissions')} ({tenderBids.length})
                 </Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
                   {tender.status === TENDER_STATUS.OPEN && (
@@ -688,7 +688,7 @@ export default function TenderDetail() {
                 </Box>
                 
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Date de soumission:</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('tenders.submissionDate')}:</Typography>
                   <Typography variant="body2" fontWeight={600}>
                     {selectedBid?.createdAt ? formatDate(selectedBid.createdAt) : '-'}
                   </Typography>

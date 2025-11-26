@@ -134,7 +134,7 @@ export default function Auctions() {
                 auctionData = response.data;
             } else {
                 console.error("Unexpected response format:", response);
-                enqueueSnackbar('Format de réponse inattendu.', { variant: 'error' });
+                enqueueSnackbar(t('auctions.errors.unexpectedFormat'), { variant: 'error' });
                 return;
             }
 
@@ -179,7 +179,7 @@ export default function Auctions() {
         })
         .catch((e) => {
             console.error("Error fetching auctions:", e);
-            enqueueSnackbar('Chargement échoué.', { variant: 'error' });
+            enqueueSnackbar(t('auctions.errors.loadFailed'), { variant: 'error' });
         })
         .finally(() => setLoading(false));
 };
@@ -203,11 +203,11 @@ export default function Auctions() {
   const getAuctionTypeLabel = (type: AUCTION_TYPE) => {
     switch (type) {
       case AUCTION_TYPE.CLASSIC:
-        return 'Classique';
+        return t('auctions.type.classic');
       case AUCTION_TYPE.EXPRESS:
-        return 'Express (MEZROUB)';
+        return t('auctions.type.express');
       case AUCTION_TYPE.AUTO_SUB_BID:
-        return 'Automatique';
+        return t('auctions.type.automatic');
       default:
         return type;
     }
@@ -358,22 +358,22 @@ export default function Auctions() {
 
     if (!relaunchData.title.trim()) {
       console.log('Title validation failed');
-      errors.title = 'Le titre est requis';
+      errors.title = t('auctions.validation.titleRequired');
     }
 
     if (!relaunchData.description.trim()) {
       console.log('Description validation failed');
-      errors.description = 'La description est requise';
+      errors.description = t('auctions.validation.descriptionRequired');
     }
 
     if (!relaunchData.place.trim()) {
       console.log('Place validation failed');
-      errors.place = 'Le lieu est requis';
+      errors.place = t('auctions.validation.placeRequired');
     }
 
     if (relaunchData.startingPrice <= 0) {
       console.log('Starting price validation failed:', relaunchData.startingPrice);
-      errors.startingPrice = 'Le prix de départ doit être supérieur à 0';
+      errors.startingPrice = t('auctions.validation.startingPriceRequired');
     }
 
     const now = new Date();
@@ -383,7 +383,7 @@ export default function Auctions() {
         now: now,
         comparison: relaunchData.startingAt < now
       });
-      errors.startingAt = 'La date de début doit être dans le futur';
+      errors.startingAt = t('auctions.validation.startingDateRequired');
     }
 
     if (relaunchData.endingAt <= relaunchData.startingAt) {
@@ -392,7 +392,7 @@ export default function Auctions() {
         startingAt: relaunchData.startingAt,
         comparison: relaunchData.endingAt <= relaunchData.startingAt
       });
-      errors.endingAt = 'La date de fin doit être après la date de début';
+      errors.endingAt = t('auctions.validation.endingDateRequired');
     }
 
     // Check minimum duration (1 hour)
@@ -404,7 +404,7 @@ export default function Auctions() {
         oneHour: oneHour,
         comparison: duration < oneHour
       });
-      errors.endingAt = 'La durée de l\'enchère doit être d\'au moins 1 heure';
+      errors.endingAt = t('auctions.validation.durationRequired');
     }
 
     console.log('Validation errors:', errors);
@@ -451,7 +451,7 @@ export default function Auctions() {
     AuctionsAPI.relaunchAuction(relaunchPayload)
       .then((response) => {
         console.log('Relaunch successful:', response);
-        enqueueSnackbar('Enchère relancée avec succès!', { variant: 'success' });
+        enqueueSnackbar(t('auctions.success.relaunched'), { variant: 'success' });
         setRelaunchDialog(false);
         setSelectedAuction(null);
         setValidationErrors({});
@@ -464,7 +464,7 @@ export default function Auctions() {
         console.error('Error response:', error.response);
         console.error('Error data:', error.response?.data);
         
-        let errorMessage = 'Erreur lors de la relance de l\'enchère.';
+        let errorMessage = t('auctions.errors.relaunchFailed');
         
         if (error.response?.data?.message) {
           if (Array.isArray(error.response.data.message)) {
@@ -557,7 +557,7 @@ export default function Auctions() {
                       }}
                       startIcon={<Iconify icon="eva:refresh-fill" />}
                     >
-                      Relancer
+                      {t('auctions.relaunch')}
                     </Button>
                   )}
                 </Stack>
@@ -610,11 +610,11 @@ export default function Auctions() {
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel>Filtrer par statut</InputLabel>
+                <InputLabel>{t('auctions.filterByStatus')}</InputLabel>
                 <Select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  label="Filtrer par statut"
+                  label={t('auctions.filterByStatus')}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       background: theme.palette.mode === 'light' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.25)',
@@ -622,9 +622,9 @@ export default function Auctions() {
                     }
                   }}
                 >
-                  <MenuItem value="ALL">Toutes les enchères</MenuItem>
-                  <MenuItem value="ACTIVE">Enchères en cours</MenuItem>
-                  <MenuItem value="FINISHED">Enchères terminées</MenuItem>
+                  <MenuItem value="ALL">{t('auctions.filter.all')}</MenuItem>
+                  <MenuItem value="ACTIVE">{t('auctions.filter.active')}</MenuItem>
+                  <MenuItem value="FINISHED">{t('auctions.filter.finished')}</MenuItem>
                 </Select>
               </FormControl>
               <Button
@@ -676,14 +676,14 @@ export default function Auctions() {
               sx={{ color: 'text.disabled', mb: 2 }} 
             />
             <Typography variant="h6" gutterBottom>
-              {statusFilter === 'ACTIVE' && 'Aucune enchère en cours'}
-              {statusFilter === 'FINISHED' && 'Aucune enchère terminée'}
-              {statusFilter === 'ALL' && 'Aucune enchère trouvée'}
+              {statusFilter === 'ACTIVE' && t('auctions.empty.active')}
+              {statusFilter === 'FINISHED' && t('auctions.empty.finished')}
+              {statusFilter === 'ALL' && t('auctions.empty.all')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {statusFilter === 'ACTIVE' && 'Vous n\'avez pas d\'enchères actuellement en cours.'}
-              {statusFilter === 'FINISHED' && 'Vous n\'avez pas encore d\'enchères terminées et fermées à relancer.'}
-              {statusFilter === 'ALL' && 'Commencez par créer votre première enchère.'}
+              {statusFilter === 'ACTIVE' && t('auctions.empty.activeDescription')}
+              {statusFilter === 'FINISHED' && t('auctions.empty.finishedDescription')}
+              {statusFilter === 'ALL' && t('auctions.empty.allDescription')}
             </Typography>
             <Button
               variant="contained"
@@ -691,21 +691,21 @@ export default function Auctions() {
               to="/dashboard/auctions/create"
               startIcon={<Iconify icon="eva:plus-fill" />}
             >
-              Créer une nouvelle enchère
+              {t('auctions.createNewAuction')}
             </Button>
           </Box>
         )}
 
         {/* Relaunch Dialog */}
         <Dialog open={relaunchDialog} onClose={() => setRelaunchDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Relancer l'Enchère</DialogTitle>
+          <DialogTitle>{t('auctions.relaunchDialog.title')}</DialogTitle>
           <DialogContent>
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Titre de l'enchère"
+                    label={t('auctions.relaunchDialog.auctionTitle')}
                     value={relaunchData.title}
                     onChange={(e) => setRelaunchData({ ...relaunchData, title: e.target.value })}
                     error={!!validationErrors.title}
@@ -718,7 +718,7 @@ export default function Auctions() {
                     fullWidth
                     multiline
                     rows={3}
-                    label="Description"
+                    label={t('auctions.relaunchDialog.description')}
                     value={relaunchData.description}
                     onChange={(e) => setRelaunchData({ ...relaunchData, description: e.target.value })}
                     error={!!validationErrors.description}
@@ -729,7 +729,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Lieu"
+                    label={t('auctions.relaunchDialog.place')}
                     value={relaunchData.place}
                     onChange={(e) => setRelaunchData({ ...relaunchData, place: e.target.value })}
                     error={!!validationErrors.place}
@@ -740,7 +740,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Quantité"
+                    label={t('auctions.relaunchDialog.quantity')}
                     value={relaunchData.quantity}
                     onChange={(e) => setRelaunchData({ ...relaunchData, quantity: e.target.value })}
                     error={!!validationErrors.quantity}
@@ -750,7 +750,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Prix de départ (DA)"
+                    label={t('auctions.relaunchDialog.startingPrice')}
                     type="number"
                     value={relaunchData.startingPrice}
                     onChange={(e) => setRelaunchData({ ...relaunchData, startingPrice: Number(e.target.value) })}
@@ -761,21 +761,21 @@ export default function Auctions() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Type d'enchère</InputLabel>
+                    <InputLabel>{t('auctions.relaunchDialog.auctionType')}</InputLabel>
                     <Select
                       value={relaunchData.auctionType}
                       onChange={(e) => setRelaunchData({ ...relaunchData, auctionType: e.target.value as AUCTION_TYPE })}
                     >
-                      <MenuItem value={AUCTION_TYPE.CLASSIC}>Classique</MenuItem>
-                      <MenuItem value={AUCTION_TYPE.EXPRESS}>Express (MEZROUB)</MenuItem>
-                      <MenuItem value={AUCTION_TYPE.AUTO_SUB_BID}>Automatique</MenuItem>
+                      <MenuItem value={AUCTION_TYPE.CLASSIC}>{t('auctions.relaunchDialog.type.classic')}</MenuItem>
+                      <MenuItem value={AUCTION_TYPE.EXPRESS}>{t('auctions.relaunchDialog.type.express')}</MenuItem>
+                      <MenuItem value={AUCTION_TYPE.AUTO_SUB_BID}>{t('auctions.relaunchDialog.type.automatic')}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
                 {/* Timing Configuration */}
                 <Grid item xs={12}>
                   <Typography variant="h6" gutterBottom>
-                    Configuration du timing
+                    {t('auctions.relaunchDialog.timing.title')}
                   </Typography>
                 </Grid>
                 
@@ -783,7 +783,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Délai de début"
+                    label={t('auctions.relaunchDialog.timing.startDelay')}
                     type="number"
                     value={timingConfig.startDelay}
                     onChange={(e) => {
@@ -795,16 +795,16 @@ export default function Auctions() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Unité de délai</InputLabel>
+                    <InputLabel>{t('auctions.relaunchDialog.timing.startUnit')}</InputLabel>
                     <Select
                       value={timingConfig.startUnit}
                       onChange={(e) => {
                         setTimingConfig(prev => ({ ...prev, startUnit: e.target.value as 'minutes' | 'hours' | 'days' }));
                       }}
                     >
-                      <MenuItem value="minutes">Minutes</MenuItem>
-                      <MenuItem value="hours">Heures</MenuItem>
-                      <MenuItem value="days">Jours</MenuItem>
+                      <MenuItem value="minutes">{t('auctions.relaunchDialog.timing.units.minutes')}</MenuItem>
+                      <MenuItem value="hours">{t('auctions.relaunchDialog.timing.units.hours')}</MenuItem>
+                      <MenuItem value="days">{t('auctions.relaunchDialog.timing.units.days')}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -813,7 +813,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Durée de l'enchère"
+                    label={t('auctions.relaunchDialog.timing.duration')}
                     type="number"
                     value={timingConfig.duration}
                     onChange={(e) => {
@@ -825,16 +825,16 @@ export default function Auctions() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>Unité de durée</InputLabel>
+                    <InputLabel>{t('auctions.relaunchDialog.timing.durationUnit')}</InputLabel>
                     <Select
                       value={timingConfig.unit}
                       onChange={(e) => {
                         setTimingConfig(prev => ({ ...prev, unit: e.target.value as 'hours' | 'days' | 'months' }));
                       }}
                     >
-                      <MenuItem value="hours">Heures</MenuItem>
-                      <MenuItem value="days">Jours</MenuItem>
-                      <MenuItem value="months">Mois</MenuItem>
+                      <MenuItem value="hours">{t('auctions.relaunchDialog.timing.units.hours')}</MenuItem>
+                      <MenuItem value="days">{t('auctions.relaunchDialog.timing.units.days')}</MenuItem>
+                      <MenuItem value="months">{t('auctions.relaunchDialog.timing.units.months')}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -846,7 +846,7 @@ export default function Auctions() {
                     onClick={updateTiming}
                     startIcon={<Iconify icon="eva:refresh-fill" />}
                   >
-                    Mettre à jour les dates
+                    {t('auctions.relaunchDialog.updateDates')}
                   </Button>
                 </Grid>
                 
@@ -854,7 +854,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Date de début calculée"
+                    label={t('auctions.relaunchDialog.calculatedStartDate')}
                     value={relaunchData.startingAt.toLocaleString('fr-FR', {
                       year: 'numeric',
                       month: '2-digit',
@@ -870,7 +870,7 @@ export default function Auctions() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Date de fin calculée"
+                    label={t('auctions.relaunchDialog.calculatedEndDate')}
                     value={relaunchData.endingAt.toLocaleString('fr-FR', {
                       year: 'numeric',
                       month: '2-digit',
@@ -887,9 +887,9 @@ export default function Auctions() {
             </LocalizationProvider>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setRelaunchDialog(false)}>Annuler</Button>
+            <Button onClick={() => setRelaunchDialog(false)}>{t('auctions.relaunchDialog.cancel')}</Button>
             <Button onClick={handleRelaunch} variant="contained" color="primary">
-              Relancer l'Enchère
+              {t('auctions.relaunchDialog.confirm')}
             </Button>
           </DialogActions>
         </Dialog>

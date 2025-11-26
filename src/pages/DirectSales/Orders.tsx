@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import Page from '@/components/Page';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
@@ -46,6 +47,7 @@ interface Order {
 }
 
 export default function Orders() {
+  const { t } = useTranslation();
   const { enqueueSnackbar } = useSnackbar();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function Orders() {
       setOrders(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching orders:', error);
-      enqueueSnackbar('Erreur lors du chargement des commandes', { variant: 'error' });
+      enqueueSnackbar(t('orders.loadError'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -76,12 +78,12 @@ export default function Orders() {
     try {
       setConfirming(true);
       await DirectSaleAPI.confirmPurchase(selectedOrder._id);
-      enqueueSnackbar('Commande confirmée avec succès', { variant: 'success' });
+      enqueueSnackbar(t('orders.confirmSuccess'), { variant: 'success' });
       setConfirmDialogOpen(false);
       setSelectedOrder(null);
       fetchOrders();
     } catch (error: any) {
-      enqueueSnackbar('Erreur lors de la confirmation', { variant: 'error' });
+      enqueueSnackbar(t('orders.confirmError'), { variant: 'error' });
     } finally {
       setConfirming(false);
     }
@@ -102,47 +104,48 @@ export default function Orders() {
     }
   };
 
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
-        return 'Confirmé';
+        return t('orders.status.confirmed');
       case 'PENDING':
-        return 'En attente';
+        return t('orders.status.pending');
       case 'CANCELLED':
-        return 'Annulé';
+        return t('orders.status.cancelled');
       case 'COMPLETED':
-        return 'Terminé';
+        return t('orders.status.completed');
       default:
         return status;
     }
   };
 
   return (
-    <Page title="Mes commandes">
+    <Page title={t('orders.title')}>
       <Container maxWidth="xl">
-        <Breadcrumb links={[{ name: 'Ventes Directes', href: '/direct-sales' }, { name: 'Commandes' }]} />
+        <Breadcrumb links={[{ name: t('navigation.directSales'), href: '/direct-sales' }, { name: t('navigation.myOrders') }]} />
 
         <Box sx={{ mb: 4 }}>
           <Typography variant="h3" sx={{ fontWeight: 700 }}>
-            Mes commandes
+            {t('orders.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gérez les commandes reçues pour vos ventes directes
+            {t('orders.description')}
           </Typography>
         </Box>
 
         {loading ? (
           <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography>Chargement...</Typography>
+            <Typography>{t('orders.loading')}</Typography>
           </Box>
         ) : orders.length === 0 ? (
           <Card sx={{ p: 4, textAlign: 'center' }}>
             <Iconify icon="mdi:package-variant" width={64} height={64} sx={{ color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
-              Aucune commande
+              {t('orders.noOrders')}
             </Typography>
             <Typography color="text.secondary">
-              Vous n'avez reçu aucune commande pour le moment
+              {t('orders.noOrdersDescription')}
             </Typography>
           </Card>
         ) : (
@@ -150,25 +153,25 @@ export default function Orders() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Produit</TableCell>
-                  <TableCell>Acheteur</TableCell>
-                  <TableCell align="right">Quantité</TableCell>
-                  <TableCell align="right">Prix unitaire</TableCell>
-                  <TableCell align="right">Total</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{t('orders.table.product')}</TableCell>
+                  <TableCell>{t('orders.table.buyer')}</TableCell>
+                  <TableCell align="right">{t('orders.table.quantity')}</TableCell>
+                  <TableCell align="right">{t('orders.table.unitPrice')}</TableCell>
+                  <TableCell align="right">{t('orders.table.total')}</TableCell>
+                  <TableCell>{t('orders.table.status')}</TableCell>
+                  <TableCell>{t('orders.table.date')}</TableCell>
+                  <TableCell align="center">{t('orders.table.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {orders.map((order) => (
                   <TableRow key={order._id}>
-                    <TableCell>{order.directSale?.title || 'Produit inconnu'}</TableCell>
+                    <TableCell>{order.directSale?.title || t('orders.unknownProduct')}</TableCell>
                     <TableCell>
-                      {order.buyer ? `${order.buyer.firstName || ''} ${order.buyer.lastName || ''}`.trim() || 'Acheteur inconnu' : 'Acheteur inconnu'}
+                      {order.buyer ? `${order.buyer.firstName || ''} ${order.buyer.lastName || ''}`.trim() || t('orders.unknownBuyer') : t('orders.unknownBuyer')}
                       <br />
                       <Typography variant="caption" color="text.secondary">
-                        {order.buyer?.email || 'Email non disponible'}
+                        {order.buyer?.email || t('orders.emailNotAvailable')}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">{order.quantity}</TableCell>
@@ -203,7 +206,7 @@ export default function Orders() {
                             setConfirmDialogOpen(true);
                           }}
                         >
-                          Confirmer
+                          {t('orders.confirm')}
                         </Button>
                       )}
                     </TableCell>
@@ -215,30 +218,32 @@ export default function Orders() {
         )}
 
         <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-          <DialogTitle>Confirmer la commande</DialogTitle>
+          <DialogTitle>{t('orders.confirmOrder')}</DialogTitle>
           <DialogContent>
             <Typography>
-              Êtes-vous sûr de vouloir confirmer la commande de {selectedOrder?.buyer ? `${selectedOrder.buyer.firstName || ''} ${selectedOrder.buyer.lastName || ''}`.trim() || 'Acheteur inconnu' : 'Acheteur inconnu'}{' '}
-              pour "{selectedOrder?.directSale?.title || 'Produit inconnu'}" ?
+              {t('orders.confirmOrderMessage', {
+                buyer: selectedOrder?.buyer ? `${selectedOrder.buyer.firstName || ''} ${selectedOrder.buyer.lastName || ''}`.trim() || t('orders.unknownBuyer') : t('orders.unknownBuyer'),
+                product: selectedOrder?.directSale?.title || t('orders.unknownProduct')
+              })}
             </Typography>
             <Box sx={{ mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Quantité: {selectedOrder?.quantity}
+                {t('orders.quantity')} {selectedOrder?.quantity}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Total: {selectedOrder?.totalPrice.toLocaleString()} DA
+                {t('orders.total')} {selectedOrder?.totalPrice.toLocaleString()} DA
               </Typography>
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setConfirmDialogOpen(false)}>Annuler</Button>
+            <Button onClick={() => setConfirmDialogOpen(false)}>{t('orders.cancel')}</Button>
             <LoadingButton
               onClick={handleConfirm}
               loading={confirming}
               variant="contained"
               color="success"
             >
-              Confirmer
+              {t('orders.confirm')}
             </LoadingButton>
           </DialogActions>
         </Dialog>

@@ -30,6 +30,13 @@
     "bills": "Bills",
     "reports": "Reports",
     "directSales": "Direct Sales",
+    "tenders": "Tenders",
+    "myTenders": "My Tenders",
+    "newTender": "New Tender",
+    "receivedOffers": "Received Offers",
+    "myDirectSales": "My Direct Sales",
+    "createDirectSale": "Create Direct Sale",
+    "myOrders": "My Orders",
     "switchToBuyer": "Switch to Buyer Mode",
     "currentlyInSellerMode": "You are currently in seller mode"
   },
@@ -856,5 +863,270 @@
       "completeStep": "Please complete {stepName}"
     },
     "confirm": "Confirm and Create"
+  },
+  "directSales": {
+    "createTitle": "Create Direct Sale",
+    "createSubtitle": "Sell your products and services at fixed prices",
+    "step": "Step {{current}} of {{total}}",
+    "progress": "{{percent}}% completed",
+    "myDirectSales": "My Direct Sales",
+    "loadError": "Error loading direct sales"
+  },
+  "tenders": {
+    "mySubmissions": "My Submissions",
+    "submissionDate": "Submission Date",
+    "pageTitle": "Tenders",
+    "currentOffer": "Current Offer",
+    "noTenders": "No tenders at the moment",
+    "noTendersDescription": "You haven't created any tenders yet. Create your first tender to start receiving proposals.",
+    "createFirstTender": "Create my first tender",
+    "errors": {
+      "sessionExpired": "Session expired. Please log in again.",
+      "accessDenied": "Access denied to tenders.",
+      "genericError": "Error: {message}",
+      "loadFailed": "Unable to load tenders. Please try again."
+    },
+    "auctionType": {
+      "classic": "Classic",
+      "express": "Express"
+    }
+  },
+  "orders": {
+    "title": "My Orders",
+    "description": "Manage orders received for your direct sales",
+    "loading": "Loading...",
+    "noOrders": "No orders",
+    "noOrdersDescription": "You haven't received any orders yet",
+    "table": {
+      "product": "Product",
+      "buyer": "Buyer",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "total": "Total",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "unknownProduct": "Unknown product",
+    "unknownBuyer": "Unknown buyer",
+    "emailNotAvailable": "Email not available",
+    "confirm": "Confirm",
+    "confirmOrder": "Confirm Order",
+    "confirmOrderMessage": "Are you sure you want to confirm the order from {buyer} for \"{product}\"?",
+    "quantity": "Quantity:",
+    "total": "Total:",
+    "cancel": "Cancel",
+    "loadError": "Error loading orders",
+    "confirmError": "Error confirming order",
+    "confirmSuccess": "Order confirmed successfully"
+  },
+  "directSales": {
+    "createTitle": "Create Direct Sale",
+    "createSubtitle": "Sell your products and services at fixed prices",
+    "step": "Step {{current}} of {{total}}",
+    "progress": "{{percent}}% completed",
+    "myDirectSales": "My Direct Sales",
+    "loadError": "Error loading direct sales",
+    "createDirectSale": "Create Direct Sale",
+    "loading": "Loading...",
+    "noDirectSales": "No direct sales",
+    "noDirectSalesDescription": "Start by creating your first direct sale",
+    "table": {
+      "title": "Title",
+      "description": "Description",
+      "price": "Price",
+      "quantity": "Quantity",
+      "status": "Status",
+      "createdAt": "Creation Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "soldOut": "Sold Out",
+      "inactive": "Inactive"
+    },
+    "viewDetails": "View Details",
+    "deleteTitle": "Delete Direct Sale",
+    "deleteMessage": "Are you sure you want to delete \"{title}\"? This action is irreversible.",
+    "unlimited": "Unlimited",
+    "deleteSuccess": "Direct sale deleted successfully",
+    "deleteError": "Error deleting direct sale"
+  },
+  "tenderBids": {
+    "pageTitle": "Received Offers",
+    "table": {
+      "provider": "Provider",
+      "tender": "Tender",
+      "amountProposal": "Amount/Proposal",
+      "deliveryTime": "Delivery Time",
+      "date": "Date",
+      "status": "Status"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "declined": "Declined"
+    },
+    "viewDetails": "View Details",
+    "accept": "Accept",
+    "reject": "Reject",
+    "close": "Close",
+    "dialog": {
+      "title": "Offer Details",
+      "providerInfo": "Provider Information",
+      "tenderInfo": "Tender",
+      "bidDetails": "Offer Details",
+      "name": "Name:",
+      "email": "Email:",
+      "phone": "Phone:",
+      "title": "Title:",
+      "type": "Type:",
+      "detailedProposal": "Detailed Proposal:",
+      "noProposal": "No proposal provided",
+      "proposedAmount": "Proposed Amount:",
+      "deliveryTime": "Delivery Time:",
+      "notSpecified": "Not specified",
+      "status": "Status:"
+    },
+    "evaluationType": {
+      "bestOffer": "Best Offer",
+      "lowestPrice": "Lowest Price"
+    },
+    "alert": {
+      "bestOfferType": "Best Offer type tender (evaluation by proposal)",
+      "lowestPriceType": "Lowest Price type tender (evaluation by price)"
+    },
+    "errors": {
+      "unexpectedFormat": "Unexpected response format.",
+      "loadFailed": "Loading failed.",
+      "acceptFailed": "Error accepting offer.",
+      "rejectFailed": "Error rejecting offer."
+    },
+    "success": {
+      "accepted": "Offer accepted successfully!"
+    },
+    "info": {
+      "rejected": "Offer rejected."
+    },
+    "notAvailable": "N/A",
+    "noProposal": "No proposal",
+    "days": "days"
+  },
+  "auctions": {
+    "filterByStatus": "Filter by Status",
+    "filter": {
+      "all": "All Auctions",
+      "active": "Active Auctions",
+      "finished": "Finished Auctions"
+    },
+    "relaunch": "Relaunch",
+    "createNewAuction": "Create New Auction",
+    "empty": {
+      "active": "No active auctions",
+      "finished": "No finished auctions",
+      "all": "No auctions found",
+      "activeDescription": "You don't have any active auctions at the moment.",
+      "finishedDescription": "You don't have any finished and closed auctions to relaunch yet.",
+      "allDescription": "Start by creating your first auction."
+    },
+    "relaunchDialog": {
+      "title": "Relaunch Auction",
+      "auctionTitle": "Auction Title",
+      "description": "Description",
+      "place": "Place",
+      "quantity": "Quantity",
+      "startingPrice": "Starting Price (DA)",
+      "auctionType": "Auction Type",
+      "type": {
+        "classic": "Classic",
+        "express": "Express (MEZROUB)",
+        "automatic": "Automatic"
+      },
+      "timing": {
+        "title": "Timing Configuration",
+        "startDelay": "Start Delay",
+        "startUnit": "Delay Unit",
+        "duration": "Auction Duration",
+        "durationUnit": "Duration Unit",
+        "units": {
+          "minutes": "Minutes",
+          "hours": "Hours",
+          "days": "Days",
+          "months": "Months"
+        }
+      },
+      "updateDates": "Update Dates",
+      "calculatedStartDate": "Calculated Start Date",
+      "calculatedEndDate": "Calculated End Date",
+      "cancel": "Cancel",
+      "confirm": "Relaunch Auction"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "descriptionRequired": "Description is required",
+      "placeRequired": "Place is required",
+      "startingPriceRequired": "Starting price must be greater than 0",
+      "startingDateRequired": "Start date must be in the future",
+      "endingDateRequired": "End date must be after start date",
+      "durationRequired": "Auction duration must be at least 1 hour"
+    },
+    "success": {
+      "relaunched": "Auction relaunched successfully!"
+    },
+    "errors": {
+      "relaunchFailed": "Error relaunching auction.",
+      "unexpectedFormat": "Unexpected response format.",
+      "loadFailed": "Loading failed."
+    },
+    "type": {
+      "classic": "Classic",
+      "express": "Express (MEZROUB)",
+      "automatic": "Automatic"
+    }
+  },
+  "offers": {
+    "receivedOffers": "Received Offers",
+    "myOffers": "My Offers",
+    "deleteSelection": "Delete Selection ({count})",
+    "refresh": "Refresh",
+    "accept": "Accept",
+    "reject": "Reject",
+    "delete": "Delete",
+    "tab": {
+      "received": "Received Offer",
+      "my": "My Offer"
+    },
+    "empty": {
+      "received": "No received offers",
+      "my": "No offers made",
+      "receivedDescription": "You haven't received any offers yet.",
+      "myDescription": "You haven't made any offers yet."
+    },
+    "status": {
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "info": {
+      "noOffersFound": "No offers found",
+      "rejected": "Offer rejected."
+    },
+    "errors": {
+      "loadFailed": "Error loading offers",
+      "acceptFailed": "Error accepting offer.",
+      "rejectFailed": "Error rejecting offer.",
+      "deleteFailed": "Error deleting offer.",
+      "bulkDeleteFailed": "Error during bulk deletion."
+    },
+    "success": {
+      "accepted": "Offer accepted successfully!",
+      "deleted": "Offer deleted successfully",
+      "bulkDeleted": "{count} offer(s) deleted"
+    }
   }
 } 
