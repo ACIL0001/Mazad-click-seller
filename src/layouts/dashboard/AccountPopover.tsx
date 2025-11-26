@@ -447,19 +447,19 @@ export default function AccountPopover() {
              gap: '8px',
            }}
          >
-           {/* Text above switch */}
-           <Typography 
-             variant="body1" 
-             sx={{ 
-               fontSize: '14px',
-               fontWeight: '600',
-               color: '#333',
-               textAlign: 'center',
-               mb: 0.5
-             }}
-           >
-             Switch to Buyer Mode
-           </Typography>
+          {/* Text above switch */}
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#333',
+              textAlign: 'center',
+              mb: 0.5
+            }}
+          >
+            {t('navigation.switchToBuyer')}
+          </Typography>
           <Box
             onClick={handleSwitchToBuyer}
             sx={{
@@ -520,20 +520,20 @@ export default function AccountPopover() {
                />
              </Box>
              
-             {/* Current Mode Text */}
-             <Typography 
-               variant="body2" 
-             sx={{ 
-               fontSize: '12px',
-               fontWeight: 600,
-               color: '#666',
-               transition: 'all 0.3s ease',
-               minWidth: '50px',
-               textAlign: 'center'
-             }}
-             >
-               Seller Mode
-             </Typography>
+            {/* Current Mode Text */}
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#666',
+                transition: 'all 0.3s ease',
+                minWidth: '50px',
+                textAlign: 'center'
+              }}
+            >
+              {t('userDropdown.sellerModeActive')}
+            </Typography>
 
              {/* Animated Toggle Switch - Always OFF in seller mode */}
              <Box
@@ -591,7 +591,7 @@ export default function AccountPopover() {
                    fontWeight: 'bold',
                  }}
                >
-                 SELLER
+                 {t('userDropdown.seller')}
                </Box>
                <Box
                  sx={{
@@ -605,24 +605,24 @@ export default function AccountPopover() {
                    fontWeight: 'bold',
                  }}
                >
-                 BUYER
+                 {t('userDropdown.buyer')}
                </Box>
              </Box>
            </Box>
            
-           {/* Text below switch */}
-           <Typography 
-             variant="body2" 
-             sx={{ 
-               fontSize: '12px',
-               color: '#666',
-               textAlign: 'center',
-               mt: 0.5,
-               fontWeight: '500'
-             }}
-           >
-             You're in the Seller Mode
-           </Typography>
+          {/* Text below switch */}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontSize: '12px',
+              color: '#666',
+              textAlign: 'center',
+              mt: 0.5,
+              fontWeight: '500'
+            }}
+          >
+            {t('navigation.currentlyInSellerMode')}
+          </Typography>
          </Box>
 
         {/* Menu Options - Enhanced */}
