@@ -815,7 +815,7 @@
     "rides": "الرحلات",
     "scheduled": "مجدولة",
     "pending": "في الانتظار",
-    "cancelled": "ملغية",
+    "cancelled": "ملغاة",
     "verified": "مؤكد",
     "disabled": "معطل",
     "sms": "رسائل نصية",
@@ -840,7 +840,39 @@
     "freeSpace": "مساحة حرة | جيجابايت",
     "storageSize": "حجم التخزين | جيجابايت",
     "professionalOnly": "هذا القسم متاح فقط للمشتركين المحترفين.",
-    "subscribeNow": "اشترك الآن"
+    "subscribeNow": "اشترك الآن",
+    "financial": {
+      "totalEarnings": "إجمالي الأرباح",
+      "averagePrice": "السعر المتوسط",
+      "totalViews": "إجمالي المشاهدات",
+      "conversionRate": "معدل التحويل"
+    },
+    "sections": {
+      "quickActions": "إجراءات سريعة - المزادات، العروض والمبيعات المباشرة",
+      "performance": "أداء المزادات، العروض والمبيعات المباشرة",
+      "offersOverview": "نظرة عامة على العروض والطلبات",
+      "financialOverview": "نظرة عامة مالية"
+    },
+    "cards": {
+      "totalAuctions": "إجمالي المزادات",
+      "activeAuctions": "المزادات النشطة",
+      "totalTenders": "إجمالي الطلبات",
+      "activeTenders": "الطلبات النشطة",
+      "totalDirectSales": "إجمالي المبيعات المباشرة",
+      "activeDirectSales": "المبيعات المباشرة النشطة",
+      "totalOffers": "إجمالي العروض",
+      "pendingOffers": "العروض المعلقة",
+      "tenderBids": "مشاركات طلبات العروض",
+      "pendingTenderBids": "مشاركات طلبات العروض المعلقة"
+    },
+    "quickActions": {
+      "createTender": "إنشاء طلب عروض",
+      "viewTenders": "عرض طلبات العروض",
+      "createAuction": "إنشاء مزاد",
+      "viewAuctions": "عرض المزادات",
+      "createDirectSale": "إنشاء بيع مباشر",
+      "viewDirectSales": "عرض المبيعات المباشرة"
+    }
   },
   "chat": {
     "loadingMessages": "تحميل الرسائل...",

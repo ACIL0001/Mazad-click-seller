@@ -382,6 +382,38 @@
     "storageSize": "Storage Size | GB",
     "professionalOnly": "This section is available only for professional subscribers.",
     "subscribeNow": "Subscribe Now",
+    "financial": {
+      "totalEarnings": "Total Earnings",
+      "averagePrice": "Average Price",
+      "totalViews": "Total Views",
+      "conversionRate": "Conversion Rate"
+    },
+    "sections": {
+      "quickActions": "Quick Actions - Auctions, Tenders & Direct Sales",
+      "performance": "Auctions, Tenders & Direct Sales Performance",
+      "offersOverview": "Offers & Tenders Overview",
+      "financialOverview": "Financial Overview"
+    },
+    "cards": {
+      "totalAuctions": "Total Auctions",
+      "activeAuctions": "Active Auctions",
+      "totalTenders": "Total Tenders",
+      "activeTenders": "Active Tenders",
+      "totalDirectSales": "Total Direct Sales",
+      "activeDirectSales": "Active Direct Sales",
+      "totalOffers": "Total Offers",
+      "pendingOffers": "Pending Offers",
+      "tenderBids": "Tender Submissions",
+      "pendingTenderBids": "Pending Tender Submissions"
+    },
+    "quickActions": {
+      "createTender": "Create Tender",
+      "viewTenders": "View Tenders",
+      "createAuction": "Create Auction",
+      "viewAuctions": "View Auctions",
+      "createDirectSale": "Create Direct Sale",
+      "viewDirectSales": "View Direct Sales"
+    },
     "professional_required": {
       "title": "Professional Account Required",
       "subtitle": "Access to the seller dashboard requires a professional account with verified identity.",

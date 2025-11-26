@@ -439,6 +439,38 @@
     "storageSize": "Taille de Stockage | GB",
     "professionalOnly": "Cette section est disponible uniquement pour les abonnés professionnels.",
     "subscribeNow": "S'abonner Maintenant",
+    "financial": {
+      "totalEarnings": "Gains totaux",
+      "averagePrice": "Prix moyen",
+      "totalViews": "Vues totales",
+      "conversionRate": "Taux de conversion"
+    },
+    "sections": {
+      "quickActions": "Actions rapides - Enchères, Soumissions & Ventes Directes",
+      "performance": "Performance des Enchères, Soumissions & Ventes Directes",
+      "offersOverview": "Aperçu des Offres & Soumissions",
+      "financialOverview": "Aperçu financier"
+    },
+    "cards": {
+      "totalAuctions": "Total Enchères",
+      "activeAuctions": "Enchères actives",
+      "totalTenders": "Total Soumissions",
+      "activeTenders": "Soumissions actives",
+      "totalDirectSales": "Total Ventes Directes",
+      "activeDirectSales": "Ventes Directes actives",
+      "totalOffers": "Total Offres",
+      "pendingOffers": "Offres en attente",
+      "tenderBids": "Soumissions d'Appels d'Offres",
+      "pendingTenderBids": "Soumissions d'Appels d'Offres en attente"
+    },
+    "quickActions": {
+      "createTender": "Créer Soumission",
+      "viewTenders": "Voir Soumissions",
+      "createAuction": "Créer Enchère",
+      "viewAuctions": "Voir Enchères",
+      "createDirectSale": "Créer Vente Directe",
+      "viewDirectSales": "Voir Ventes Directes"
+    },
     "professional_required": {
       "title": "Compte Professionnel Requis",
       "subtitle": "L'accès au tableau de bord vendeur nécessite un compte professionnel avec identité vérifiée.",

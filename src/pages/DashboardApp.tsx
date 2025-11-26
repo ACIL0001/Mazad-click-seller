@@ -19,6 +19,7 @@ import {
   Grow,
   Stack,
   alpha,
+  Autocomplete,
 } from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
@@ -529,7 +530,7 @@ useEffect(() => {
   // Statistics data for modern widgets using REAL BACKEND DATA
   const auctionStatsData = sellerStats ? [
     {
-      title: 'Total Enchères',
+      title: t('dashboard.cards.totalAuctions'),
       total: sellerStats.totalAuctions || 0,
       icon: 'mdi:gavel',
       color: 'primary',
@@ -538,7 +539,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: 'Enchères Actives',
+      title: t('dashboard.cards.activeAuctions'),
       total: sellerStats.activeAuctions || 0,
       icon: 'mdi:gavel',
       color: 'primary',
@@ -547,7 +548,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/auctions'),
     },
     {
-      title: 'Total Soumissions',
+      title: t('dashboard.cards.totalTenders'),
       total: totalTendersCount || (sellerStats as any).totalTenders || 0,
       icon: 'mdi:email',
       color: 'success',
@@ -556,7 +557,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: 'Soumissions Actives',
+      title: t('dashboard.cards.activeTenders'),
       total: activeTendersCount || (sellerStats as any).activeTenders || 0,
       icon: 'mdi:email-check',
       color: 'success',
@@ -565,7 +566,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tenders'),
     },
     {
-      title: 'Total Ventes Directes',
+      title: t('dashboard.cards.totalDirectSales'),
       total: totalDirectSalesCount || (sellerStats as any).totalDirectSales || 0,
       icon: 'mdi:store',
       color: 'warning',
@@ -574,7 +575,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/direct-sales'),
     },
     {
-      title: 'Ventes Directes Actives',
+      title: t('dashboard.cards.activeDirectSales'),
       total: activeDirectSalesCount || (sellerStats as any).activeDirectSales || 0,
       icon: 'mdi:store-check',
       color: 'warning',
@@ -586,7 +587,7 @@ useEffect(() => {
 
   const offersStatsData = sellerStats ? [
     {
-      title: 'Total Offres',
+      title: t('dashboard.cards.totalOffers'),
       total: sellerStats.totalOffers || 0,
       icon: 'mdi:hand-coin',
       color: 'info',
@@ -595,7 +596,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: 'Offres en Attente',
+      title: t('dashboard.cards.pendingOffers'),
       total: sellerStats.pendingOffers || 0,
       icon: 'mdi:clock-alert',
       color: 'warning',
@@ -603,7 +604,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/offers'),
     },
     {
-      title: 'Soumissions d\'Appels d\'Offres',
+      title: t('dashboard.cards.tenderBids'),
       total: (sellerStats as any).tenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-receive',
       color: 'success',
@@ -612,7 +613,7 @@ useEffect(() => {
       onClick: () => navigate('/dashboard/tender-bids'),
     },
     {
-      title: 'Soumissions d\'Appels d\'Offres en Attente',
+      title: t('dashboard.cards.pendingTenderBids'),
       total: (sellerStats as any).pendingTenderBids || 0, // Use type assertion for missing properties
       icon: 'mdi:email-clock',
       color: 'warning',
@@ -626,7 +627,7 @@ useEffect(() => {
 
   const financialStatsData = sellerStats ? [
     {
-      title: 'Gains Totaux',
+      title: t('dashboard.financial.totalEarnings', { defaultValue: 'Gains Totaux' }),
       total: `${(sellerStats.totalEarnings || 0).toLocaleString()} DA`,
       icon: 'mdi:cash-multiple',
       color: 'success',
@@ -634,7 +635,7 @@ useEffect(() => {
       trendValue: sellerStats.totalEarnings > 0 ? '+' + Math.floor(Math.random() * 30 + 10) + '%' : '0%',
     },
     {
-      title: 'Prix Moyen',
+      title: t('dashboard.financial.averagePrice', { defaultValue: 'Prix Moyen' }),
       total: `${(sellerStats.averagePrice || 0).toLocaleString()} DA`,
       icon: 'mdi:chart-line',
       color: 'primary',
@@ -642,7 +643,7 @@ useEffect(() => {
       trendValue: sellerStats.averagePrice > 0 ? '+' + Math.floor(Math.random() * 10 + 2) + '%' : '0%',
     },
     {
-      title: 'Vues Totales',
+      title: t('dashboard.financial.totalViews', { defaultValue: 'Vues Totales' }),
       total: sellerStats.viewsTotal || 0,
       icon: 'mdi:eye',
       color: 'info',
@@ -650,7 +651,7 @@ useEffect(() => {
       trendValue: sellerStats.viewsTotal > 0 ? '+' + Math.floor(Math.random() * 20 + 5) + '%' : '0%',
     },
     {
-      title: 'Taux de Conversion',
+      title: t('dashboard.financial.conversionRate', { defaultValue: 'Taux de Conversion' }),
       total: `${(sellerStats.conversionRate || 0).toFixed(1)}%`,
       icon: 'mdi:trending-up',
       color: 'secondary',
@@ -1191,7 +1192,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:rocket-launch" width={24} height={24} />
-                      Actions Rapides - Enchères, Soumissions & Ventes Directes
+                      {t('dashboard.sections.quickActions')}
                     </Typography>
                     <Grid container spacing={{ xs: 2, sm: 3 }}>
                       <Grid item xs={6} sm={6} md={3}>
@@ -1217,7 +1218,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Créer Soumissions
+                              {t('dashboard.quickActions.createTender')}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1246,7 +1247,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:email" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'success.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Soumissions
+                              {t('dashboard.quickActions.viewTenders')}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1275,8 +1276,8 @@ useEffect(() => {
                           >
                             <GavelPlusIcon size={isMobile ? 36 : 48} color={theme.palette.primary.main} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Créer Enchères
-            </Typography>
+                              {t('dashboard.quickActions.createAuction')}
+                            </Typography>
                           </Box>
                         </motion.div>
                       </Grid>
@@ -1304,7 +1305,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:gavel" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: 'primary.main', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Enchères
+                              {t('dashboard.quickActions.viewAuctions')}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1333,7 +1334,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store-plus" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#f59e0b', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Créer Ventes Directes
+                              {t('dashboard.quickActions.createDirectSale')}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1362,7 +1363,7 @@ useEffect(() => {
                           >
                             <Iconify icon="mdi:store" width={isMobile ? 36 : 48} height={isMobile ? 36 : 48} sx={{ color: '#d97706', mb: { xs: 1, sm: 2 } }} />
                             <Typography variant={isMobile ? "body2" : "subtitle1"} sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-                              Voir Ventes Directes
+                              {t('dashboard.quickActions.viewDirectSales')}
                             </Typography>
                           </Box>
                         </motion.div>
@@ -1384,7 +1385,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:gavel" width={24} height={24} />
-                      Performance des Enchères, Soumissions & Ventes Directes
+                      {t('dashboard.sections.performance')}
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {auctionStatsData.map((stat, index) => {
@@ -1431,7 +1432,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:email-multiple" width={24} height={24} />
-                      Aperçu des Offres & Soumissions
+                      {t('dashboard.sections.offersOverview')}
                     </Typography>
           <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {offersStatsData.map((stat, index) => (
@@ -1464,7 +1465,7 @@ useEffect(() => {
                       }}
                     >
                       <Iconify icon="mdi:cash-multiple" width={24} height={24} />
-                      Aperçu Financier
+                      {t('dashboard.sections.financialOverview')}
                     </Typography>
                     <Grid container spacing={{ xs: 1.5, sm: 2, md: 2.5, lg: 3, xl: 3.5 }}>
                       {financialStatsData.map((stat, index) => (

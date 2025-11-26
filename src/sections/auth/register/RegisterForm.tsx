@@ -35,6 +35,7 @@ import {
   Select,
   MenuItem,
   Chip,
+  Autocomplete,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // component
@@ -833,124 +834,65 @@ export default function RegisterForm(props: RegisterFormProps) {
             {/* Professional-specific fields */}
             {values.type === USER_TYPE.PROFESSIONAL && (
               <>
-                <FormControl 
-                  fullWidth 
-                  error={Boolean(touched.secteur && errors.secteur)}
-                  sx={{ 
-                    mb: 1.5,
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 3,
-                      backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                      backdropFilter: 'blur(10px)',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                        transform: 'translateY(-1px)',
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
-                      },
-                      '&.Mui-focused': {
-                        backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                        borderColor: theme.palette.primary.main,
-                        boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.2)}`,
-                        transform: 'translateY(-2px)',
-                      },
-                      '& fieldset': {
-                        border: 'none',
-                      }
-                    }
+                {/* Secteur d'activité - compact, searchable multi-select */}
+                <Autocomplete
+                  multiple
+                  disableCloseOnSelect
+                  options={categories.map((category) => category.name)}
+                  value={values.secteur || []}
+                  onChange={(_, newValue) => setFieldValue('secteur', newValue)}
+                  loading={loadingCategories}
+                  filterSelectedOptions
+                  limitTags={2}
+                  fullWidth
+                  ListboxProps={{
+                    style: { maxHeight: 260 },
                   }}
-                >
-                  <InputLabel id="secteur-label">Secteur d'activité</InputLabel>
-                  <Select
-                    labelId="secteur-label"
-                    id="secteur"
-                    multiple
-                    value={values.secteur}
-                    label="Secteur d'activité"
-                    onChange={(event) => setFieldValue('secteur', event.target.value)}
-                    disabled={loadingCategories}
-                    displayEmpty
-                    renderValue={(selected) => {
-                      if (!selected || selected.length === 0) {
-                        return <Box sx={{ color: 'text.secondary' }}>Choisir vos secteurs d'activité</Box>;
-                      }
-                      return (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {selected.map((value) => (
-                            <Chip 
-                              key={value} 
-                              label={value} 
-                              size="small"
-                              sx={{ 
-                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                                color: 'primary.main',
-                                fontWeight: 500,
-                              }}
-                            />
-                          ))}
-                        </Box>
-                      );
-                    }}
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <Iconify icon="eva:briefcase-fill" width={20} height={20} />
-                      </InputAdornment>
-                    }
-                  >
-                    {loadingCategories ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        Chargement des secteurs...
-                      </MenuItem>
-                    ) : categories.length > 0 ? (
-                      categories.map((category) => (
-                        <MenuItem key={category._id} value={category.name}>
-                          <Checkbox checked={values.secteur.indexOf(category.name) > -1} />
-                          {category.name}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>
-                        Aucun secteur disponible
-                      </MenuItem>
-                    )}
-                  </Select>
-                  {touched.secteur && errors.secteur && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                      {(() => {
-                        const err = errors.secteur;
-                        if (!err) return null;
-                        if (typeof err === 'string') return err;
-                        if (Array.isArray(err)) {
-                          return err
-                            .map((item) => {
-                              if (!item) return null;
-                              if (typeof item === 'string') return item;
-                              if (Array.isArray(item)) {
-                                return item.filter(Boolean).join(', ');
-                              }
-                              if (typeof item === 'object') {
-                                return Object.values(item)
-                                  .filter((value): value is string => typeof value === 'string')
-                                  .join(', ');
-                              }
-                              return String(item);
-                            })
-                            .filter(Boolean)
-                            .join(', ');
-                        }
-                        if (typeof err === 'object') {
-                          return Object.values(err as Record<string, unknown>)
-                            .map((value) => (typeof value === 'string' ? value : String(value)))
-                            .join(', ');
-                        }
-                        return String(err);
-                      })()}
-                    </Typography>
+                  sx={{ mb: 1.5 }}
+                  renderInput={(params) => (
+                    <StyledTextField
+                      {...params}
+                      label="Secteur d'activité"
+                      placeholder="Choisir vos secteurs d'activité"
+                      error={Boolean(touched.secteur && errors.secteur)}
+                      helperText={touched.secteur && errors.secteur}
+                    />
                   )}
-                </FormControl>
+                  renderTags={(value, getTagProps) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {value.map((option, index) => (
+                        <Chip
+                          {...getTagProps({ index })}
+                          key={option}
+                          label={option}
+                          size="small"
+                          sx={{
+                            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                            color: 'primary.main',
+                            fontWeight: 500,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                  renderOption={(props, option, { selected }) => (
+                    <MenuItem
+                      {...props}
+                      key={option}
+                    >
+                      <Checkbox
+                        checked={selected}
+                        sx={{ mr: 1 }}
+                      />
+                      {option}
+                    </MenuItem>
+                  )}
+                  noOptionsText={
+                    loadingCategories
+                      ? 'Chargement des secteurs...'
+                      : 'Aucun secteur disponible'
+                  }
+                />
 
                 <StyledTextField
                   fullWidth

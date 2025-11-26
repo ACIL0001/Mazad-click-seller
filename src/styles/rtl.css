@@ -10,19 +10,9 @@
   left: auto;
 }
 
-.rtl .MuiAppBar-root {
-  right: 280px;
-  left: auto;
-}
-
 /* Main content area adjustments for RTL */
 [dir="rtl"] .MuiDrawer-root .MuiDrawer-paper {
   right: 0;
-  left: auto;
-}
-
-[dir="rtl"] .MuiAppBar-root {
-  right: 280px;
   left: auto;
 }
 
