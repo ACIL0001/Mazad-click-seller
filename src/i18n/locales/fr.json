@@ -28,7 +28,19 @@
     "addAuction": "Ajouter Enchère",
     "orders": "Commandes",
     "bills": "Factures",
-    "reports": "Rapports"
+    "reports": "Rapports",
+    "directSales": "Ventes Directes"
+  },
+  "postLogin": {
+    "welcome": "Bienvenue, {{name}} !",
+    "chooseContinue": "Choisissez comment vous souhaitez continuer",
+    "continueAsSeller": "Continuer en tant que Vendeur",
+    "sellerDescription": "Vendre et offrir",
+    "continueAsBuyer": "Continuer en tant qu'Acheteur",
+    "buyerDescription": "Acheter et bénéficier",
+    "redirecting": "Redirection...",
+    "loggedInAs": "Connecté en tant que",
+    "role": "Rôle"
   },
   "common": {
     "loading": "Chargement...",
@@ -444,5 +456,11 @@
       "home_button": "Aller à l'Accueil",
       "verification_note": "Vérification d'identité requise pour les comptes professionnels"
     }
+  },
+  "directSales": {
+    "createTitle": "Créer une vente directe",
+    "createSubtitle": "Vendez vos produits et services à prix fixe",
+    "step": "Étape {{current}} sur {{total}}",
+    "progress": "{{percent}}% terminé"
   }
 }

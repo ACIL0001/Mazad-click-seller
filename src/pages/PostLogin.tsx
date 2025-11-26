@@ -22,8 +22,10 @@ import { useSnackbar } from 'notistack';
 import useAuth from '../hooks/useAuth';
 import app from '../config';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 export default function PostLogin() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { auth, isLogged, isReady } = useAuth();
@@ -127,10 +129,10 @@ export default function PostLogin() {
     <Container maxWidth="md" sx={{ mt: 8, mb: 4 }}>
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom>
-          Bienvenue, {auth.user.firstName} !
+          {t('postLogin.welcome', { name: auth.user.firstName }) || `Bienvenue, ${auth.user.firstName} !`}
         </Typography>
         <Typography variant="h6" color="text.secondary" gutterBottom>
-          Choisissez comment vous souhaitez continuer
+          {t('postLogin.chooseContinue') || 'Choisissez comment vous souhaitez continuer'}
         </Typography>
       </Box>
 
@@ -169,11 +171,11 @@ export default function PostLogin() {
               </Avatar>
               
               <Typography variant="h5" component="h2" gutterBottom>
-                Continuer en tant que Vendeur
+                {t('postLogin.continueAsSeller') || 'Continuer en tant que Vendeur'}
               </Typography>
               
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                Vendre et offrir
+                {t('postLogin.sellerDescription') || 'Vendre et offrir'}
               </Typography>
               
               <Button
@@ -184,7 +186,7 @@ export default function PostLogin() {
                 disabled={loading}
                 sx={{ py: 1.5 }}
               >
-                Continuer en tant que Vendeur
+                {t('postLogin.continueAsSeller') || 'Continuer en tant que Vendeur'}
               </Button>
             </CardContent>
           </Card>
@@ -218,11 +220,11 @@ export default function PostLogin() {
               </Avatar>
               
               <Typography variant="h5" component="h2" gutterBottom>
-                Continuer en tant qu'Acheteur
+                {t('postLogin.continueAsBuyer') || 'Continuer en tant qu\'Acheteur'}
               </Typography>
               
               <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                Acheter et bénéficier
+                {t('postLogin.buyerDescription') || 'Acheter et bénéficier'}
               </Typography>
               
               <Button
@@ -237,10 +239,10 @@ export default function PostLogin() {
                 {loading ? (
                   <>
                     <CircularProgress size={20} sx={{ mr: 1 }} />
-                    Redirection...
+                    {t('postLogin.redirecting') || 'Redirection...'}
                   </>
                 ) : (
-                  'Continuer en tant qu\'Acheteur'
+                  t('postLogin.continueAsBuyer') || 'Continuer en tant qu\'Acheteur'
                 )}
               </Button>
             </CardContent>
@@ -257,10 +259,10 @@ export default function PostLogin() {
           </Avatar>
           <Box>
             <Typography variant="body2" color="text.secondary">
-              Logged in as: <strong>{auth.user.firstName} {auth.user.lastName}</strong>
+              {t('postLogin.loggedInAs') || 'Logged in as'}: <strong>{auth.user.firstName} {auth.user.lastName}</strong>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Role: <strong>{auth.user.type}</strong>
+              {t('postLogin.role') || 'Role'}: <strong>{auth.user.type}</strong>
             </Typography>
           </Box>
         </Box>

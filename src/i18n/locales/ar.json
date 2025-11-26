@@ -28,7 +28,19 @@
     "addAuction": "إضافة مزاد",
     "orders": "الطلبات",
     "bills": "الفواتير",
-    "reports": "البلاغات"
+    "reports": "البلاغات",
+    "directSales": "المبيعات المباشرة"
+  },
+  "postLogin": {
+    "welcome": "مرحباً، {{name}}!",
+    "chooseContinue": "اختر كيف تريد المتابعة",
+    "continueAsSeller": "المتابعة كبائع",
+    "sellerDescription": "بيع وتقديم العروض",
+    "continueAsBuyer": "المتابعة كمشتري",
+    "buyerDescription": "شراء والاستفادة",
+    "redirecting": "إعادة التوجيه...",
+    "loggedInAs": "تسجيل الدخول كـ",
+    "role": "الدور"
   },
   "common": {
     "loading": "جاري التحميل...",
@@ -1027,5 +1039,11 @@
       "home_button": "الذهاب إلى الرئيسية",
       "verification_note": "التحقق من الهوية مطلوب للحسابات المهنية"
     }
+  },
+  "directSales": {
+    "createTitle": "إنشاء بيع مباشر",
+    "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
+    "step": "الخطوة {{current}} من {{total}}",
+    "progress": "{{percent}}% مكتمل"
   }
 } 

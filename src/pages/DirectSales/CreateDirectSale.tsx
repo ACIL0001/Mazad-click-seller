@@ -771,17 +771,17 @@ export default function CreateDirectSale() {
   };
 
   return (
-    <Page title="Créer une vente directe">
+    <Page title={t('directSales.createTitle') || 'Créer une vente directe'}>
       <MainContainer>
-        <Breadcrumb links={[{ name: 'Ventes Directes', href: '/dashboard/direct-sales' }, { name: 'Créer' }]} />
+        <Breadcrumb links={[{ name: t('navigation.directSales') || 'Ventes Directes', href: '/dashboard/direct-sales' }, { name: t('common.create') || 'Créer' }]} />
 
         <HeaderCard>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-              Créer une vente directe
+              {t('directSales.createTitle') || 'Créer une vente directe'}
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
-              Vendez vos produits et services à prix fixe
+              {t('directSales.createSubtitle') || 'Vendez vos produits et services à prix fixe'}
             </Typography>
           </Box>
         </HeaderCard>
@@ -789,10 +789,10 @@ export default function CreateDirectSale() {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Étape {activeStep + 1} sur {steps.length}
+              {t('directSales.step', { current: activeStep + 1, total: steps.length }) || `Étape ${activeStep + 1} sur ${steps.length}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {Math.round(((activeStep + 1) / steps.length) * 100)}% terminé
+              {t('directSales.progress', { percent: Math.round(((activeStep + 1) / steps.length) * 100) }) || `${Math.round(((activeStep + 1) / steps.length) * 100)}% terminé`}
             </Typography>
           </Box>
           <ProgressBar variant="determinate" value={((activeStep + 1) / steps.length) * 100} />

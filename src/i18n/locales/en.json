@@ -28,7 +28,19 @@
     "addAuction": "Add Auction",
     "orders": "Orders",
     "bills": "Bills",
-    "reports": "Reports"
+    "reports": "Reports",
+    "directSales": "Direct Sales"
+  },
+  "postLogin": {
+    "welcome": "Welcome, {{name}}!",
+    "chooseContinue": "Choose how you want to continue",
+    "continueAsSeller": "Continue as Seller",
+    "sellerDescription": "Sell and offer",
+    "continueAsBuyer": "Continue as Buyer",
+    "buyerDescription": "Buy and benefit",
+    "redirecting": "Redirecting...",
+    "loggedInAs": "Logged in as",
+    "role": "Role"
   },
   "common": {
     "loading": "Loading...",
