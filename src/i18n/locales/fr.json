@@ -496,5 +496,64 @@
     "createSubtitle": "Vendez vos produits et services à prix fixe",
     "step": "Étape {{current}} sur {{total}}",
     "progress": "{{percent}}% terminé"
+  },
+  "createTender": {
+    "title": "Créer un appel d'offres",
+    "pageTitle": "Créer un nouvel appel d'offres",
+    "createButton": "Créer l'appel d'offres",
+    "step": "Étape {{current}} sur {{total}}",
+    "progress": "{{percent}}% terminé",
+    "steps": {
+      "productServiceType": "Type de produit/service",
+      "tenderType": "Type d'appel d'offres",
+      "evaluationType": "Type d'évaluation",
+      "category": "Catégorie",
+      "details": "Détails"
+    },
+    "stepDescriptions": {
+      "productServiceType": "Choisissez produit ou service",
+      "tenderType": "Choisissez le type d'appel d'offres",
+      "evaluationType": "Mieux disant ou moins disant",
+      "category": "Sélectionnez la catégorie",
+      "details": "Remplissez les informations"
+    },
+    "step1": {
+      "title": "Choisissez le type de produit/service",
+      "product": "Produit",
+      "productDesc": "Recherchez des produits ou matériels spécifiques",
+      "service": "Service",
+      "serviceDesc": "Recherchez des prestations de services professionnels"
+    },
+    "step2": {
+      "title": "Choisissez le type d'appel d'offres",
+      "classic": "Classique",
+      "classicDesc": "Appel d'offres traditionnel sur plusieurs jours",
+      "express": "Express",
+      "expressDesc": "Appel d'offres rapide en heures"
+    },
+    "step3": {
+      "title": "Choisissez le type d'évaluation",
+      "lowestPrice": "Prix le plus bas",
+      "lowestPriceDesc": "Le prix le plus bas remporte (soumission de prix uniquement)",
+      "bestOffer": "Meilleure proposition",
+      "bestOfferDesc": "La meilleure proposition/offre remporte (soumission détaillée)"
+    },
+    "step4": {
+      "title": "Sélectionnez une catégorie",
+      "description": "Choisissez la catégorie qui correspond le mieux à votre {type}",
+      "availableCategories": "Catégories disponibles"
+    },
+    "step5": {
+      "title": "Détails de l'appel d'offres",
+      "description": "Complétez les informations détaillées pour votre appel d'offres"
+    },
+    "success": {
+      "created": "Appel d'offres créé avec succès!"
+    },
+    "errors": {
+      "createFailed": "Erreur lors de la création de l'appel d'offres",
+      "completeStep": "Veuillez compléter {stepName}"
+    },
+    "confirm": "Confirmer et Créer"
   }
 }

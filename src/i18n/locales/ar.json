@@ -1039,5 +1039,64 @@
     "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
     "step": "الخطوة {{current}} من {{total}}",
     "progress": "{{percent}}% مكتمل"
+  },
+  "createTender": {
+    "title": "إنشاء طلب عروض",
+    "pageTitle": "إنشاء طلب عروض جديد",
+    "createButton": "إنشاء طلب العروض",
+    "step": "الخطوة {{current}} من {{total}}",
+    "progress": "{{percent}}% مكتمل",
+    "steps": {
+      "productServiceType": "نوع المنتج/الخدمة",
+      "tenderType": "نوع طلب العروض",
+      "evaluationType": "نوع التقييم",
+      "category": "الفئة",
+      "details": "التفاصيل"
+    },
+    "stepDescriptions": {
+      "productServiceType": "اختر منتج أو خدمة",
+      "tenderType": "اختر نوع طلب العروض",
+      "evaluationType": "أفضل عرض أو أقل سعر",
+      "category": "اختر الفئة",
+      "details": "املأ المعلومات"
+    },
+    "step1": {
+      "title": "اختر نوع المنتج/الخدمة",
+      "product": "منتج",
+      "productDesc": "ابحث عن منتجات أو مواد محددة",
+      "service": "خدمة",
+      "serviceDesc": "ابحث عن عروض خدمات مهنية"
+    },
+    "step2": {
+      "title": "اختر نوع طلب العروض",
+      "classic": "كلاسيكي",
+      "classicDesc": "طلب عروض تقليدي على عدة أيام",
+      "express": "سريع",
+      "expressDesc": "طلب عروض سريع بالساعات"
+    },
+    "step3": {
+      "title": "اختر نوع التقييم",
+      "lowestPrice": "أقل سعر",
+      "lowestPriceDesc": "الفوز بالسعر الأقل (تقديم السعر فقط)",
+      "bestOffer": "أفضل عرض",
+      "bestOfferDesc": "الفوز بأفضل عرض/اقتراح (تقديم مفصل)"
+    },
+    "step4": {
+      "title": "اختر فئة",
+      "description": "اختر الفئة التي تناسب {type} الخاص بك بشكل أفضل",
+      "availableCategories": "الفئات المتاحة"
+    },
+    "step5": {
+      "title": "تفاصيل طلب العروض",
+      "description": "أكمل المعلومات التفصيلية لطلب العروض الخاص بك"
+    },
+    "success": {
+      "created": "تم إنشاء طلب العروض بنجاح!"
+    },
+    "errors": {
+      "createFailed": "خطأ في إنشاء طلب العروض",
+      "completeStep": "يرجى إكمال {stepName}"
+    },
+    "confirm": "تأكيد وإنشاء"
   }
 } 

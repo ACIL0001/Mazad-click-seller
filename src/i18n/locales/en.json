@@ -797,5 +797,64 @@
       "contactSupport": "Contact Support",
       "reportIssue": "Report Issue"
     }
+  },
+  "createTender": {
+    "title": "Create Tender",
+    "pageTitle": "Create New Tender",
+    "createButton": "Create Tender",
+    "step": "Step {{current}} of {{total}}",
+    "progress": "{{percent}}% completed",
+    "steps": {
+      "productServiceType": "Product/Service Type",
+      "tenderType": "Tender Type",
+      "evaluationType": "Evaluation Type",
+      "category": "Category",
+      "details": "Details"
+    },
+    "stepDescriptions": {
+      "productServiceType": "Choose product or service",
+      "tenderType": "Choose the tender type",
+      "evaluationType": "Best offer or lowest price",
+      "category": "Select the category",
+      "details": "Fill in the information"
+    },
+    "step1": {
+      "title": "Choose product/service type",
+      "product": "Product",
+      "productDesc": "Search for specific products or materials",
+      "service": "Service",
+      "serviceDesc": "Search for professional service offerings"
+    },
+    "step2": {
+      "title": "Choose tender type",
+      "classic": "Classic",
+      "classicDesc": "Traditional tender over several days",
+      "express": "Express",
+      "expressDesc": "Fast tender in hours"
+    },
+    "step3": {
+      "title": "Choose evaluation type",
+      "lowestPrice": "Lowest Price",
+      "lowestPriceDesc": "The lowest price wins (price submission only)",
+      "bestOffer": "Best Offer",
+      "bestOfferDesc": "The best proposal/offer wins (detailed submission)"
+    },
+    "step4": {
+      "title": "Select a category",
+      "description": "Choose the category that best matches your {type}",
+      "availableCategories": "Available Categories"
+    },
+    "step5": {
+      "title": "Tender Details",
+      "description": "Complete the detailed information for your tender"
+    },
+    "success": {
+      "created": "Tender created successfully!"
+    },
+    "errors": {
+      "createFailed": "Error creating tender",
+      "completeStep": "Please complete {stepName}"
+    },
+    "confirm": "Confirm and Create"
   }
 } 

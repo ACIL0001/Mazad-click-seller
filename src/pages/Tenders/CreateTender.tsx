@@ -215,11 +215,11 @@ export default function CreateTender() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
-    { title: 'Type de produit/service', description: 'Choisissez produit ou service' },
-    { title: 'Type d\'appel d\'offres', description: 'Choisissez le type d\'appel d\'offres' },
-    { title: 'Type d\'évaluation', description: 'Mieux disant ou moins disant' },
-    { title: 'Catégorie', description: 'Sélectionnez la catégorie' },
-    { title: 'Détails', description: 'Remplissez les informations' }
+    { title: t('createTender.steps.productServiceType'), description: t('createTender.stepDescriptions.productServiceType') },
+    { title: t('createTender.steps.tenderType'), description: t('createTender.stepDescriptions.tenderType') },
+    { title: t('createTender.steps.evaluationType'), description: t('createTender.stepDescriptions.evaluationType') },
+    { title: t('createTender.steps.category'), description: t('createTender.stepDescriptions.category') },
+    { title: t('createTender.steps.details'), description: t('createTender.stepDescriptions.details') }
   ];
 
   // Helper functions for category hierarchy (reuse from CreateAuction)
@@ -338,9 +338,9 @@ export default function CreateTender() {
       case 2: {
         // Step 2: Show evaluationType
         if (formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT) {
-          return 'Moins disant';
+          return t('createTender.step3.lowestPrice');
         } else if (formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT) {
-          return 'Mieux disant';
+          return t('createTender.step3.bestOffer');
         }
         return null;
       }
@@ -817,8 +817,14 @@ export default function CreateTender() {
         // Don't show generic error message - validateStep already showed specific error
         // Only show message if we're switching steps
         if (step !== activeStep) {
-          const stepNames = ['le type de produit/service', 'le type d\'appel d\'offres', 'le type d\'évaluation', 'la catégorie', 'les détails'];
-          enqueueSnackbar(`Veuillez compléter ${stepNames[step]}`, { variant: 'warning' });
+          const stepNames = [
+            t('createTender.steps.productServiceType'),
+            t('createTender.steps.tenderType'),
+            t('createTender.steps.evaluationType'),
+            t('createTender.steps.category'),
+            t('createTender.steps.details')
+          ];
+          enqueueSnackbar(t('createTender.errors.completeStep', { stepName: stepNames[step] }), { variant: 'warning' });
         }
         
         // If error is on step 0, 1, 2, or 3, scroll to top to show step selector
@@ -909,13 +915,13 @@ export default function CreateTender() {
 
       await TendersAPI.create(formData);
 
-      enqueueSnackbar('Appel d\'offres créé avec succès!', { variant: 'success' });
+      enqueueSnackbar(t('createTender.success.created'), { variant: 'success' });
       
       setTimeout(() => {
         navigate(-1);
       }, 1000);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erreur lors de la création de l\'appel d\'offres';
+      const errorMessage = error.response?.data?.message || t('createTender.errors.createFailed');
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -940,7 +946,7 @@ export default function CreateTender() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Choisissez le type de produit/service
+              {t('createTender.step1.title')}
             </Typography>
 
             <Grid container spacing={3}>
@@ -959,10 +965,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Produit
+                      {t('createTender.step1.product')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Recherchez des produits ou matériels spécifiques
+                      {t('createTender.step1.productDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -983,10 +989,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Service
+                      {t('createTender.step1.service')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Recherchez des prestations de services professionnels
+                      {t('createTender.step1.serviceDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -999,7 +1005,7 @@ export default function CreateTender() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Choisissez le type d'appel d'offres
+              {t('createTender.step2.title')}
             </Typography>
 
             <Grid container spacing={2} justifyContent="center">
@@ -1018,10 +1024,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                      Classique
+                      {t('createTender.step2.classic')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Appel d'offres traditionnel sur plusieurs jours
+                      {t('createTender.step2.classicDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1042,10 +1048,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                      Express
+                      {t('createTender.step2.express')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Appel d'offres rapide en quelques heures
+                      {t('createTender.step2.expressDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1058,7 +1064,7 @@ export default function CreateTender() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Choisissez le type d'évaluation
+              {t('createTender.step3.title')}
             </Typography>
 
             <Grid container spacing={3}>
@@ -1077,10 +1083,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Moins Disant
+                      {t('createTender.step3.lowestPrice')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Le prix le plus bas remporte (soumission de prix uniquement)
+                      {t('createTender.step3.lowestPriceDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1101,10 +1107,10 @@ export default function CreateTender() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Mieux Disant
+                      {t('createTender.step3.bestOffer')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      La meilleure proposition/offre remporte (soumission détaillée)
+                      {t('createTender.step3.bestOfferDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1117,7 +1123,7 @@ export default function CreateTender() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Sélectionnez la catégorie
+              {t('createTender.step4.title')}
             </Typography>
 
             <Alert severity="info" sx={{ mb: 3 }}>
@@ -1273,7 +1279,7 @@ export default function CreateTender() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Détails de l'appel d'offres
+              {t('createTender.step5.title')}
             </Typography>
 
             <Grid container spacing={4}>
@@ -1546,13 +1552,13 @@ export default function CreateTender() {
   };
 
   return (
-    <Page title="Créer un appel d'offres">
+    <Page title={t('createTender.title')}>
       <MainContainer>
         {/* Header */}
         <HeaderCard>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-              Créer un nouvel appel d'offres
+              {t('createTender.pageTitle')}
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
               Trouvez les meilleurs prestataires au meilleur prix
@@ -1564,10 +1570,10 @@ export default function CreateTender() {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Étape {activeStep + 1} sur {steps.length}
+              {t('createTender.step', { current: activeStep + 1, total: steps.length })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {Math.round(((activeStep + 1) / steps.length) * 100)}% terminé
+              {t('createTender.progress', { percent: Math.round(((activeStep + 1) / steps.length) * 100) })}
             </Typography>
           </Box>
           <LinearProgress
@@ -1635,7 +1641,7 @@ export default function CreateTender() {
                   endIcon={<Iconify icon="eva:checkmark-fill" />}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
-                  Créer l'appel d'offres
+                  {t('createTender.createButton')}
                 </LoadingButton>
               ) : (
                 // Hide "Suivant" button on steps 0, 1, and 2 (auto-advance enabled)
@@ -1739,7 +1745,7 @@ export default function CreateTender() {
               }
             }}
           >
-            Confirmer et Créer
+            {t('createTender.confirm')}
           </LoadingButton>
         </DialogActions>
       </Dialog>
