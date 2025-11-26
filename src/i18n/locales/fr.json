@@ -435,7 +435,12 @@
     },
     "step3": {
       "title": "Détails de l'enchère",
-      "description": "Remplissez les informations"
+      "description": "Remplissez les informations",
+      "auctionType": "Type d'enchère",
+      "normalAuction": "Classique",
+      "normalAuctionDesc": "Enchère traditionnelle sur plusieurs jours",
+      "expressAuction": "Express",
+      "expressAuctionDesc": "Enchère rapide en quelques heures"
     },
     "duration": {
       "2days": "2 jours",
@@ -474,7 +479,15 @@
       "startingPricePositive": "Le prix de départ doit être positif",
       "startingPriceRequired": "Le prix de départ est requis",
       "reservePricePositive": "Le prix de réserve doit être positif",
-      "reservePriceRequired": "Le prix de réserve est requis"
+      "reservePriceRequired": "Le prix de réserve est requis",
+      "completeStepType": "le type d'enchère",
+      "completeStepCategory": "la catégorie",
+      "completeStepDetails": "les détails",
+      "completeStep": "Veuillez compléter {{stepName}}",
+      "createFailed": "Erreur lors de la création de l'enchère"
+    },
+    "success": {
+      "created": "Enchère créée avec succès!"
     }
   },
   "dashboard": {
@@ -706,7 +719,14 @@
     "create": {
       "step1": {
         "type": "Type",
-        "description": "Choisissez le type"
+        "title": "Choisissez le type",
+        "description": "Choisissez le type",
+        "productDesc": "Vendez des objets physiques",
+        "serviceDesc": "Offrez vos services"
+      },
+      "step2": {
+        "title": "Sélectionnez la catégorie",
+        "description": "Sélectionnez la catégorie"
       },
       "step2": {
         "description": "Sélectionnez la catégorie"
@@ -739,7 +759,16 @@
         "priceRequired": "Le prix est requis",
         "wilayaRequired": "La wilaya est requise",
         "placeRequired": "L'emplacement est requis",
-        "quantityNegative": "La quantité ne peut pas être négative"
+        "quantityNegative": "La quantité ne peut pas être négative",
+        "selectType": "Veuillez sélectionner un type",
+        "selectCategory": "Veuillez sélectionner une catégorie",
+        "noImages": "Veuillez télécharger au moins une image ou une vidéo",
+        "lowRating": "Votre note est trop faible pour créer une vente directe",
+        "loadCategoriesFailed": "Erreur lors du chargement des catégories",
+        "createFailed": "Erreur lors de la création de la vente directe"
+      },
+      "success": {
+        "created": "Vente directe créée avec succès!"
       }
     }
   },

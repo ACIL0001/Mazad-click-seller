@@ -324,7 +324,7 @@ export default function CreateDirectSale() {
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      enqueueSnackbar('Erreur lors du chargement des catégories', { variant: 'error' });
+      enqueueSnackbar(t('directSales.create.errors.loadCategoriesFailed'), { variant: 'error' });
       
       // Fallback: set empty array
       setCategories([]);
@@ -360,12 +360,12 @@ export default function CreateDirectSale() {
   const handleNext = () => {
     if (activeStep === 0) {
       if (!formik.values.saleType) {
-        enqueueSnackbar('Veuillez sélectionner un type', { variant: 'error' });
+        enqueueSnackbar(t('directSales.create.errors.selectType'), { variant: 'error' });
         return;
       }
     } else if (activeStep === 1) {
       if (!formik.values.productCategory) {
-        enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
+        enqueueSnackbar(t('directSales.create.errors.selectCategory'), { variant: 'error' });
         return;
       }
     }
@@ -378,12 +378,12 @@ export default function CreateDirectSale() {
 
   const handleSubmit = async (values: any) => {
     if (mediaFiles.length === 0) {
-      enqueueSnackbar('Veuillez télécharger au moins une image ou une vidéo', { variant: 'error' });
+      enqueueSnackbar(t('directSales.create.errors.noImages'), { variant: 'error' });
       return;
     }
 
     if (auth.user?.rate < 3) {
-      enqueueSnackbar('Votre note est trop faible pour créer une vente directe', { variant: 'error' });
+      enqueueSnackbar(t('directSales.create.errors.lowRating'), { variant: 'error' });
       return;
     }
 
@@ -426,12 +426,12 @@ export default function CreateDirectSale() {
 
       await DirectSaleAPI.create(formData);
 
-      enqueueSnackbar('Vente directe créée avec succès!', { variant: 'success' });
+      enqueueSnackbar(t('directSales.create.success.created'), { variant: 'success' });
       setTimeout(() => {
         navigate('/dashboard/direct-sales');
       }, 1000);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erreur lors de la création de la vente directe';
+      const errorMessage = error.response?.data?.message || t('directSales.create.errors.createFailed');
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -444,7 +444,7 @@ export default function CreateDirectSale() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Choisissez le type
+              {t('directSales.create.step1.title')}
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
@@ -455,10 +455,10 @@ export default function CreateDirectSale() {
                   <Box sx={{ textAlign: 'center' }}>
                     <Iconify icon="mdi:package-variant" width={48} height={48} sx={{ mb: 2, color: 'primary.main' }} />
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Produit
+                      {t('common.product')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Vendez des objets physiques
+                      {t('directSales.create.step1.productDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -471,10 +471,10 @@ export default function CreateDirectSale() {
                   <Box sx={{ textAlign: 'center' }}>
                     <Iconify icon="mdi:handshake" width={48} height={48} sx={{ mb: 2, color: 'primary.main' }} />
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Service
+                      {t('common.service')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Offrez vos services
+                      {t('directSales.create.step1.serviceDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -487,7 +487,7 @@ export default function CreateDirectSale() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Sélectionnez la catégorie
+              {t('directSales.create.step2.title')}
             </Typography>
 
             {/* Category Validation Error */}

@@ -635,10 +635,11 @@
       "description": "Complete the detailed information for your auction",
       "auctionParameters": "Auction Parameters",
       "auctionType": "Auction Type",
-      "normalAuction": "Standard Auction",
-      "normalAuctionDesc": "Duration from 3 days to 2 months",
-      "expressAuction": "EXPRESS Auction",
-      "expressAuctionDesc": "Duration from 2 to 18 hours",
+      "auctionType": "Auction Type",
+      "normalAuction": "Classic",
+      "normalAuctionDesc": "Traditional auction over several days",
+      "expressAuction": "Express",
+      "expressAuctionDesc": "Fast auction in a few hours",
       "auctionDuration": "Auction Duration",
       "prices": "Prices",
       "startingPrice": "Starting Price",
@@ -675,7 +676,33 @@
       "reservePriceTooLow": "Please set the reserve price higher than the starting price",
       "startingPriceTooHigh": "Please set the starting price lower than the reserve price",
       "reservePriceError": "Please select a reserve price higher than the starting price",
-      "startingPriceError": "Please select a starting price lower than the reserve price"
+      "startingPriceError": "Please select a starting price lower than the reserve price",
+      "loginRequired": "Please log in to create an auction",
+      "wilayaRequired": "Wilaya is required",
+      "placeRequired": "Location is required",
+      "quantityRequired": "Quantity is required for products",
+      "titleMinLength": "Title must contain at least 3 characters",
+      "titleMaxLength": "Title is too long",
+      "titleRequired": "Title is required",
+      "descriptionMinLength": "Description must contain at least 10 characters",
+      "descriptionRequired": "Description is required",
+      "invalidBidType": "Invalid auction type",
+      "bidTypeRequired": "Auction type is required",
+      "invalidAuctionType": "Invalid auction type",
+      "auctionTypeRequired": "Auction type is required",
+      "categoryRequired": "Category is required",
+      "startingPricePositive": "Starting price must be positive",
+      "startingPriceRequired": "Starting price is required",
+      "reservePricePositive": "Reserve price must be positive",
+      "reservePriceRequired": "Reserve price is required",
+      "completeStepType": "the auction type",
+      "completeStepCategory": "the category",
+      "completeStepDetails": "the details",
+      "completeStep": "Please complete {{stepName}}",
+      "createFailed": "Error creating auction"
+    },
+    "success": {
+      "created": "Auction created successfully!"
     }
   },
   "language": {
@@ -870,7 +897,59 @@
     "step": "Step {{current}} of {{total}}",
     "progress": "{{percent}}% completed",
     "myDirectSales": "My Direct Sales",
-    "loadError": "Error loading direct sales"
+    "loadError": "Error loading direct sales",
+    "create": {
+      "step1": {
+        "type": "Type",
+        "title": "Choose the type",
+        "description": "Choose the type",
+        "productDesc": "Sell physical objects",
+        "serviceDesc": "Offer your services"
+      },
+      "step2": {
+        "title": "Select the category",
+        "description": "Select the category"
+      },
+      "step3": {
+        "description": "Fill in the information"
+      },
+      "form": {
+        "title": "Title",
+        "description": "Description",
+        "price": "Price (DA)",
+        "quantity": "Quantity (0 = unlimited)",
+        "quantityHelper": "Put 0 for unlimited quantity",
+        "wilaya": "Wilaya",
+        "selectWilaya": "Select a wilaya",
+        "place": "Place",
+        "professionalSale": "Professional sale",
+        "anonymousSale": "Anonymous sale",
+        "imagesAndVideos": "Images and videos"
+      },
+      "errors": {
+        "titleMinLength": "Title must contain at least 3 characters",
+        "titleRequired": "Title is required",
+        "descriptionMinLength": "Description must contain at least 10 characters",
+        "descriptionRequired": "Description is required",
+        "invalidType": "Invalid type",
+        "typeRequired": "Type is required",
+        "categoryRequired": "Category is required",
+        "pricePositive": "Price must be positive",
+        "priceRequired": "Price is required",
+        "wilayaRequired": "Wilaya is required",
+        "placeRequired": "Location is required",
+        "quantityNegative": "Quantity cannot be negative",
+        "selectType": "Please select a type",
+        "selectCategory": "Please select a category",
+        "noImages": "Please upload at least one image or video",
+        "lowRating": "Your rating is too low to create a direct sale",
+        "loadCategoriesFailed": "Error loading categories",
+        "createFailed": "Error creating direct sale"
+      },
+      "success": {
+        "created": "Direct sale created successfully!"
+      }
+    }
   },
   "tenders": {
     "mySubmissions": "My Submissions",

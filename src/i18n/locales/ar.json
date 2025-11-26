@@ -979,12 +979,17 @@
     "step3": {
       "title": "تفاصيل المزاد",
       "description": "أكمل المعلومات التفصيلية لمزادك",
+      "auctionType": "نوع المزاد",
+      "normalAuction": "كلاسيكي",
+      "normalAuctionDesc": "مزاد تقليدي على عدة أيام",
+      "expressAuction": "سريع",
+      "expressAuctionDesc": "مزاد سريع في بضع ساعات",
       "auctionParameters": "معلمات المزاد",
       "auctionType": "نوع المزاد",
-      "normalAuction": "مزاد عادي",
-      "normalAuctionDesc": "مدة من 3 أيام إلى شهرين",
-      "expressAuction": "مزاد سريع",
-      "expressAuctionDesc": "مدة من ساعتين إلى 18 ساعة",
+      "normalAuction": "كلاسيكي",
+      "normalAuctionDesc": "مزاد تقليدي على عدة أيام",
+      "expressAuction": "سريع",
+      "expressAuctionDesc": "مزاد سريع في بضع ساعات",
       "auctionDuration": "مدة المزاد",
       "prices": "الأسعار",
       "startingPrice": "سعر البداية",
@@ -1039,7 +1044,15 @@
       "startingPricePositive": "يجب أن يكون سعر البداية موجباً",
       "startingPriceRequired": "سعر البداية مطلوب",
       "reservePricePositive": "يجب أن يكون سعر الحجز موجباً",
-      "reservePriceRequired": "سعر الحجز مطلوب"
+      "reservePriceRequired": "سعر الحجز مطلوب",
+      "completeStepType": "نوع المزاد",
+      "completeStepCategory": "الفئة",
+      "completeStepDetails": "التفاصيل",
+      "completeStep": "يرجى إكمال {{stepName}}",
+      "createFailed": "خطأ في إنشاء المزاد"
+    },
+    "success": {
+      "created": "تم إنشاء المزاد بنجاح!"
     }
   },
   "review": {
@@ -1067,7 +1080,14 @@
     "create": {
       "step1": {
         "type": "النوع",
-        "description": "اختر النوع"
+        "title": "اختر النوع",
+        "description": "اختر النوع",
+        "productDesc": "بيع الأشياء المادية",
+        "serviceDesc": "تقديم خدماتك"
+      },
+      "step2": {
+        "title": "اختر الفئة",
+        "description": "اختر الفئة"
       },
       "step2": {
         "description": "اختر الفئة"
@@ -1100,7 +1120,16 @@
         "priceRequired": "السعر مطلوب",
         "wilayaRequired": "الولاية مطلوبة",
         "placeRequired": "المكان مطلوب",
-        "quantityNegative": "لا يمكن أن تكون الكمية سالبة"
+        "quantityNegative": "لا يمكن أن تكون الكمية سالبة",
+        "selectType": "يرجى اختيار نوع",
+        "selectCategory": "يرجى اختيار فئة",
+        "noImages": "يرجى تحميل صورة واحدة على الأقل أو فيديو",
+        "lowRating": "تقييمك منخفض جداً، لا يمكنك إنشاء بيع مباشر",
+        "loadCategoriesFailed": "خطأ في تحميل الفئات",
+        "createFailed": "خطأ في إنشاء البيع المباشر"
+      },
+      "success": {
+        "created": "تم إنشاء البيع المباشر بنجاح!"
       }
     }
   },

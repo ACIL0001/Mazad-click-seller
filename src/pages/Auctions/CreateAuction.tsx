@@ -1632,8 +1632,8 @@ export default function CreateAuction() {
         // Don't show generic error message - validateStep already showed specific error
         // Only show message if we're switching steps
         if (step !== activeStep) {
-          const stepNames = ['le type d\'enchère', 'la catégorie', 'les détails'];
-          enqueueSnackbar(`Veuillez compléter ${stepNames[step]}`, { variant: 'warning' });
+          const stepNames = [t('createAuction.errors.completeStepType'), t('createAuction.errors.completeStepCategory'), t('createAuction.errors.completeStepDetails')];
+          enqueueSnackbar(t('createAuction.errors.completeStep', { stepName: stepNames[step] }), { variant: 'warning' });
         }
         
         // If error is on step 0 or 1, scroll to top to show step selector
@@ -1650,7 +1650,7 @@ export default function CreateAuction() {
 
     // Additional validation for files
     if (mediaFiles.length === 0) {
-      enqueueSnackbar('Veuillez télécharger au moins une image ou une vidéo', { variant: 'error' });
+      enqueueSnackbar(t('createAuction.errors.noImages'), { variant: 'error' });
       setActiveStep(2); // Go to details step where files are uploaded
       // Scroll to media section
       setTimeout(() => {
@@ -1663,7 +1663,7 @@ export default function CreateAuction() {
     }
 
     if (auth.user?.rate < 3) {
-      enqueueSnackbar('Votre note est trop faible pour créer une enchère', { variant: 'error' });
+      enqueueSnackbar(t('createAuction.errors.lowRating'), { variant: 'error' });
       return;
     }
 
@@ -1723,7 +1723,7 @@ export default function CreateAuction() {
 
       await AuctionsAPI.create(formData);
 
-      enqueueSnackbar('Enchère créée avec succès!', { variant: 'success' });
+      enqueueSnackbar(t('createAuction.success.created'), { variant: 'success' });
       console.log('Navigating back to previous page...');
       
       // Add a small delay to ensure the success message is shown
@@ -1732,7 +1732,7 @@ export default function CreateAuction() {
         navigate(-1);
       }, 1000);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Erreur lors de la création de l\'enchère';
+      const errorMessage = error.response?.data?.message || t('createAuction.errors.createFailed');
       enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -1757,7 +1757,7 @@ export default function CreateAuction() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Choisissez le type d'enchère
+              {t('createAuction.step1.title')}
             </Typography>
 
             {/* Bid Type Validation Error */}
@@ -1793,10 +1793,10 @@ export default function CreateAuction() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Produit
+                      {t('createAuction.step1.product')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Vendez des objets physiques, matériels ou numériques
+                      {t('createAuction.step1.productDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1827,10 +1827,10 @@ export default function CreateAuction() {
                       />
                     </IconContainer>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
-                      Service
+                      {t('createAuction.step1.service')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Proposez vos compétences et services professionnels
+                      {t('createAuction.step1.serviceDesc')}
                     </Typography>
                   </Box>
                 </SelectionCard>
@@ -1839,7 +1839,7 @@ export default function CreateAuction() {
 
             <Box sx={{ mt: 4, textAlign: 'center' }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Type d'enchère
+                {t('createAuction.step3.auctionType')}
               </Typography>
 
               {/* Auction Type Validation Error */}
@@ -1875,10 +1875,10 @@ export default function CreateAuction() {
                         />
                       </IconContainer>
                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                        Classique
+                        {t('createAuction.step3.normalAuction')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Enchère traditionnelle sur plusieurs jours
+                        {t('createAuction.step3.normalAuctionDesc')}
                       </Typography>
                     </Box>
                   </SelectionCard>
@@ -1909,10 +1909,10 @@ export default function CreateAuction() {
                         />
                       </IconContainer>
                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                        Express
+                        {t('createAuction.step3.expressAuction')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Enchère rapide en quelques heures
+                        {t('createAuction.step3.expressAuctionDesc')}
                       </Typography>
                     </Box>
                   </SelectionCard>
