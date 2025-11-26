@@ -1021,7 +1021,25 @@
       "reservePriceTooLow": "يرجى تحديد سعر الحجز أعلى من سعر البداية",
       "startingPriceTooHigh": "يرجى تحديد سعر البداية أقل من سعر الحجز",
       "reservePriceError": "يرجى تحديد سعر احتياطي أعلى من سعر البداية",
-      "startingPriceError": "يرجى تحديد سعر بداية أقل من السعر الاحتياطي"
+      "startingPriceError": "يرجى تحديد سعر بداية أقل من السعر الاحتياطي",
+      "loginRequired": "يرجى تسجيل الدخول لإنشاء مزاد",
+      "wilayaRequired": "الولاية مطلوبة",
+      "placeRequired": "الموقع مطلوب",
+      "quantityRequired": "الكمية مطلوبة للمنتجات",
+      "titleMinLength": "يجب أن يحتوي العنوان على 3 أحرف على الأقل",
+      "titleMaxLength": "العنوان طويل جداً",
+      "titleRequired": "العنوان مطلوب",
+      "descriptionMinLength": "يجب أن تحتوي الوصف على 10 أحرف على الأقل",
+      "descriptionRequired": "الوصف مطلوب",
+      "invalidBidType": "نوع المزاد غير صالح",
+      "bidTypeRequired": "نوع المزاد مطلوب",
+      "invalidAuctionType": "نوع المزاد غير صالح",
+      "auctionTypeRequired": "نوع المزاد مطلوب",
+      "categoryRequired": "الفئة مطلوبة",
+      "startingPricePositive": "يجب أن يكون سعر البداية موجباً",
+      "startingPriceRequired": "سعر البداية مطلوب",
+      "reservePricePositive": "يجب أن يكون سعر الحجز موجباً",
+      "reservePriceRequired": "سعر الحجز مطلوب"
     }
   },
   "review": {
@@ -1045,7 +1063,46 @@
     "createTitle": "إنشاء بيع مباشر",
     "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
     "step": "الخطوة {{current}} من {{total}}",
-    "progress": "{{percent}}% مكتمل"
+    "progress": "{{percent}}% مكتمل",
+    "create": {
+      "step1": {
+        "type": "النوع",
+        "description": "اختر النوع"
+      },
+      "step2": {
+        "description": "اختر الفئة"
+      },
+      "step3": {
+        "description": "املأ المعلومات"
+      },
+      "form": {
+        "title": "العنوان",
+        "description": "الوصف",
+        "price": "السعر (دج)",
+        "quantity": "الكمية (0 = غير محدود)",
+        "quantityHelper": "ضع 0 للكمية غير المحدودة",
+        "wilaya": "الولاية",
+        "selectWilaya": "اختر ولاية",
+        "place": "المكان",
+        "professionalSale": "بيع احترافي",
+        "anonymousSale": "بيع مجهول",
+        "imagesAndVideos": "الصور والفيديوهات"
+      },
+      "errors": {
+        "titleMinLength": "يجب أن يحتوي العنوان على 3 أحرف على الأقل",
+        "titleRequired": "العنوان مطلوب",
+        "descriptionMinLength": "يجب أن تحتوي الوصف على 10 أحرف على الأقل",
+        "descriptionRequired": "الوصف مطلوب",
+        "invalidType": "نوع غير صالح",
+        "typeRequired": "النوع مطلوب",
+        "categoryRequired": "الفئة مطلوبة",
+        "pricePositive": "يجب أن يكون السعر موجباً",
+        "priceRequired": "السعر مطلوب",
+        "wilayaRequired": "الولاية مطلوبة",
+        "placeRequired": "المكان مطلوب",
+        "quantityNegative": "لا يمكن أن تكون الكمية سالبة"
+      }
+    }
   },
   "createTender": {
     "title": "إنشاء طلب عروض",

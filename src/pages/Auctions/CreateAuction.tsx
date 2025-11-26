@@ -954,38 +954,32 @@ export default function CreateAuction() {
   const [showWarningModal, setShowWarningModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const steps = [
-    { title: 'Type d\'enchère', description: 'Choisissez le type d\'enchère' },
-    { title: 'Catégorie', description: 'Sélectionnez la catégorie' },
-    { title: 'Détails', description: 'Remplissez les informations' }
-  ];
-
   // Enhanced validation schema
   const validationSchema = Yup.object().shape({
     title: Yup.string()
-      .min(3, 'Le titre doit contenir au moins 3 caractères')
-      .max(100, 'Le titre est trop long')
-      .required('Le titre est requis'),
+      .min(3, t('createAuction.errors.titleMinLength'))
+      .max(100, t('createAuction.errors.titleMaxLength'))
+      .required(t('createAuction.errors.titleRequired')),
     description: Yup.string()
-      .min(10, 'La description doit contenir au moins 10 caractères')
-      .required('La description est requise'),
+      .min(10, t('createAuction.errors.descriptionMinLength'))
+      .required(t('createAuction.errors.descriptionRequired')),
     bidType: Yup.string()
-      .oneOf(Object.values(BID_TYPES), 'Type d\'enchère invalide')
-      .required('Le type d\'enchère est requis'),
+      .oneOf(Object.values(BID_TYPES), t('createAuction.errors.invalidBidType'))
+      .required(t('createAuction.errors.bidTypeRequired')),
     auctionType: Yup.string()
-      .oneOf(Object.values(AUCTION_TYPES), 'Type d\'enchère invalide')
-      .required('Le type d\'enchère est requis'),
+      .oneOf(Object.values(AUCTION_TYPES), t('createAuction.errors.invalidAuctionType'))
+      .required(t('createAuction.errors.auctionTypeRequired')),
     productCategory: Yup.string()
-      .required('La catégorie est requise'),
+      .required(t('createAuction.errors.categoryRequired')),
     startingPrice: Yup.number()
-      .min(1, 'Le prix de départ doit être positif')
-      .required('Le prix de départ est requis'),
+      .min(1, t('createAuction.errors.startingPricePositive'))
+      .required(t('createAuction.errors.startingPriceRequired')),
     reservePrice: Yup.number()
-      .min(1, 'Le prix de réserve doit être positif')
-      .required('Le prix de réserve est requis')
+      .min(1, t('createAuction.errors.reservePricePositive'))
+      .required(t('createAuction.errors.reservePriceRequired'))
       .test(
         'is-greater-than-starting',
-        'Le prix de réserve doit être supérieur au prix de départ',
+        t('createAuction.errors.reservePriceTooLow'),
         function(value) {
           const { startingPrice } = this.parent;
           if (!value || !startingPrice) return true; // Let required validation handle empty values
@@ -996,15 +990,15 @@ export default function CreateAuction() {
       ),
     duration: Yup.object()
       .nullable()
-      .required('La durée est requise'),
+      .required(t('createAuction.errors.noDuration')),
     wilaya: Yup.string()
-      .required('La wilaya est requise'),
+      .required(t('createAuction.errors.wilayaRequired')),
     place: Yup.string()
-      .required('L\'emplacement est requis'),
+      .required(t('createAuction.errors.placeRequired')),
     hidden: Yup.boolean(),
     quantity: Yup.string().when('bidType', ([bidType], schema) => {
       return bidType === BID_TYPES.PRODUCT
-        ? schema.required('La quantité est requise pour les produits')
+        ? schema.required(t('createAuction.errors.quantityRequired'))
         : schema.notRequired();
     }),
   });
@@ -1036,6 +1030,12 @@ export default function CreateAuction() {
     },
   });
 
+  const steps = [
+    { title: t('createAuction.steps.type'), description: t('createAuction.step1.description') },
+    { title: t('createAuction.steps.category'), description: t('createAuction.step2.description', { type: formik.values.bidType === BID_TYPES.PRODUCT ? t('createAuction.step1.product') : t('createAuction.step1.service') }) },
+    { title: t('createAuction.steps.details'), description: t('createAuction.step3.description') }
+  ];
+
   // Revalidate reservePrice when startingPrice changes
   useEffect(() => {
     if (formik.values.startingPrice && formik.values.reservePrice && formik.touched.reservePrice) {
@@ -1050,10 +1050,10 @@ export default function CreateAuction() {
     switch (stepIndex) {
       case 0: {
         // Step 0: Show bidType and auctionType
-        const bidTypeLabel = formik.values.bidType === BID_TYPES.PRODUCT ? 'Produit' : 
-                           formik.values.bidType === BID_TYPES.SERVICE ? 'Service' : null;
-        const auctionTypeLabel = formik.values.auctionType === AUCTION_TYPES.CLASSIC ? 'Classique' :
-                                formik.values.auctionType === AUCTION_TYPES.EXPRESS ? 'Express' : null;
+        const bidTypeLabel = formik.values.bidType === BID_TYPES.PRODUCT ? t('createAuction.step1.product') : 
+                           formik.values.bidType === BID_TYPES.SERVICE ? t('createAuction.step1.service') : null;
+        const auctionTypeLabel = formik.values.auctionType === AUCTION_TYPES.CLASSIC ? t('createAuction.step3.normalAuction') :
+                                formik.values.auctionType === AUCTION_TYPES.EXPRESS ? t('createAuction.step3.expressAuction') : null;
         
         if (bidTypeLabel && auctionTypeLabel) {
           return `${bidTypeLabel} - ${auctionTypeLabel}`;
@@ -1170,49 +1170,49 @@ export default function CreateAuction() {
         let firstErrorField = '';
         
         if (!values.title || values.title.length < 3) {
-          errors.push('Le titre est requis et doit contenir au moins 3 caractères');
+          errors.push(t('createAuction.errors.titleRequired'));
           if (!firstErrorField) {
             firstErrorField = 'title';
             console.log('❌ First error: title');
           }
         }
         if (!values.description || values.description.length < 10) {
-          errors.push('La description est requise et doit contenir au moins 10 caractères');
+          errors.push(t('createAuction.errors.descriptionRequired'));
           if (!firstErrorField) {
             firstErrorField = 'description';
             console.log('❌ First error: description');
           }
         }
         if (values.bidType === BID_TYPES.PRODUCT && !values.quantity) {
-          errors.push('La quantité est requise pour les produits');
+          errors.push(t('createAuction.errors.quantityRequired'));
           if (!firstErrorField) {
             firstErrorField = 'quantity';
             console.log('❌ First error: quantity');
           }
         }
         if (!values.startingPrice || parseFloat(values.startingPrice) < 1) {
-          errors.push('Le prix de départ doit être positif');
+          errors.push(t('createAuction.errors.startingPricePositive'));
           if (!firstErrorField) {
             firstErrorField = 'startingPrice';
             console.log('❌ First error: startingPrice');
           }
         }
         if (!values.duration) {
-          errors.push('La durée est requise');
+          errors.push(t('createAuction.errors.noDuration'));
           if (!firstErrorField) {
             firstErrorField = 'duration';
             console.log('❌ First error: duration');
           }
         }
         if (!values.place) {
-          errors.push('L\'emplacement est requis');
+          errors.push(t('createAuction.errors.placeRequired'));
           if (!firstErrorField) {
             firstErrorField = 'place';
             console.log('❌ First error: place');
           }
         }
         if (!values.wilaya) {
-          errors.push('La wilaya est requise');
+          errors.push(t('createAuction.errors.wilayaRequired'));
           if (!firstErrorField) {
             firstErrorField = 'wilaya';
             console.log('❌ First error: wilaya');
@@ -1370,25 +1370,25 @@ export default function CreateAuction() {
   };
 
   const TimeOptions = [
-    { label: '2 jours', value: 2, icon: 'mdi:clock-outline' },
-    { label: '7 jours', value: 7, icon: 'mdi:calendar-week' },
-    { label: '15 jours', value: 15, icon: 'mdi:calendar-month' },
-    { label: '1 mois', value: 30, icon: 'mdi:calendar' },
-    { label: '2 mois', value: 60, icon: 'mdi:calendar-multiple' }
+    { label: t('createAuction.duration.2days'), value: 2, icon: 'mdi:clock-outline' },
+    { label: t('createAuction.duration.7days'), value: 7, icon: 'mdi:calendar-week' },
+    { label: t('createAuction.duration.15days'), value: 15, icon: 'mdi:calendar-month' },
+    { label: t('createAuction.duration.1month'), value: 30, icon: 'mdi:calendar' },
+    { label: t('createAuction.duration.2months'), value: 60, icon: 'mdi:calendar-multiple' }
   ];
 
   const ExpressTimeOptions = [
-    { label: '2 heures', value: 2, icon: 'mdi:lightning-bolt' },
-    { label: '4 heures', value: 4, icon: 'mdi:clock-fast' },
-    { label: '8 heures', value: 8, icon: 'mdi:clock' },
-    { label: '16 heures', value: 16, icon: 'mdi:clock-time-four' },
-    { label: '24 heures', value: 24, icon: 'mdi:clock-time-twelve' }
+    { label: t('createAuction.duration.2hours'), value: 2, icon: 'mdi:lightning-bolt' },
+    { label: t('createAuction.duration.4hours'), value: 4, icon: 'mdi:clock-fast' },
+    { label: t('createAuction.duration.8hours'), value: 8, icon: 'mdi:clock' },
+    { label: t('createAuction.duration.16hours'), value: 16, icon: 'mdi:clock-time-four' },
+    { label: t('createAuction.duration.24hours'), value: 24, icon: 'mdi:clock-time-twelve' }
   ];
 
   // Load categories and handle auth check
   useEffect(() => {
     if (!isLogged) {
-      enqueueSnackbar('Veuillez vous connecter pour créer une enchère', { variant: 'error' });
+      enqueueSnackbar(t('createAuction.errors.loginRequired'), { variant: 'error' });
       navigate('/login');
       return;
     }
@@ -2227,7 +2227,7 @@ export default function CreateAuction() {
 
                 {formik.touched.duration && formik.errors.duration && (
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    {typeof formik.errors.duration === 'string' ? formik.errors.duration : 'La durée est requise'}
+                    {typeof formik.errors.duration === 'string' ? formik.errors.duration : t('createAuction.errors.noDuration')}
                   </Alert>
                 )}
 

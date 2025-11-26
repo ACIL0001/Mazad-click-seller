@@ -409,6 +409,74 @@
     "submitSuccess": "Évaluation soumise avec succès",
     "alreadyReviewed": "Vous avez déjà évalué cet utilisateur"
   },
+  "createAuction": {
+    "title": "Créer une enchère",
+    "pageTitle": "Créer une nouvelle enchère",
+    "createButton": "Créer l'enchère",
+    "steps": {
+      "type": "Type",
+      "category": "Catégorie",
+      "details": "Détails"
+    },
+    "step1": {
+      "title": "Choisissez le type d'enchère",
+      "description": "Choisissez le type d'enchère",
+      "product": "Produit",
+      "productDesc": "Mettez un objet physique que vous possédez aux enchères",
+      "service": "Service",
+      "serviceDesc": "Offrez un service ou une procédure aux enchères"
+    },
+    "step2": {
+      "title": "Sélectionnez une catégorie",
+      "description": "Choisissez la catégorie qui correspond le mieux à votre {type}",
+      "availableCategories": "Catégories disponibles",
+      "subcategoriesOf": "Sous-catégories de {name}",
+      "categoryDefault": "Catégorie {name}"
+    },
+    "step3": {
+      "title": "Détails de l'enchère",
+      "description": "Remplissez les informations"
+    },
+    "duration": {
+      "2days": "2 jours",
+      "7days": "7 jours",
+      "15days": "15 jours",
+      "1month": "1 mois",
+      "2months": "2 mois",
+      "2hours": "2 heures",
+      "4hours": "4 heures",
+      "8hours": "8 heures",
+      "16hours": "16 heures",
+      "24hours": "24 heures"
+    },
+    "errors": {
+      "noImages": "Veuillez télécharger au moins une image pour créer une enchère.",
+      "lowRating": "Votre note est trop basse, vous ne pouvez pas ajouter d'enchère",
+      "noDuration": "Veuillez spécifier une durée pour l'enchère",
+      "reservePriceTooLow": "Veuillez définir le prix de réserve supérieur au prix de départ",
+      "startingPriceTooHigh": "Veuillez définir le prix de départ inférieur au prix de réserve",
+      "reservePriceError": "Veuillez sélectionner un prix de réserve supérieur au prix de départ",
+      "startingPriceError": "Veuillez sélectionner un prix de départ inférieur au prix de réserve",
+      "loginRequired": "Veuillez vous connecter pour créer une enchère",
+      "wilayaRequired": "La wilaya est requise",
+      "placeRequired": "L'emplacement est requis",
+      "quantityRequired": "La quantité est requise pour les produits",
+      "titleMinLength": "Le titre doit contenir au moins 3 caractères",
+      "titleMaxLength": "Le titre est trop long",
+      "titleRequired": "Le titre est requis",
+      "descriptionMinLength": "La description doit contenir au moins 10 caractères",
+      "descriptionRequired": "La description est requise",
+      "invalidBidType": "Type d'enchère invalide",
+      "bidTypeRequired": "Le type d'enchère est requis",
+      "invalidAuctionType": "Type d'enchère invalide",
+      "auctionTypeRequired": "Le type d'enchère est requis",
+      "categoryRequired": "La catégorie est requise",
+      "startingPricePositive": "Le prix de départ doit être positif",
+      "startingPriceRequired": "Le prix de départ est requis",
+      "reservePricePositive": "Le prix de réserve doit être positif",
+      "reservePriceRequired": "Le prix de réserve est requis"
+    }
+  },
   "dashboard": {
     "welcome": "Bienvenue",
     "totalUsers": "Total Utilisateurs",
@@ -634,7 +702,46 @@
     "deleteMessage": "Êtes-vous sûr de vouloir supprimer \"{title}\" ? Cette action est irréversible.",
     "unlimited": "Illimité",
     "deleteSuccess": "Vente directe supprimée avec succès",
-    "deleteError": "Erreur lors de la suppression"
+    "deleteError": "Erreur lors de la suppression",
+    "create": {
+      "step1": {
+        "type": "Type",
+        "description": "Choisissez le type"
+      },
+      "step2": {
+        "description": "Sélectionnez la catégorie"
+      },
+      "step3": {
+        "description": "Remplissez les informations"
+      },
+      "form": {
+        "title": "Titre",
+        "description": "Description",
+        "price": "Prix (DA)",
+        "quantity": "Quantité (0 = illimité)",
+        "quantityHelper": "Mettez 0 pour quantité illimitée",
+        "wilaya": "Wilaya",
+        "selectWilaya": "Sélectionnez une wilaya",
+        "place": "Lieu",
+        "professionalSale": "Vente professionnelle",
+        "anonymousSale": "Vente anonyme",
+        "imagesAndVideos": "Images et vidéos"
+      },
+      "errors": {
+        "titleMinLength": "Le titre doit contenir au moins 3 caractères",
+        "titleRequired": "Le titre est requis",
+        "descriptionMinLength": "La description doit contenir au moins 10 caractères",
+        "descriptionRequired": "La description est requise",
+        "invalidType": "Type invalide",
+        "typeRequired": "Le type est requis",
+        "categoryRequired": "La catégorie est requise",
+        "pricePositive": "Le prix doit être positif",
+        "priceRequired": "Le prix est requis",
+        "wilayaRequired": "La wilaya est requise",
+        "placeRequired": "L'emplacement est requis",
+        "quantityNegative": "La quantité ne peut pas être négative"
+      }
+    }
   },
   "tenders": {
     "mySubmissions": "Mes soumissions",

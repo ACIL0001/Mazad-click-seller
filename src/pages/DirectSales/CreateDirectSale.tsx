@@ -211,14 +211,14 @@ export default function CreateDirectSale() {
   const [showWarningModal, setShowWarningModal] = useState(false);
 
   const validationSchema = Yup.object().shape({
-    title: Yup.string().min(3, 'Le titre doit contenir au moins 3 caractères').required('Le titre est requis'),
-    description: Yup.string().min(10, 'La description doit contenir au moins 10 caractères').required('La description est requise'),
-    saleType: Yup.string().oneOf(Object.values(DIRECT_SALE_TYPES), 'Type invalide').required('Le type est requis'),
-    productCategory: Yup.string().required('La catégorie est requise'),
-    price: Yup.number().min(1, 'Le prix doit être positif').required('Le prix est requis'),
-    wilaya: Yup.string().required('La wilaya est requise'),
-    place: Yup.string().required('L\'emplacement est requis'),
-    quantity: Yup.number().min(0, 'La quantité ne peut pas être négative'),
+    title: Yup.string().min(3, t('directSales.create.errors.titleMinLength')).required(t('directSales.create.errors.titleRequired')),
+    description: Yup.string().min(10, t('directSales.create.errors.descriptionMinLength')).required(t('directSales.create.errors.descriptionRequired')),
+    saleType: Yup.string().oneOf(Object.values(DIRECT_SALE_TYPES), t('directSales.create.errors.invalidType')).required(t('directSales.create.errors.typeRequired')),
+    productCategory: Yup.string().required(t('directSales.create.errors.categoryRequired')),
+    price: Yup.number().min(1, t('directSales.create.errors.pricePositive')).required(t('directSales.create.errors.priceRequired')),
+    wilaya: Yup.string().required(t('directSales.create.errors.wilayaRequired')),
+    place: Yup.string().required(t('directSales.create.errors.placeRequired')),
+    quantity: Yup.number().min(0, t('directSales.create.errors.quantityNegative')),
   });
 
   const formik = useFormik({
@@ -249,28 +249,28 @@ export default function CreateDirectSale() {
         case 0:
           // Show selected type if available, otherwise show "Type"
           if (formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT) {
-            return 'Produit';
+            return t('common.product');
           } else if (formik.values.saleType === DIRECT_SALE_TYPES.SERVICE) {
-            return 'Service';
+            return t('common.service');
           }
-          return 'Type';
+          return t('directSales.create.step1.type');
         case 1:
           // Show selected category name if available, otherwise show "Catégorie"
           if (selectedCategory && selectedCategory.name) {
             return selectedCategory.name;
           }
-          return 'Catégorie';
+          return t('common.categories');
         case 2:
-          return 'Détails';
+          return t('createAuction.steps.details');
         default:
           return '';
       }
     };
 
     return [
-      { title: getStepTitle(0), description: 'Choisissez le type' },
-      { title: getStepTitle(1), description: 'Sélectionnez la catégorie' },
-      { title: getStepTitle(2), description: 'Remplissez les informations' },
+      { title: getStepTitle(0), description: t('directSales.create.step1.description') },
+      { title: getStepTitle(1), description: t('directSales.create.step2.description') },
+      { title: getStepTitle(2), description: t('directSales.create.step3.description') },
     ];
   }, [formik.values.saleType, selectedCategory]);
 
@@ -651,7 +651,7 @@ export default function CreateDirectSale() {
             <Stack spacing={3}>
               <TextField
                 fullWidth
-                label="Titre"
+                label={t('directSales.create.form.title')}
                 {...formik.getFieldProps('title')}
                 error={formik.touched.title && !!formik.errors.title}
                 helperText={formik.touched.title && formik.errors.title}
@@ -661,7 +661,7 @@ export default function CreateDirectSale() {
                 fullWidth
                 multiline
                 rows={4}
-                label="Description"
+                label={t('directSales.create.form.description')}
                 {...formik.getFieldProps('description')}
                 error={formik.touched.description && !!formik.errors.description}
                 helperText={formik.touched.description && formik.errors.description}
@@ -672,7 +672,7 @@ export default function CreateDirectSale() {
                   <TextField
                     fullWidth
                     type="number"
-                    label="Prix (DA)"
+                    label={t('directSales.create.form.price')}
                     {...formik.getFieldProps('price')}
                     error={formik.touched.price && !!formik.errors.price}
                     helperText={formik.touched.price && formik.errors.price}
@@ -685,10 +685,10 @@ export default function CreateDirectSale() {
                   <TextField
                     fullWidth
                     type="number"
-                    label="Quantité (0 = illimité)"
+                    label={t('directSales.create.form.quantity')}
                     {...formik.getFieldProps('quantity')}
                     error={formik.touched.quantity && !!formik.errors.quantity}
-                    helperText={formik.touched.quantity && formik.errors.quantity || 'Mettez 0 pour quantité illimitée'}
+                    helperText={formik.touched.quantity && formik.errors.quantity || t('directSales.create.form.quantityHelper')}
                   />
                 </Grid>
               </Grid>
@@ -698,12 +698,12 @@ export default function CreateDirectSale() {
                   <TextField
                     fullWidth
                     select
-                    label="Wilaya"
+                    label={t('directSales.create.form.wilaya')}
                     {...formik.getFieldProps('wilaya')}
                     error={formik.touched.wilaya && !!formik.errors.wilaya}
                     helperText={formik.touched.wilaya && formik.errors.wilaya}
                   >
-                    <MenuItem value="">Sélectionnez une wilaya</MenuItem>
+                    <MenuItem value="">{t('directSales.create.form.selectWilaya')}</MenuItem>
                     {[
                       "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Béjaïa", "Biskra", "Béchar", 
                       "Blida", "Bouira", "Tamanrasset", "Tébessa", "Tlemcen", "Tiaret", "Tizi Ouzou", 
@@ -722,7 +722,7 @@ export default function CreateDirectSale() {
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
-                    label="Lieu"
+                    label={t('directSales.create.form.place')}
                     {...formik.getFieldProps('place')}
                     error={formik.touched.place && !!formik.errors.place}
                     helperText={formik.touched.place && formik.errors.place}
@@ -732,7 +732,7 @@ export default function CreateDirectSale() {
 
               <Box>
                 <Typography variant="subtitle1" gutterBottom>
-                  Images et vidéos
+                  {t('directSales.create.form.imagesAndVideos')}
                 </Typography>
                 <UploadMultiFile
                   files={mediaFiles}
@@ -749,7 +749,7 @@ export default function CreateDirectSale() {
                     onChange={(e) => formik.setFieldValue('isPro', e.target.checked)}
                   />
                 }
-                label="Vente professionnelle"
+                label={t('directSales.create.form.professionalSale')}
               />
 
               <FormControlLabel
@@ -759,7 +759,7 @@ export default function CreateDirectSale() {
                     onChange={(e) => formik.setFieldValue('hidden', e.target.checked)}
                   />
                 }
-                label="Vente anonyme"
+                label={t('directSales.create.form.anonymousSale')}
               />
             </Stack>
           </StepCard>
