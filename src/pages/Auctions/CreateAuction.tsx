@@ -35,6 +35,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import * as Yup from 'yup';
 import { Form, useFormik, FormikProvider } from 'formik';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -936,6 +937,7 @@ declare global {
 
 export default function CreateAuction() {
   const { t } = useTranslation();
+  const { isRTL, direction } = useLanguage();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -1142,13 +1144,13 @@ export default function CreateAuction() {
     switch (step) {
       case 0: // Bid Type & Auction Type
         if (!values.bidType) {
-          enqueueSnackbar('Veuillez sélectionner un type d\'enchère', { variant: 'error' });
+          enqueueSnackbar(t('createAuction.errors.selectBidType'), { variant: 'error' });
           // Scroll to top of the page to show bid type selection
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
         }
         if (!values.auctionType) {
-          enqueueSnackbar('Veuillez sélectionner un type d\'enchère', { variant: 'error' });
+          enqueueSnackbar(t('createAuction.errors.selectBidType'), { variant: 'error' });
           // Scroll to auction type section
           window.scrollTo({ top: 400, behavior: 'smooth' });
           return false;
@@ -1157,7 +1159,7 @@ export default function CreateAuction() {
 
       case 1: // Category
         if (!values.productCategory) {
-          enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
+          enqueueSnackbar(t('createAuction.errors.selectCategory'), { variant: 'error' });
           // Scroll to top to show categories
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
@@ -1420,7 +1422,7 @@ export default function CreateAuction() {
           throw new Error('Invalid response structure');
         }
       } catch (error: any) {
-        enqueueSnackbar('Erreur lors du chargement des données', { variant: 'error' });
+        enqueueSnackbar(t('createAuction.errors.loadDataError'), { variant: 'error' });
       }
     };
 
@@ -1525,11 +1527,11 @@ export default function CreateAuction() {
             setWilayaAutoDetected(true);
             setDetectedWilaya(detectedWilaya);
             setForceUpdate(prev => prev + 1);
-            enqueueSnackbar(`Wilaya détectée: ${detectedWilaya}`, { variant: 'success' });
+            enqueueSnackbar(t('createAuction.wilayaDetected', { wilaya: detectedWilaya }), { variant: 'success' });
           } else {
             setWilayaAutoDetected(false);
             setDetectedWilaya('');
-            enqueueSnackbar('Wilaya non détectée. Veuillez sélectionner manuellement.', { variant: 'warning' });
+            enqueueSnackbar(t('createAuction.wilayaNotDetected'), { variant: 'warning' });
           }
         });
 
@@ -1537,8 +1539,8 @@ export default function CreateAuction() {
         console.error('Failed to initialize Google Maps autocomplete:', error);
         enqueueSnackbar(
           error.message.includes('API key') 
-            ? 'Google Maps API key not configured. Please contact support.'
-            : 'Erreur lors du chargement de Google Maps. Veuillez réessayer.',
+            ? t('createAuction.errors.googleMapsApiKeyError')
+            : t('createAuction.errors.googleMapsError'),
           { variant: 'error' }
         );
       }
@@ -1926,7 +1928,7 @@ export default function CreateAuction() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              Sélectionnez la catégorie *
+              {t('createAuction.step2.selectCategory')}
             </Typography>
 
             {/* Category Validation Error */}
@@ -2095,7 +2097,7 @@ export default function CreateAuction() {
               <Grid item xs={12}>
                 <StyledTextField
                   fullWidth
-                  label="Titre de l'enchère *"
+                  label={t('createAuction.form.title')}
                   name="title"
                   value={formik.values.title}
                   onChange={formik.handleChange}
@@ -2106,9 +2108,9 @@ export default function CreateAuction() {
                       <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                         {formik.errors.title}
                       </Alert> : 
-                      'Le titre doit contenir au moins 3 caractères'
+                      t('createAuction.form.titleHelper')
                   }
-                  placeholder="Ex: iPhone 13 Pro Max - État neuf"
+                  placeholder={t('createAuction.form.titlePlaceholder')}
                 />
               </Grid>
 
@@ -2117,7 +2119,7 @@ export default function CreateAuction() {
                   fullWidth
                   multiline
                   rows={4}
-                  label="Description détaillée *"
+                  label={t('createAuction.form.description')}
                   name="description"
                   value={formik.values.description}
                   onChange={formik.handleChange}
@@ -2128,9 +2130,9 @@ export default function CreateAuction() {
                       <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                         {formik.errors.description}
                       </Alert> : 
-                      'La description doit contenir au moins 10 caractères'
+                      t('createAuction.form.descriptionHelper')
                   }
-                  placeholder="Décrivez votre produit/service en détail..."
+                  placeholder={t('createAuction.form.descriptionPlaceholder')}
                 />
               </Grid>
 
@@ -2138,7 +2140,7 @@ export default function CreateAuction() {
                 <Grid item xs={12} md={6}>
                   <StyledTextField
                     fullWidth
-                    label="Quantité *"
+                    label={t('createAuction.form.quantity')}
                     name="quantity"
                     value={formik.values.quantity}
                     onChange={formik.handleChange}
@@ -2149,7 +2151,7 @@ export default function CreateAuction() {
                         <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                           {formik.errors.quantity}
                         </Alert> : 
-                        'Ex: 1 unité, 5 pièces...'
+                        t('createAuction.form.quantityHelper')
                     }
                   />
                 </Grid>
@@ -2159,13 +2161,12 @@ export default function CreateAuction() {
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Prix et conditions
+                  {t('createAuction.form.pricingAndConditions')}
                 </Typography>
 
                 <Alert severity="info" sx={{ mb: 3 }}>
                   <Typography variant="body2">
-                    <strong>Conseils de prix :</strong> Le prix de réserve protège votre vente en définissant
-                    un prix minimum pour accepter l'enchère. Laissez vide si vous n'avez pas de prix minimum.
+                    {t('createAuction.form.pricingTips')}
                   </Typography>
                 </Alert>
               </Grid>
@@ -2174,7 +2175,7 @@ export default function CreateAuction() {
                 <StyledTextField
                   fullWidth
                   type="number"
-                  label="Prix de départ *"
+                  label={t('createAuction.step3.startingPrice')}
                   name="startingPrice"
                   value={formik.values.startingPrice}
                   onChange={formik.handleChange}
@@ -2185,7 +2186,7 @@ export default function CreateAuction() {
                       <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                         {formik.errors.startingPrice}
                       </Alert> : 
-                      'Le prix de départ doit être positif'
+                      t('createAuction.form.startingPriceHelper')
                   }
                   InputProps={{
                     endAdornment: <InputAdornment position="end">DA</InputAdornment>,
@@ -2197,19 +2198,19 @@ export default function CreateAuction() {
                 <StyledTextField
                   fullWidth
                   type="number"
-                  label="Prix de réserve *"
+                  label={t('createAuction.step3.reservePrice')}
                   name="reservePrice"
                   value={formik.values.reservePrice}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  placeholder="Ce prix doit être supérieur au prix de départ"
+                  placeholder={t('createAuction.form.reservePricePlaceholder')}
                   error={formik.touched.reservePrice && !!formik.errors.reservePrice}
                   helperText={
                     formik.touched.reservePrice && formik.errors.reservePrice ? 
                       <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                         {formik.errors.reservePrice}
                       </Alert> : 
-                      "Ce prix doit être supérieur au prix de départ"
+                      t('createAuction.form.reservePriceHelper')
                   }
                   required
                   InputProps={{
@@ -2222,7 +2223,7 @@ export default function CreateAuction() {
               <Grid item xs={12} id="duration-section">
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }} id="duration-heading">
-                  Durée de l'enchère *
+                  {t('createAuction.form.duration')}
                 </Typography>
 
                 {formik.touched.duration && formik.errors.duration && (
@@ -2279,8 +2280,7 @@ export default function CreateAuction() {
 
                 <Alert severity="info" sx={{ mb: 3 }}>
                   <Typography variant="body2">
-                    <strong>Conseil :</strong> Tapez votre adresse complète et la wilaya sera automatiquement détectée.
-                    Si la détection automatique échoue, vous pouvez sélectionner manuellement.
+                    {t('createAuction.form.addressHelper')}
                   </Typography>
                 </Alert>
               </Grid>
@@ -2289,7 +2289,7 @@ export default function CreateAuction() {
                 <StyledTextField
                   inputRef={inputRef}
                   fullWidth
-                  label="Adresse *"
+                  label={t('createAuction.form.address')}
                   name="place"
                   value={formik.values.place}
                   onChange={(e) => {
@@ -2310,9 +2310,9 @@ export default function CreateAuction() {
                       <Alert severity="error" sx={{ py: 0, mt: 1, fontSize: '0.75rem' }}>
                         {formik.errors.place}
                       </Alert> : 
-                      'Commencez à taper votre adresse pour voir les suggestions'
+                      t('createAuction.form.addressPlaceholder')
                   }
-                  placeholder="Ex: 123 Rue de la Liberté, Alger, Algérie"
+                  placeholder={t('createAuction.form.addressExample')}
                 />
               </Grid>
 
@@ -2320,7 +2320,7 @@ export default function CreateAuction() {
                 <StyledTextField
                   fullWidth
                   select
-                  label="Wilaya *"
+                  label={t('createAuction.form.wilaya')}
                   name="wilaya"
                   key={forceUpdate}
                   value={detectedWilaya || formik.values.wilaya || ''}
@@ -2344,15 +2344,15 @@ export default function CreateAuction() {
                         {formik.errors.wilaya}
                       </Alert> :
                     wilayaAutoDetected && detectedWilaya
-                      ? `Wilaya détectée automatiquement: ${detectedWilaya}`
-                      : 'Sélectionnez manuellement si non détectée'
+                      ? t('createAuction.wilayaAutoDetected', { wilaya: detectedWilaya })
+                      : t('createAuction.form.selectWilayaManually')
                   }
                 >
                   <MenuItem value="">
                     <em>
                       {wilayaAutoDetected && detectedWilaya
-                        ? `Wilaya détectée: ${detectedWilaya}`
-                        : 'Sélectionnez une wilaya'
+                        ? t('createAuction.wilayaDetected', { wilaya: detectedWilaya })
+                        : t('createAuction.form.selectWilaya')
                       }
                     </em>
                   </MenuItem>
@@ -2402,10 +2402,10 @@ export default function CreateAuction() {
                       label={
                         <Box>
                           <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                            Enchère professionnelle
+                            {t('createAuction.professionalAuction')}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Visible uniquement par les professionnels
+                            {t('createAuction.professionalAuctionDesc')}
                           </Typography>
                         </Box>
                       }
@@ -2447,11 +2447,11 @@ export default function CreateAuction() {
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Images et Vidéos
+                  {t('createAuction.imagesAndVideos')}
                 </Typography>
 
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Téléchargez des images et vidéos de haute qualité pour mieux présenter votre produit ou service. Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM
+                  {t('createAuction.uploadInfo')}
                 </Alert>
 
                 <UploadMultiFile
@@ -2477,16 +2477,16 @@ export default function CreateAuction() {
   };
 
   return (
-    <Page title="Créer une enchère">
+    <Page title={t('createAuction.pageTitle')}>
       <MainContainer>
         {/* Header */}
         <HeaderCard>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-              Créer une nouvelle enchère
+              {t('createAuction.headerTitle')}
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
-              Vendez vos produits et services en quelques étapes simples
+              {t('createAuction.headerSubtitle')}
             </Typography>
           </Box>
         </HeaderCard>
@@ -2495,10 +2495,10 @@ export default function CreateAuction() {
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Étape {activeStep + 1} sur {steps.length}
+              {t('createAuction.stepProgress', { current: activeStep + 1, total: steps.length })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {Math.round(((activeStep + 1) / steps.length) * 100)}% terminé
+              {t('createAuction.progressPercent', { percent: Math.round(((activeStep + 1) / steps.length) * 100) })}
             </Typography>
           </Box>
           <ProgressBar
@@ -2541,15 +2541,21 @@ export default function CreateAuction() {
             {getStepContent(activeStep)}
 
             {/* Navigation */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              mt: 4 
+            }}>
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 variant="outlined"
-                startIcon={<Iconify icon="eva:arrow-back-fill" />}
+                startIcon={!isRTL ? <Iconify icon="eva:arrow-back-fill" /> : undefined}
+                endIcon={isRTL ? <Iconify icon="eva:arrow-forward-fill" /> : undefined}
                 sx={{ borderRadius: 2, px: 3 }}
               >
-                Précédent
+                {t('common.previous')}
               </Button>
 
               {activeStep === steps.length - 1 ? (
@@ -2562,10 +2568,11 @@ export default function CreateAuction() {
                     // Use our custom handleSubmit instead of Formik's
                     await handleSubmit(formik.values);
                   }}
-                  endIcon={<Iconify icon="eva:checkmark-fill" />}
+                  startIcon={isRTL ? <Iconify icon="eva:checkmark-fill" /> : undefined}
+                  endIcon={!isRTL ? <Iconify icon="eva:checkmark-fill" /> : undefined}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
-                  Créer l'enchère
+                  {t('createAuction.createButton')}
                 </LoadingButton>
               ) : (
                 // Hide "Suivant" button on steps 0 and 1 (auto-advance enabled)
@@ -2574,10 +2581,11 @@ export default function CreateAuction() {
                     type="button"
                     variant="contained"
                     onClick={handleNext}
-                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                    startIcon={isRTL ? <Iconify icon="eva:arrow-back-fill" /> : undefined}
+                    endIcon={!isRTL ? <Iconify icon="eva:arrow-forward-fill" /> : undefined}
                     sx={{ borderRadius: 2, px: 4 }}
                   >
-                    Suivant
+                    {t('common.next')}
                   </Button>
                 )
               )}
@@ -2654,7 +2662,7 @@ export default function CreateAuction() {
               }
             }}
           >
-            Annuler
+            {t('common.cancel')}
           </Button>
           <LoadingButton
             onClick={handleConfirmSubmit}
@@ -2669,7 +2677,7 @@ export default function CreateAuction() {
               }
             }}
           >
-            Confirmer et Créer
+            {t('createAuction.confirmCreate')}
           </LoadingButton>
         </DialogActions>
       </Dialog>

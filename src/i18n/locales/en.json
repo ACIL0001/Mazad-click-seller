@@ -628,18 +628,30 @@
       "description": "Choose the category that best matches your {type}",
       "availableCategories": "Available Categories",
       "subcategoriesOf": "Subcategories of {name}",
-      "categoryDefault": "Category {name}"
+      "categoryDefault": "Category {name}",
+      "selectCategory": "Select the category *"
     },
     "step3": {
       "title": "Auction Details",
       "description": "Complete the detailed information for your auction",
       "auctionParameters": "Auction Parameters",
       "auctionType": "Auction Type",
-      "auctionType": "Auction Type",
       "normalAuction": "Classic",
       "normalAuctionDesc": "Traditional auction over several days",
       "expressAuction": "Express",
-      "expressAuctionDesc": "Fast auction in a few hours",
+      "expressAuctionDesc": "Fast auction in a few hours"
+    },
+    "pageTitle": "Create Auction",
+    "headerTitle": "Create New Auction",
+    "headerSubtitle": "Sell your products and services in a few simple steps",
+    "stepProgress": "Step {{current}} of {{total}}",
+    "progressPercent": "{{percent}}% completed",
+    "createButton": "Create Auction",
+    "confirmCreate": "Confirm and Create",
+    "professionalAuction": "Professional Auction",
+    "professionalAuctionDesc": "Visible only to professionals",
+    "imagesAndVideos": "Images and Videos",
+    "uploadInfo": "Upload high-quality images and videos to better showcase your product or service. Supported formats: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM",
       "auctionDuration": "Auction Duration",
       "prices": "Prices",
       "startingPrice": "Starting Price",
@@ -699,7 +711,38 @@
       "completeStepCategory": "the category",
       "completeStepDetails": "the details",
       "completeStep": "Please complete {{stepName}}",
-      "createFailed": "Error creating auction"
+      "createFailed": "Error creating auction",
+      "selectBidType": "Please select an auction type",
+      "selectCategory": "Please select a category",
+      "loadDataError": "Error loading data",
+      "googleMapsError": "Error loading Google Maps. Please try again.",
+      "googleMapsApiKeyError": "Google Maps API key not configured. Please contact support."
+    },
+    "wilayaDetected": "Wilaya detected: {{wilaya}}",
+    "wilayaNotDetected": "Wilaya not detected. Please select manually.",
+    "wilayaAutoDetected": "Wilaya automatically detected: {{wilaya}}",
+    "form": {
+      "title": "Auction Title *",
+      "titleHelper": "Title must contain at least 3 characters",
+      "titlePlaceholder": "Ex: iPhone 13 Pro Max - New Condition",
+      "description": "Detailed Description *",
+      "descriptionHelper": "Description must contain at least 10 characters",
+      "descriptionPlaceholder": "Describe your product/service in detail...",
+      "quantity": "Quantity *",
+      "quantityHelper": "Ex: 1 unit, 5 pieces...",
+      "pricingAndConditions": "Pricing and Conditions",
+      "pricingTips": "<strong>Pricing Tips:</strong> The reserve price protects your sale by setting a minimum price to accept the bid. Leave empty if you don't have a minimum price.",
+      "startingPriceHelper": "Starting price must be positive",
+      "reservePricePlaceholder": "This price must be higher than the starting price",
+      "reservePriceHelper": "This price must be higher than the starting price",
+      "duration": "Auction Duration *",
+      "address": "Address *",
+      "addressHelper": "<strong>Tip:</strong> Type your complete address and the wilaya will be automatically detected. If automatic detection fails, you can select manually.",
+      "addressPlaceholder": "Start typing your address to see suggestions",
+      "addressExample": "Ex: 123 Liberty Street, Algiers, Algeria",
+      "wilaya": "Wilaya *",
+      "selectWilaya": "Select a wilaya",
+      "selectWilayaManually": "Select manually if not detected"
     },
     "success": {
       "created": "Auction created successfully!"
@@ -887,9 +930,28 @@
     },
     "errors": {
       "createFailed": "Error creating tender",
-      "completeStep": "Please complete {stepName}"
+      "completeStep": "Please complete {stepName}",
+      "noAttachments": "Please upload at least one attachment",
+      "lowRating": "Your rating is too low to create a tender"
     },
-    "confirm": "Confirm and Create"
+    "confirm": "Confirm and Create",
+    "pageTitle": "Create New Tender",
+    "headerSubtitle": "Find the best providers at the best price",
+    "form": {
+      "desiredQuantity": "Desired Quantity",
+      "selectWilaya": "Select a wilaya",
+      "selectWilayaManually": "Select manually if not detected"
+    },
+    "wilayaDetected": "Wilaya detected",
+    "attachments": "Attachments",
+    "attachmentsTitle": "Images, Videos and Documents",
+    "uploadInfo": "Upload images, videos and documents (specifications, plans, technical specifications...). Supported formats: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM, PDF, DOC, DOCX",
+    "confirmDialog": {
+      "title": "Important Warning",
+      "warning": "Once created, you will not be able to delete this tender",
+      "warningDesc": "Please make sure all information is correct before confirming creation.",
+      "message": "Do you really want to create this tender?"
+    }
   },
   "directSales": {
     "createTitle": "Create Direct Sale",
@@ -941,6 +1003,7 @@
         "quantityNegative": "Quantity cannot be negative",
         "selectType": "Please select a type",
         "selectCategory": "Please select a category",
+        "selectTypeFirst": "Please first select a sale type",
         "noImages": "Please upload at least one image or video",
         "lowRating": "Your rating is too low to create a direct sale",
         "loadCategoriesFailed": "Error loading categories",
@@ -948,6 +1011,12 @@
       },
       "success": {
         "created": "Direct sale created successfully!"
+      },
+      "createButton": "Create Direct Sale",
+      "confirmDialog": {
+        "title": "Confirm Creation",
+        "message": "Are you sure you want to create this direct sale? Once created, it will be visible to all buyers.",
+        "confirm": "Confirm"
       }
     }
   },

@@ -35,6 +35,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import * as Yup from 'yup';
 import { Form, useFormik, FormikProvider } from 'formik';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -196,6 +197,7 @@ declare global {
 
 export default function CreateTender() {
   const { t } = useTranslation();
+  const { isRTL, direction } = useLanguage();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -424,7 +426,7 @@ export default function CreateTender() {
     switch (step) {
       case 0: // Tender Type
         if (!values.tenderType) {
-          enqueueSnackbar('Veuillez sélectionner un type (Produit ou Service)', { variant: 'error' });
+          enqueueSnackbar(t('createTender.errors.selectType'), { variant: 'error' });
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
         }
@@ -432,7 +434,7 @@ export default function CreateTender() {
 
       case 1: // Auction Type
         if (!values.auctionType) {
-          enqueueSnackbar('Veuillez sélectionner un type d\'appel d\'offres', { variant: 'error' });
+          enqueueSnackbar(t('createTender.errors.selectTenderType'), { variant: 'error' });
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
         }
@@ -440,7 +442,7 @@ export default function CreateTender() {
 
       case 2: // Evaluation Type
         if (!values.evaluationType) {
-          enqueueSnackbar('Veuillez sélectionner un type d\'évaluation', { variant: 'error' });
+          enqueueSnackbar(t('createTender.errors.selectEvaluationType'), { variant: 'error' });
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
         }
@@ -448,7 +450,7 @@ export default function CreateTender() {
 
       case 3: // Category
         if (!values.category) {
-          enqueueSnackbar('Veuillez sélectionner une catégorie', { variant: 'error' });
+          enqueueSnackbar(t('createTender.errors.selectCategory'), { variant: 'error' });
           window.scrollTo({ top: 0, behavior: 'smooth' });
           return false;
         }
@@ -553,7 +555,7 @@ export default function CreateTender() {
   // Load categories and handle auth check (reuse from CreateAuction)
   useEffect(() => {
     if (!isLogged) {
-      enqueueSnackbar('Veuillez vous connecter pour créer un appel d\'offres', { variant: 'error' });
+      enqueueSnackbar(t('createTender.errors.loginRequired'), { variant: 'error' });
       navigate('/login');
       return;
     }
@@ -841,12 +843,12 @@ export default function CreateTender() {
 
     // Additional validation for attachments
     if (attachments.length === 0) {
-      enqueueSnackbar('Veuillez télécharger au moins une pièce jointe', { variant: 'error' });
+      enqueueSnackbar(t('createTender.errors.noAttachments'), { variant: 'error' });
       setActiveStep(3); // Go to details step where files are uploaded
       // Scroll to attachments section
       setTimeout(() => {
         const attachmentsSection = Array.from(document.querySelectorAll('h5')).find(
-          (el) => el.textContent?.includes('Pièces jointes')
+          (el) => el.textContent?.includes(t('createTender.attachments'))
         );
         if (attachmentsSection) {
           attachmentsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -856,7 +858,7 @@ export default function CreateTender() {
     }
 
     if (auth.user?.rate < 3) {
-      enqueueSnackbar('Votre note est trop faible pour créer un appel d\'offres', { variant: 'error' });
+      enqueueSnackbar(t('createTender.errors.lowRating'), { variant: 'error' });
       return;
     }
 
@@ -1324,7 +1326,7 @@ export default function CreateTender() {
                 <Grid item xs={12} md={6}>
                   <StyledTextField
                     fullWidth
-                    label="Quantité souhaitée"
+                    label={t('createTender.form.desiredQuantity')}
                     value={formik.values.quantity}
                     onChange={formik.handleChange('quantity')}
                     placeholder="Ex: 50 unités, 100 pièces..."
@@ -1424,15 +1426,15 @@ export default function CreateTender() {
                   error={formik.touched.wilaya && Boolean(formik.errors.wilaya)}
                   helperText={
                     detectedWilaya
-                      ? 'Wilaya détectée'
-                      : formik.touched.wilaya && formik.errors.wilaya || 'Sélectionnez manuellement si non détectée'
+                      ? t('createTender.wilayaDetected')
+                      : formik.touched.wilaya && formik.errors.wilaya || t('createTender.form.selectWilayaManually')
                   }
                 >
                   <MenuItem value="">
                     <em>
                       {detectedWilaya
-                        ? 'Wilaya détectée'
-                        : 'Sélectionnez une wilaya'
+                        ? t('createTender.wilayaDetected')
+                        : t('createTender.form.selectWilaya')
                       }
                     </em>
                   </MenuItem>
@@ -1519,11 +1521,11 @@ export default function CreateTender() {
               <Grid item xs={12}>
                 <Divider sx={{ my: 3 }} />
                 <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                  Images, Vidéos et Documents
+                  {t('createTender.attachmentsTitle')}
                 </Typography>
 
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Téléchargez des images, vidéos et documents (cahier des charges, plans, spécifications techniques...). Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM, PDF, DOC, DOCX
+                  {t('createTender.uploadInfo')}
                 </Alert>
 
                 <UploadMultiFile
@@ -1561,7 +1563,7 @@ export default function CreateTender() {
               {t('createTender.pageTitle')}
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
-              Trouvez les meilleurs prestataires au meilleur prix
+              {t('createTender.headerSubtitle')}
             </Typography>
           </Box>
         </HeaderCard>
@@ -1617,15 +1619,21 @@ export default function CreateTender() {
             {getStepContent(activeStep)}
 
             {/* Navigation */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              mt: 4 
+            }}>
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 variant="outlined"
-                startIcon={<Iconify icon="eva:arrow-back-fill" />}
+                startIcon={!isRTL ? <Iconify icon="eva:arrow-back-fill" /> : undefined}
+                endIcon={isRTL ? <Iconify icon="eva:arrow-forward-fill" /> : undefined}
                 sx={{ borderRadius: 2, px: 3 }}
               >
-                Précédent
+                {t('common.previous')}
               </Button>
 
               {activeStep === steps.length - 1 ? (
@@ -1638,7 +1646,8 @@ export default function CreateTender() {
                     // Use our custom handleSubmit instead of Formik's
                     await handleSubmit(formik.values);
                   }}
-                  endIcon={<Iconify icon="eva:checkmark-fill" />}
+                  startIcon={isRTL ? <Iconify icon="eva:checkmark-fill" /> : undefined}
+                  endIcon={!isRTL ? <Iconify icon="eva:checkmark-fill" /> : undefined}
                   sx={{ borderRadius: 2, px: 4 }}
                 >
                   {t('createTender.createButton')}
@@ -1650,10 +1659,11 @@ export default function CreateTender() {
                     type="button"
                     variant="contained"
                     onClick={handleNext}
-                    endIcon={<Iconify icon="eva:arrow-forward-fill" />}
+                    startIcon={isRTL ? <Iconify icon="eva:arrow-back-fill" /> : undefined}
+                    endIcon={!isRTL ? <Iconify icon="eva:arrow-forward-fill" /> : undefined}
                     sx={{ borderRadius: 2, px: 4 }}
                   >
-                    Suivant
+                    {t('common.next')}
                   </Button>
                 )
               )}
@@ -1698,21 +1708,21 @@ export default function CreateTender() {
               <Iconify icon="mdi:alert" width={32} height={32} sx={{ color: 'white' }} />
             </Box>
             <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
-              Attention Important
+              {t('createTender.confirmDialog.title')}
             </Typography>
           </Box>
         </DialogTitle>
         <DialogContent sx={{ px: 4, py: 3 }}>
           <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-              ⚠️ Une fois créé, vous ne pourrez plus supprimer cet appel d'offres
+              ⚠️ {t('createTender.confirmDialog.warning')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Veuillez vous assurer que toutes les informations sont correctes avant de confirmer la création.
+              {t('createTender.confirmDialog.warningDesc')}
             </Typography>
           </Alert>
           <Typography variant="body2" sx={{ color: 'text.secondary', mt: 2 }}>
-            Voulez-vous vraiment créer cet appel d'offres ?
+            {t('createTender.confirmDialog.message')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
@@ -1730,7 +1740,7 @@ export default function CreateTender() {
               }
             }}
           >
-            Annuler
+            {t('common.cancel')}
           </Button>
           <LoadingButton
             onClick={handleConfirmSubmit}

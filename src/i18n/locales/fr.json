@@ -431,7 +431,8 @@
       "description": "Choisissez la catégorie qui correspond le mieux à votre {type}",
       "availableCategories": "Catégories disponibles",
       "subcategoriesOf": "Sous-catégories de {name}",
-      "categoryDefault": "Catégorie {name}"
+      "categoryDefault": "Catégorie {name}",
+      "selectCategory": "Sélectionnez la catégorie *"
     },
     "step3": {
       "title": "Détails de l'enchère",
@@ -442,6 +443,17 @@
       "expressAuction": "Express",
       "expressAuctionDesc": "Enchère rapide en quelques heures"
     },
+    "pageTitle": "Créer une enchère",
+    "headerTitle": "Créer une nouvelle enchère",
+    "headerSubtitle": "Vendez vos produits et services en quelques étapes simples",
+    "stepProgress": "Étape {{current}} sur {{total}}",
+    "progressPercent": "{{percent}}% terminé",
+    "createButton": "Créer l'enchère",
+    "confirmCreate": "Confirmer et Créer",
+    "professionalAuction": "Enchère professionnelle",
+    "professionalAuctionDesc": "Visible uniquement par les professionnels",
+    "imagesAndVideos": "Images et Vidéos",
+    "uploadInfo": "Téléchargez des images et vidéos de haute qualité pour mieux présenter votre produit ou service. Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM",
     "duration": {
       "2days": "2 jours",
       "7days": "7 jours",
@@ -484,7 +496,38 @@
       "completeStepCategory": "la catégorie",
       "completeStepDetails": "les détails",
       "completeStep": "Veuillez compléter {{stepName}}",
-      "createFailed": "Erreur lors de la création de l'enchère"
+      "createFailed": "Erreur lors de la création de l'enchère",
+      "selectBidType": "Veuillez sélectionner un type d'enchère",
+      "selectCategory": "Veuillez sélectionner une catégorie",
+      "loadDataError": "Erreur lors du chargement des données",
+      "googleMapsError": "Erreur lors du chargement de Google Maps. Veuillez réessayer.",
+      "googleMapsApiKeyError": "Clé API Google Maps non configurée. Veuillez contacter le support."
+    },
+    "wilayaDetected": "Wilaya détectée: {{wilaya}}",
+    "wilayaNotDetected": "Wilaya non détectée. Veuillez sélectionner manuellement.",
+    "wilayaAutoDetected": "Wilaya détectée automatiquement: {{wilaya}}",
+    "form": {
+      "title": "Titre de l'enchère *",
+      "titleHelper": "Le titre doit contenir au moins 3 caractères",
+      "titlePlaceholder": "Ex: iPhone 13 Pro Max - État neuf",
+      "description": "Description détaillée *",
+      "descriptionHelper": "La description doit contenir au moins 10 caractères",
+      "descriptionPlaceholder": "Décrivez votre produit/service en détail...",
+      "quantity": "Quantité *",
+      "quantityHelper": "Ex: 1 unité, 5 pièces...",
+      "pricingAndConditions": "Prix et conditions",
+      "pricingTips": "<strong>Conseils de prix :</strong> Le prix de réserve protège votre vente en définissant un prix minimum pour accepter l'enchère. Laissez vide si vous n'avez pas de prix minimum.",
+      "startingPriceHelper": "Le prix de départ doit être positif",
+      "reservePricePlaceholder": "Ce prix doit être supérieur au prix de départ",
+      "reservePriceHelper": "Ce prix doit être supérieur au prix de départ",
+      "duration": "Durée de l'enchère *",
+      "address": "Adresse *",
+      "addressHelper": "<strong>Conseil :</strong> Tapez votre adresse complète et la wilaya sera automatiquement détectée. Si la détection automatique échoue, vous pouvez sélectionner manuellement.",
+      "addressPlaceholder": "Commencez à taper votre adresse pour voir les suggestions",
+      "addressExample": "Ex: 123 Rue de la Liberté, Alger, Algérie",
+      "wilaya": "Wilaya *",
+      "selectWilaya": "Sélectionnez une wilaya",
+      "selectWilayaManually": "Sélectionnez manuellement si non détectée"
     },
     "success": {
       "created": "Enchère créée avec succès!"
@@ -646,9 +689,33 @@
     },
     "errors": {
       "createFailed": "Erreur lors de la création de l'appel d'offres",
-      "completeStep": "Veuillez compléter {stepName}"
+      "completeStep": "Veuillez compléter {stepName}",
+      "noAttachments": "Veuillez télécharger au moins une pièce jointe",
+      "lowRating": "Votre note est trop faible pour créer un appel d'offres",
+      "selectType": "Veuillez sélectionner un type (Produit ou Service)",
+      "selectTenderType": "Veuillez sélectionner un type d'appel d'offres",
+      "selectEvaluationType": "Veuillez sélectionner un type d'évaluation",
+      "selectCategory": "Veuillez sélectionner une catégorie",
+      "loginRequired": "Veuillez vous connecter pour créer un appel d'offres"
     },
-    "confirm": "Confirmer et Créer"
+    "confirm": "Confirmer et Créer",
+    "pageTitle": "Créer un nouvel appel d'offres",
+    "headerSubtitle": "Trouvez les meilleurs prestataires au meilleur prix",
+    "form": {
+      "desiredQuantity": "Quantité souhaitée",
+      "selectWilaya": "Sélectionnez une wilaya",
+      "selectWilayaManually": "Sélectionnez manuellement si non détectée"
+    },
+    "wilayaDetected": "Wilaya détectée",
+    "attachments": "Pièces jointes",
+    "attachmentsTitle": "Images, Vidéos et Documents",
+    "uploadInfo": "Téléchargez des images, vidéos et documents (cahier des charges, plans, spécifications techniques...). Formats supportés: JPEG, PNG, GIF, WebP, MP4, MOV, AVI, WebM, PDF, DOC, DOCX",
+    "confirmDialog": {
+      "title": "Attention Important",
+      "warning": "Une fois créé, vous ne pourrez plus supprimer cet appel d'offres",
+      "warningDesc": "Veuillez vous assurer que toutes les informations sont correctes avant de confirmer la création.",
+      "message": "Voulez-vous vraiment créer cet appel d'offres ?"
+    }
   },
   "orders": {
     "title": "Mes commandes",
@@ -762,6 +829,7 @@
         "quantityNegative": "La quantité ne peut pas être négative",
         "selectType": "Veuillez sélectionner un type",
         "selectCategory": "Veuillez sélectionner une catégorie",
+        "selectTypeFirst": "Veuillez d'abord sélectionner un type de vente",
         "noImages": "Veuillez télécharger au moins une image ou une vidéo",
         "lowRating": "Votre note est trop faible pour créer une vente directe",
         "loadCategoriesFailed": "Erreur lors du chargement des catégories",
@@ -769,6 +837,12 @@
       },
       "success": {
         "created": "Vente directe créée avec succès!"
+      },
+      "createButton": "Créer la vente directe",
+      "confirmDialog": {
+        "title": "Confirmer la création",
+        "message": "Êtes-vous sûr de vouloir créer cette vente directe ? Une fois créée, elle sera visible par tous les acheteurs.",
+        "confirm": "Confirmer"
       }
     }
   },

@@ -29,6 +29,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import * as Yup from 'yup';
 import { useFormik, FormikProvider } from 'formik';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -197,6 +198,7 @@ const ProgressBar = styled(LinearProgress)(({ theme }) => ({
 
 export default function CreateDirectSale() {
   const { t } = useTranslation();
+  const { isRTL, direction } = useLanguage();
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -632,7 +634,7 @@ export default function CreateDirectSale() {
                   <Typography variant="h6" color="text.secondary">
                     {formik.values.saleType 
                       ? `Aucune catégorie disponible pour les ${formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT ? 'produits' : 'services'}`
-                      : 'Veuillez d\'abord sélectionner un type de vente'
+                      : t('directSales.create.errors.selectTypeFirst')
                     }
                   </Typography>
                 </Box>
@@ -812,14 +814,19 @@ export default function CreateDirectSale() {
           <form onSubmit={formik.handleSubmit}>
             {getStepContent(activeStep)}
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              flexDirection: isRTL ? 'row-reverse' : 'row',
+              mt: 4 
+            }}>
               <Button
                 disabled={activeStep === 0}
                 onClick={handleBack}
                 size="large"
                 variant="outlined"
               >
-                Précédent
+                {t('common.previous')}
               </Button>
 
               {activeStep === steps.length - 1 && (
@@ -829,7 +836,7 @@ export default function CreateDirectSale() {
                   size="large"
                   loading={isSubmitting}
                 >
-                  Créer la vente directe
+                  {t('directSales.create.createButton')}
                 </LoadingButton>
               )}
             </Box>
@@ -837,16 +844,16 @@ export default function CreateDirectSale() {
         </FormikProvider>
 
         <Dialog open={showWarningModal} onClose={() => setShowWarningModal(false)}>
-          <DialogTitle>Confirmer la création</DialogTitle>
+          <DialogTitle>{t('directSales.create.confirmDialog.title')}</DialogTitle>
           <DialogContent>
             <Typography>
-              Êtes-vous sûr de vouloir créer cette vente directe ? Une fois créée, elle sera visible par tous les acheteurs.
+              {t('directSales.create.confirmDialog.message')}
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowWarningModal(false)}>Annuler</Button>
+            <Button onClick={() => setShowWarningModal(false)}>{t('common.cancel')}</Button>
             <LoadingButton onClick={handleConfirmSubmit} loading={isSubmitting} variant="contained">
-              Confirmer
+              {t('directSales.create.confirmDialog.confirm')}
             </LoadingButton>
           </DialogActions>
         </Dialog>
