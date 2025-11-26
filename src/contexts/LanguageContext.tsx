@@ -51,13 +51,13 @@ const AVAILABLE_LANGUAGES = [
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
   const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [isRTL, setIsRTL] = useState(false);
   const [direction, setDirection] = useState<'ltr' | 'rtl'>('ltr');
 
   useEffect(() => {
-    // Get saved language from localStorage or use browser default
-    const savedLanguage = localStorage.getItem('language') || 'en';
+    // Get saved language from localStorage or use default 'fr'
+    const savedLanguage = localStorage.getItem('language') || 'fr';
     const currentLang = AVAILABLE_LANGUAGES.find(lang => lang.value === savedLanguage) || AVAILABLE_LANGUAGES[0];
     
     console.log('🌐 Initial Language Load Debug:', {

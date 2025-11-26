@@ -33,7 +33,7 @@ export default function AccountPopover() {
   const anchorRef = useRef(null);
   const navigate = useNavigate();
   const { auth, clear } = useAuth();
-  const { isRTL } = useLanguage();
+  const { isRTL, changeLanguage } = useLanguage();
 
   const MENU_OPTIONS = [
     {
@@ -61,6 +61,13 @@ export default function AccountPopover() {
   };
 
   const logout = () => {
+    // Always reset language to default (French) on logout
+    try {
+      changeLanguage('fr');
+    } catch (e) {
+      console.warn('Language reset on logout failed, continuing logout anyway', e);
+      localStorage.setItem('language', 'fr');
+    }
     clear();
     navigate('/login');
   };
