@@ -29,7 +29,9 @@
     "orders": "Commandes",
     "bills": "Factures",
     "reports": "Rapports",
-    "directSales": "Ventes Directes"
+    "directSales": "Ventes Directes",
+    "switchToBuyer": "Passer au mode acheteur",
+    "currentlyInSellerMode": "Vous êtes actuellement en mode vendeur"
   },
   "postLogin": {
     "welcome": "Bienvenue, {{name}} !",

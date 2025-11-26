@@ -29,7 +29,9 @@
     "orders": "الطلبات",
     "bills": "الفواتير",
     "reports": "البلاغات",
-    "directSales": "المبيعات المباشرة"
+    "directSales": "المبيعات المباشرة",
+    "switchToBuyer": "التبديل إلى وضع المشتري",
+    "currentlyInSellerMode": "أنت حاليًا في وضع البائع"
   },
   "postLogin": {
     "welcome": "مرحباً، {{name}}!",

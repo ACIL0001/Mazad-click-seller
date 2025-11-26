@@ -29,7 +29,9 @@
     "orders": "Orders",
     "bills": "Bills",
     "reports": "Reports",
-    "directSales": "Direct Sales"
+    "directSales": "Direct Sales",
+    "switchToBuyer": "Switch to Buyer Mode",
+    "currentlyInSellerMode": "You are currently in seller mode"
   },
   "postLogin": {
     "welcome": "Welcome, {{name}}!",
