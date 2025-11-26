@@ -362,7 +362,12 @@ export default function OtpVerification() {
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    inputProps={{ maxLength: 1 }}
+                    inputProps={{ 
+                      maxLength: 1,
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*'
+                    }}
+                    type="tel"
                     autoFocus={index === 0}
                   />
                 ))}
