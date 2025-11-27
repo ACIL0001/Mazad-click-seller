@@ -22,6 +22,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Page from '@/components/Page';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
@@ -48,6 +49,7 @@ interface Order {
 
 export default function Orders() {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const { enqueueSnackbar } = useSnackbar();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -189,11 +191,19 @@ export default function Orders() {
                       />
                     </TableCell>
                     <TableCell>
-                      {new Date(order.createdAt).toLocaleDateString('fr-FR', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {(() => {
+                        const localeMap: { [key: string]: string } = {
+                          en: 'en-US',
+                          fr: 'fr-FR',
+                          ar: 'ar-SA',
+                        };
+                        const locale = localeMap[currentLanguage] || 'en-US';
+                        return new Date(order.createdAt).toLocaleDateString(locale, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        });
+                      })()}
                     </TableCell>
                     <TableCell align="center">
                       {order.status === 'PENDING' && (

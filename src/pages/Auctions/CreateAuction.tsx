@@ -1715,13 +1715,42 @@ export default function CreateAuction() {
       formData.append('data', JSON.stringify(dataPayload));
 
       // Separate images and videos from combined mediaFiles
-      mediaFiles.forEach((file) => {
+      console.log('📤 Preparing FormData for auction creation:', {
+        mediaFilesCount: mediaFiles.length,
+        dataPayload: dataPayload
+      });
+      
+      mediaFiles.forEach((file, index) => {
         if (file.type.startsWith('image/')) {
           formData.append('thumbs[]', file);
+          console.log(`📤 Added image file ${index + 1}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            fieldname: 'thumbs[]'
+          });
         } else if (file.type.startsWith('video/')) {
           formData.append('videos[]', file);
+          console.log(`📤 Added video file ${index + 1}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            fieldname: 'videos[]'
+          });
         }
       });
+
+      // Log FormData contents before sending
+      const formDataEntries: any[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          formDataEntries.push({ key, type: 'File', name: value.name, size: value.size, mimeType: value.type });
+        } else {
+          formDataEntries.push({ key, type: typeof value, value: String(value).substring(0, 200) });
+        }
+      }
+      console.log('📤 FormData contents before API call:', formDataEntries);
+      console.log('📤 Total FormData entries:', formDataEntries.length);
 
       await AuctionsAPI.create(formData);
 
@@ -2164,11 +2193,13 @@ export default function CreateAuction() {
                   {t('createAuction.form.pricingAndConditions')}
                 </Typography>
 
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  <Typography variant="body2">
-                    {t('createAuction.form.pricingTips')}
-                  </Typography>
-                </Alert>
+                {t('createAuction.form.pricingTips') && t('createAuction.form.pricingTips').trim() !== '' && (
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    <Typography variant="body2">
+                      {t('createAuction.form.pricingTips')}
+                    </Typography>
+                  </Alert>
+                )}
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -2278,11 +2309,13 @@ export default function CreateAuction() {
                   Localisation
                 </Typography>
 
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  <Typography variant="body2">
-                    {t('createAuction.form.addressHelper')}
-                  </Typography>
-                </Alert>
+                {t('createAuction.form.addressHelper') && t('createAuction.form.addressHelper').trim() !== '' && (
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    <Typography variant="body2">
+                      {t('createAuction.form.addressHelper')}
+                    </Typography>
+                  </Alert>
+                )}
               </Grid>
 
               <Grid item xs={12} md={8}>

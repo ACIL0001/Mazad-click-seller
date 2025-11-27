@@ -639,7 +639,9 @@
       "normalAuction": "Classic",
       "normalAuctionDesc": "Traditional auction over several days",
       "expressAuction": "Express",
-      "expressAuctionDesc": "Fast auction in a few hours"
+      "expressAuctionDesc": "Fast auction in a few hours",
+      "startingPrice": "Starting Price",
+      "reservePrice": "Reserve Price"
     },
     "pageTitle": "Create Auction",
     "headerTitle": "Create New Auction",
@@ -952,7 +954,6 @@
         "serviceDesc": "Offer your services"
       },
       "step2": {
-        "title": "Select the category",
         "description": "Select the category"
       },
       "step3": {
@@ -1087,7 +1088,43 @@
     "deleteMessage": "Are you sure you want to delete \"{title}\"? This action is irreversible.",
     "unlimited": "Unlimited",
     "deleteSuccess": "Direct sale deleted successfully",
-    "deleteError": "Error deleting direct sale"
+    "deleteError": "Error deleting direct sale",
+    "table": {
+      "ariaLabel": "Direct sales table"
+    },
+    "detail": {
+      "title": "Direct Sale Details",
+      "notFound": "Direct sale not found",
+      "pageTitle": "Details - {{title}}",
+      "saleDetails": "Sale Details",
+      "availableQuantity": "Available Quantity",
+      "outOf": "out of {{total}}",
+      "sellerInfo": "Seller Information",
+      "salesStats": "Sales Statistics",
+      "totalRevenue": "Total Revenue",
+      "quantitySold": "Quantity Sold",
+      "averageCart": "Average Cart",
+      "orders": "Orders ({{count}})",
+      "noOrders": "No orders at the moment",
+      "categories": "Categories",
+      "mainCategory": "Main Category",
+      "subCategory": "Subcategory",
+      "sellerType": "Seller Type",
+      "professional": "Professional",
+      "individual": "Individual",
+      "notSpecified": "Not specified",
+      "timeline": "Timeline",
+      "images": "Images",
+      "loadError": "Error loading direct sale",
+      "loadPurchasesError": "Error loading orders",
+      "table": {
+        "buyer": "Buyer",
+        "totalPrice": "Total Price"
+      },
+      "status": {
+        "refunded": "Refunded"
+      }
+    }
   },
   "tenderBids": {
     "pageTitle": "Received Offers",

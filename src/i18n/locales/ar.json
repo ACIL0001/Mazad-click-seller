@@ -1069,7 +1069,7 @@
       "reservePriceHelper": "يجب أن يكون هذا السعر أعلى من سعر البداية",
       "duration": "مدة المزاد *",
       "address": "العنوان *",
-      "addressHelper": "<strong>نصيحة:</strong> اكتب عنوانك الكامل وسيتم اكتشاف الولاية تلقائياً. إذا فشل الاكتشاف التلقائي، يمكنك الاختيار يدوياً.",
+      "addressHelper": "",
       "addressPlaceholder": "ابدأ بكتابة عنوانك لرؤية الاقتراحات",
       "addressExample": "مثال: 123 شارع الحرية، الجزائر، الجزائر",
       "wilaya": "الولاية *",
@@ -1122,7 +1122,6 @@
         "serviceDesc": "تقديم خدماتك"
       },
       "step2": {
-        "title": "اختر الفئة",
         "description": "اختر الفئة"
       },
       "step3": {
@@ -1343,7 +1342,43 @@
     "deleteMessage": "هل أنت متأكد من أنك تريد حذف \"{title}\"؟ هذا الإجراء لا يمكن التراجع عنه.",
     "unlimited": "غير محدود",
     "deleteSuccess": "تم حذف البيع المباشر بنجاح",
-    "deleteError": "خطأ في حذف البيع المباشر"
+    "deleteError": "خطأ في حذف البيع المباشر",
+    "table": {
+      "ariaLabel": "جدول المبيعات المباشرة"
+    },
+    "detail": {
+      "title": "تفاصيل البيع المباشر",
+      "notFound": "البيع المباشر غير موجود",
+      "pageTitle": "التفاصيل - {{title}}",
+      "saleDetails": "تفاصيل البيع",
+      "availableQuantity": "الكمية المتاحة",
+      "outOf": "من أصل {{total}}",
+      "sellerInfo": "معلومات البائع",
+      "salesStats": "إحصائيات المبيعات",
+      "totalRevenue": "إجمالي الإيرادات",
+      "quantitySold": "الكمية المباعة",
+      "averageCart": "متوسط السلة",
+      "orders": "الطلبات ({{count}})",
+      "noOrders": "لا توجد طلبات في الوقت الحالي",
+      "categories": "الفئات",
+      "mainCategory": "الفئة الرئيسية",
+      "subCategory": "الفئة الفرعية",
+      "sellerType": "نوع البائع",
+      "professional": "احترافي",
+      "individual": "فردي",
+      "notSpecified": "غير محدد",
+      "timeline": "الجدول الزمني",
+      "images": "الصور",
+      "loadError": "خطأ في تحميل البيع المباشر",
+      "loadPurchasesError": "خطأ في تحميل الطلبات",
+      "table": {
+        "buyer": "المشتري",
+        "totalPrice": "السعر الإجمالي"
+      },
+      "status": {
+        "refunded": "مسترد"
+      }
+    }
   },
   "tenderBids": {
     "pageTitle": "العروض المستلمة",

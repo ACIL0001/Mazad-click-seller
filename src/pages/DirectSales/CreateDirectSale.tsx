@@ -257,11 +257,11 @@ export default function CreateDirectSale() {
           }
           return t('directSales.create.step1.type');
         case 1:
-          // Show selected category name if available, otherwise show "Catégorie"
+          // Show selected category name if available, otherwise show category label
           if (selectedCategory && selectedCategory.name) {
             return selectedCategory.name;
           }
-          return t('common.categories');
+          return t('common.category');
         case 2:
           return t('createAuction.steps.details');
         default:
@@ -418,13 +418,43 @@ export default function CreateDirectSale() {
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataPayload));
 
-      mediaFiles.forEach((file) => {
+      // Log FormData preparation
+      console.log('📤 Preparing FormData for direct sale creation:', {
+        mediaFilesCount: mediaFiles.length,
+        dataPayload: dataPayload
+      });
+      
+      mediaFiles.forEach((file, index) => {
         if (file.type.startsWith('image/')) {
           formData.append('thumbs[]', file);
+          console.log(`📤 Added image file ${index + 1}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            fieldname: 'thumbs[]'
+          });
         } else if (file.type.startsWith('video/')) {
           formData.append('videos[]', file);
+          console.log(`📤 Added video file ${index + 1}:`, {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            fieldname: 'videos[]'
+          });
         }
       });
+
+      // Log FormData contents before sending
+      const formDataEntries: any[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          formDataEntries.push({ key, type: 'File', name: value.name, size: value.size, mimeType: value.type });
+        } else {
+          formDataEntries.push({ key, type: typeof value, value: String(value).substring(0, 200) });
+        }
+      }
+      console.log('📤 FormData contents before API call:', formDataEntries);
+      console.log('📤 Total FormData entries:', formDataEntries.length);
 
       await DirectSaleAPI.create(formData);
 
@@ -489,7 +519,7 @@ export default function CreateDirectSale() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
-              {t('directSales.create.step2.title')}
+              {t('directSales.create.step2.description')}
             </Typography>
 
             {/* Category Validation Error */}
@@ -647,7 +677,7 @@ export default function CreateDirectSale() {
         return (
           <StepCard>
             <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600 }}>
-              Détails de la vente directe
+              {t('directSales.create.step3.description')}
             </Typography>
 
             <Stack spacing={3}>
@@ -773,17 +803,17 @@ export default function CreateDirectSale() {
   };
 
   return (
-    <Page title={t('directSales.createTitle') || 'Créer une vente directe'}>
+    <Page title={t('directSales.createTitle')}>
       <MainContainer>
-        <Breadcrumb links={[{ name: t('navigation.directSales') || 'Ventes Directes', href: '/dashboard/direct-sales' }, { name: t('common.create') || 'Créer' }]} />
+        <Breadcrumb links={[{ name: t('navigation.directSales'), href: '/dashboard/direct-sales' }, { name: t('common.create') }]} />
 
         <HeaderCard>
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-              {t('directSales.createTitle') || 'Créer une vente directe'}
+              {t('directSales.createTitle')}
             </Typography>
             <Typography variant="h6" sx={{ opacity: 0.9 }}>
-              {t('directSales.createSubtitle') || 'Vendez vos produits et services à prix fixe'}
+              {t('directSales.createSubtitle')}
             </Typography>
           </Box>
         </HeaderCard>

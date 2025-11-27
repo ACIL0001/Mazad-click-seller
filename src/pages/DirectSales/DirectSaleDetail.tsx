@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Page from '../../components/Page';
 import Label from '../../components/Label';
 import Breadcrumb from '@/components/Breadcrumbs';
@@ -95,6 +96,7 @@ interface Purchase {
 export default function DirectSaleDetail() {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -117,7 +119,7 @@ export default function DirectSaleDetail() {
       setDirectSale(data);
     } catch (error: any) {
       console.error('Error fetching direct sale:', error);
-      enqueueSnackbar('Erreur lors du chargement de la vente directe', { variant: 'error' });
+      enqueueSnackbar(t('directSales.detail.loadError'), { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -142,7 +144,7 @@ export default function DirectSaleDetail() {
       setPurchases(purchasesData);
     } catch (error: any) {
       console.error('Error fetching purchases:', error);
-      enqueueSnackbar('Erreur lors du chargement des commandes', { variant: 'error' });
+      enqueueSnackbar(t('directSales.detail.loadPurchasesError'), { variant: 'error' });
       setPurchases([]);
     } finally {
       setPurchasesLoading(false);
@@ -150,7 +152,13 @@ export default function DirectSaleDetail() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    const localeMap: { [key: string]: string } = {
+      en: 'en-US',
+      fr: 'fr-FR',
+      ar: 'ar-SA',
+    };
+    const locale = localeMap[currentLanguage] || 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -199,11 +207,11 @@ export default function DirectSaleDetail() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return 'Active';
+        return t('directSales.status.active');
       case 'SOLD_OUT':
-        return 'Épuisé';
+        return t('directSales.status.soldOut');
       case 'INACTIVE':
-        return 'Inactif';
+        return t('directSales.status.inactive');
       default:
         return status;
     }
@@ -226,7 +234,7 @@ export default function DirectSaleDetail() {
 
   if (loading) {
     return (
-      <Page title="Détails de la vente directe">
+      <Page title={t('directSales.detail.title')}>
         <Container maxWidth="xl">
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
             <CircularProgress />
@@ -238,10 +246,10 @@ export default function DirectSaleDetail() {
 
   if (!directSale) {
     return (
-      <Page title="Vente directe introuvable">
+      <Page title={t('directSales.detail.notFound')}>
         <Container maxWidth="xl">
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-            <Typography variant="h6">Vente directe introuvable</Typography>
+            <Typography variant="h6">{t('directSales.detail.notFound')}</Typography>
           </Box>
         </Container>
       </Page>
@@ -251,10 +259,10 @@ export default function DirectSaleDetail() {
   const totalRevenue = getTotalRevenue();
   const totalQuantitySold = getTotalQuantitySold();
   const averagePurchaseValue = getAveragePurchaseValue();
-  const availableQuantity = directSale.quantity === 0 ? 'Illimité' : directSale.quantity - totalQuantitySold;
+  const availableQuantity = directSale.quantity === 0 ? t('directSales.unlimited') : directSale.quantity - totalQuantitySold;
 
   return (
-    <Page title={`Détails - ${directSale.title}`}>
+    <Page title={t('directSales.detail.pageTitle', { title: directSale.title })}>
       <Container maxWidth="xl">
         <Breadcrumb links={[
           { name: t('navigation.directSales'), href: '/dashboard/direct-sales' },
@@ -263,7 +271,7 @@ export default function DirectSaleDetail() {
 
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            Détails de la vente
+            {t('directSales.detail.saleDetails')}
           </Typography>
           <Chip
             label={getStatusLabel(directSale.status)}
@@ -280,7 +288,7 @@ export default function DirectSaleDetail() {
             {directSale.thumbs && directSale.thumbs.length > 0 && (
               <Card sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Images
+                  {t('directSales.detail.images')}
                 </Typography>
                 <Grid container spacing={2}>
                   {directSale.thumbs.map((thumb, index) => (
@@ -319,7 +327,7 @@ export default function DirectSaleDetail() {
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Prix
+                    {t('common.price')}
                   </Typography>
                   <Typography variant="h4" color="primary.main" sx={{ fontWeight: 700 }}>
                     {directSale.price.toLocaleString()} DA
@@ -327,13 +335,13 @@ export default function DirectSaleDetail() {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Quantité disponible
+                    {t('directSales.detail.availableQuantity')}
                   </Typography>
                   <Typography variant="h6">
                     {availableQuantity}
                     {directSale.quantity !== 0 && (
                       <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                        sur {directSale.quantity}
+                        {t('directSales.detail.outOf', { total: directSale.quantity })}
                       </Typography>
                     )}
                   </Typography>
@@ -345,7 +353,7 @@ export default function DirectSaleDetail() {
             {directSale.owner && (
               <Card sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon /> Informations du vendeur
+                  <PersonIcon /> {t('directSales.detail.sellerInfo')}
                 </Typography>
                 <Stack direction="row" alignItems="center" spacing={2}>
                   <Avatar 
@@ -358,7 +366,7 @@ export default function DirectSaleDetail() {
                     <Typography variant="subtitle1" fontWeight={600}>
                       {directSale.owner.firstName && directSale.owner.lastName 
                         ? `${directSale.owner.firstName} ${directSale.owner.lastName}`
-                        : directSale.owner.username || 'Utilisateur'}
+                        : directSale.owner.username || t('common.user')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {directSale.owner.email}
@@ -377,7 +385,7 @@ export default function DirectSaleDetail() {
             {purchases.length > 0 && (
               <Card sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TrendingUpIcon /> Statistiques des ventes
+                  <TrendingUpIcon /> {t('directSales.detail.salesStats')}
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
@@ -393,7 +401,7 @@ export default function DirectSaleDetail() {
                       }}
                     >
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Revenu total
+                        {t('directSales.detail.totalRevenue')}
                       </Typography>
                       <Typography variant="h5" color="success.dark" fontWeight={700}>
                         {totalRevenue.toLocaleString()} DA
@@ -413,7 +421,7 @@ export default function DirectSaleDetail() {
                       }}
                     >
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Quantité vendue
+                        {t('directSales.detail.quantitySold')}
                       </Typography>
                       <Typography variant="h5" color="info.dark" fontWeight={700}>
                         {totalQuantitySold}
@@ -433,7 +441,7 @@ export default function DirectSaleDetail() {
                       }}
                     >
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Panier moyen
+                        {t('directSales.detail.averageCart')}
                       </Typography>
                       <Typography variant="h5" color="primary.dark" fontWeight={700}>
                         {averagePurchaseValue.toFixed(0)} DA
@@ -447,7 +455,7 @@ export default function DirectSaleDetail() {
             {/* Purchases Table */}
             <Card sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ShoppingCartIcon /> Commandes ({purchases.length})
+                <ShoppingCartIcon /> {t('directSales.detail.orders', { count: purchases.length })}
               </Typography>
               {purchasesLoading ? (
                 <Box display="flex" justifyContent="center" alignItems="center" minHeight="60px">
@@ -458,11 +466,11 @@ export default function DirectSaleDetail() {
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: 'background.neutral' }}>
-                        <TableCell>Acheteur</TableCell>
-                        <TableCell align="right">Quantité</TableCell>
-                        <TableCell align="right">Prix total</TableCell>
-                        <TableCell>Statut</TableCell>
-                        <TableCell align="right">Date</TableCell>
+                        <TableCell>{t('directSales.detail.table.buyer')}</TableCell>
+                        <TableCell align="right">{t('common.quantity')}</TableCell>
+                        <TableCell align="right">{t('directSales.detail.table.totalPrice')}</TableCell>
+                        <TableCell>{t('common.status')}</TableCell>
+                        <TableCell align="right">{t('common.date')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -507,9 +515,9 @@ export default function DirectSaleDetail() {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={purchase.status === 'CONFIRMED' ? 'Confirmé' : 
-                                     purchase.status === 'PENDING' ? 'En attente' :
-                                     purchase.status === 'CANCELLED' ? 'Annulé' : 'Remboursé'}
+                              label={purchase.status === 'CONFIRMED' ? t('orders.status.confirmed') : 
+                                     purchase.status === 'PENDING' ? t('orders.status.pending') :
+                                     purchase.status === 'CANCELLED' ? t('orders.status.cancelled') : t('directSales.detail.status.refunded')}
                               size="small"
                               color={getPurchaseStatusColor(purchase.status) as any}
                             />
@@ -536,7 +544,7 @@ export default function DirectSaleDetail() {
                 >
                   <ShoppingCartIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
-                    Aucune commande pour le moment
+                    {t('directSales.detail.noOrders')}
                   </Typography>
                 </Paper>
               )}
@@ -548,21 +556,21 @@ export default function DirectSaleDetail() {
             {/* Category Information */}
             <Card sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Catégories
+                {t('directSales.detail.categories')}
               </Typography>
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Catégorie principale
+                    {t('directSales.detail.mainCategory')}
                   </Typography>
                   <Label variant="ghost" color="primary">
-                    {directSale.productCategory?.name || 'Non spécifiée'}
+                    {directSale.productCategory?.name || t('directSales.detail.notSpecified')}
                   </Label>
                 </Box>
                 {directSale.productSubCategory && (
                   <Box>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Sous-catégorie
+                      {t('directSales.detail.subCategory')}
                     </Typography>
                     <Label variant="ghost" color="secondary">
                       {directSale.productSubCategory.name}
@@ -571,10 +579,10 @@ export default function DirectSaleDetail() {
                 )}
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Type de vendeur
+                    {t('directSales.detail.sellerType')}
                   </Typography>
                   <Label variant="ghost" color={directSale.isPro ? 'warning' : 'success'}>
-                    {directSale.isPro ? 'Professionnel' : 'Particulier'}
+                    {directSale.isPro ? t('directSales.detail.professional') : t('directSales.detail.individual')}
                   </Label>
                 </Box>
               </Stack>
@@ -583,20 +591,20 @@ export default function DirectSaleDetail() {
             {/* Location Information */}
             <Card sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Localisation
+                {t('common.location')}
               </Typography>
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Wilaya
+                    {t('directSales.create.form.wilaya')}
                   </Typography>
-                  <Typography variant="body1">{directSale.wilaya || 'Non spécifiée'}</Typography>
+                  <Typography variant="body1">{directSale.wilaya || t('directSales.detail.notSpecified')}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Adresse
+                    {t('common.address')}
                   </Typography>
-                  <Typography variant="body1">{directSale.location || 'Non spécifiée'}</Typography>
+                  <Typography variant="body1">{directSale.location || t('directSales.detail.notSpecified')}</Typography>
                 </Box>
               </Stack>
             </Card>
@@ -604,18 +612,18 @@ export default function DirectSaleDetail() {
             {/* Timeline */}
             <Card sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Chronologie
+                {t('directSales.detail.timeline')}
               </Typography>
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Créé le
+                    {t('common.createdAt')}
                   </Typography>
                   <Typography variant="body1">{formatDate(directSale.createdAt)}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Modifié le
+                    {t('common.updatedAt')}
                   </Typography>
                   <Typography variant="body1">{formatDate(directSale.updatedAt)}</Typography>
                 </Box>

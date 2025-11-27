@@ -441,7 +441,9 @@
       "normalAuction": "Classique",
       "normalAuctionDesc": "Enchère traditionnelle sur plusieurs jours",
       "expressAuction": "Express",
-      "expressAuctionDesc": "Enchère rapide en quelques heures"
+      "expressAuctionDesc": "Enchère rapide en quelques heures",
+      "startingPrice": "Prix de départ",
+      "reservePrice": "Prix de réserve"
     },
     "pageTitle": "Créer une enchère",
     "headerTitle": "Créer une nouvelle enchère",
@@ -516,7 +518,7 @@
       "quantity": "Quantité *",
       "quantityHelper": "Ex: 1 unité, 5 pièces...",
       "pricingAndConditions": "Prix et conditions",
-      "pricingTips": "<strong>Conseils de prix :</strong> Le prix de réserve protège votre vente en définissant un prix minimum pour accepter l'enchère. Laissez vide si vous n'avez pas de prix minimum.",
+      "pricingTips": "",
       "startingPriceHelper": "Le prix de départ doit être positif",
       "reservePricePlaceholder": "Ce prix doit être supérieur au prix de départ",
       "reservePriceHelper": "Ce prix doit être supérieur au prix de départ",
@@ -628,7 +630,47 @@
     "step": "Étape {{current}} sur {{total}}",
     "progress": "{{percent}}% terminé",
     "myDirectSales": "Mes ventes directes",
-    "loadError": "Erreur lors du chargement des ventes directes"
+    "loadError": "Erreur lors du chargement des ventes directes",
+    "create": {
+      "step1": {
+        "type": "Type",
+        "title": "Choisissez le type",
+        "description": "Choisissez le type",
+        "productDesc": "Vendre des objets physiques",
+        "serviceDesc": "Offrir vos services"
+      },
+      "step2": {
+        "description": "Sélectionnez la catégorie"
+      },
+      "step3": {
+        "description": "Remplissez les informations"
+      },
+      "form": {
+        "title": "Titre",
+        "description": "Description",
+        "price": "Prix (DA)",
+        "quantity": "Quantité (0 = illimité)",
+        "quantityHelper": "Mettez 0 pour quantité illimitée",
+        "wilaya": "Wilaya",
+        "selectWilaya": "Sélectionnez une wilaya",
+        "place": "Lieu",
+        "professionalSale": "Vente professionnelle",
+        "anonymousSale": "Vente anonyme",
+        "imagesAndVideos": "Images et vidéos"
+      },
+      "errors": {
+        "titleMinLength": "Le titre doit contenir au moins 3 caractères",
+        "titleRequired": "Le titre est requis",
+        "descriptionMinLength": "La description doit contenir au moins 10 caractères",
+        "descriptionRequired": "La description est requise",
+        "priceRequired": "Le prix est requis",
+        "pricePositive": "Le prix doit être positif",
+        "quantityRequired": "La quantité est requise",
+        "quantityPositive": "La quantité doit être positive",
+        "wilayaRequired": "La wilaya est requise",
+        "placeRequired": "Le lieu est requis"
+      }
+    }
   },
   "tenders": {
     "mySubmissions": "Mes soumissions",
@@ -783,6 +825,42 @@
     "unlimited": "Illimité",
     "deleteSuccess": "Vente directe supprimée avec succès",
     "deleteError": "Erreur lors de la suppression",
+    "table": {
+      "ariaLabel": "Tableau des ventes directes"
+    },
+    "detail": {
+      "title": "Détails de la vente directe",
+      "notFound": "Vente directe introuvable",
+      "pageTitle": "Détails - {{title}}",
+      "saleDetails": "Détails de la vente",
+      "availableQuantity": "Quantité disponible",
+      "outOf": "sur {{total}}",
+      "sellerInfo": "Informations du vendeur",
+      "salesStats": "Statistiques des ventes",
+      "totalRevenue": "Revenu total",
+      "quantitySold": "Quantité vendue",
+      "averageCart": "Panier moyen",
+      "orders": "Commandes ({{count}})",
+      "noOrders": "Aucune commande pour le moment",
+      "categories": "Catégories",
+      "mainCategory": "Catégorie principale",
+      "subCategory": "Sous-catégorie",
+      "sellerType": "Type de vendeur",
+      "professional": "Professionnel",
+      "individual": "Particulier",
+      "notSpecified": "Non spécifiée",
+      "timeline": "Chronologie",
+      "images": "Images",
+      "loadError": "Erreur lors du chargement de la vente directe",
+      "loadPurchasesError": "Erreur lors du chargement des commandes",
+      "table": {
+        "buyer": "Acheteur",
+        "totalPrice": "Prix total"
+      },
+      "status": {
+        "refunded": "Remboursé"
+      }
+    },
     "create": {
       "step1": {
         "type": "Type",

@@ -23,12 +23,31 @@ instance.interceptors.request.use(
     const state = authStore.getState();
     const { auth, isLogged } = state;
     
+    // CRITICAL: If the request body is FormData, remove Content-Type header
+    // to let the browser set it automatically with the correct boundary
+    if (config.data instanceof FormData) {
+      console.log('📤 FormData detected, removing Content-Type header for multipart/form-data');
+      delete config.headers['Content-Type'];
+      // Log FormData contents for debugging
+      const formDataEntries: any[] = [];
+      for (const [key, value] of config.data.entries()) {
+        if (value instanceof File) {
+          formDataEntries.push({ key, type: 'File', name: value.name, size: value.size, mimeType: value.type });
+        } else {
+          formDataEntries.push({ key, type: typeof value, value: String(value).substring(0, 100) });
+        }
+      }
+      console.log('📤 FormData entries:', formDataEntries);
+    }
+    
     console.log('🔍 Request Interceptor:', {
       url: config.url,
       method: config.method,
       isLogged,
       hasToken: !!auth?.tokens?.accessToken,
-      tokenPreview: auth?.tokens?.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none'
+      tokenPreview: auth?.tokens?.accessToken ? auth.tokens.accessToken.substring(0, 20) + '...' : 'none',
+      isFormData: config.data instanceof FormData,
+      contentType: config.headers['Content-Type']
     });
     
     // Public endpoints that don't need auth (with specific HTTP methods)

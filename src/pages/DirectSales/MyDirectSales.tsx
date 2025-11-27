@@ -23,6 +23,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Page from '@/components/Page';
 import Breadcrumb from '@/components/Breadcrumbs';
 import Iconify from '@/components/Iconify';
@@ -45,6 +46,7 @@ interface DirectSale {
 
 export default function MyDirectSales() {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { auth } = useAuth();
@@ -111,7 +113,13 @@ export default function MyDirectSales() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
+    const localeMap: { [key: string]: string } = {
+      en: 'en-US',
+      fr: 'fr-FR',
+      ar: 'ar-SA',
+    };
+    const locale = localeMap[currentLanguage] || 'en-US';
+    return new Date(dateString).toLocaleDateString(locale);
   };
 
   const getAvailableQuantity = (sale: DirectSale) => {
@@ -159,7 +167,7 @@ export default function MyDirectSales() {
           </Card>
         ) : (
           <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="table des ventes directes">
+            <Table sx={{ minWidth: 650 }} aria-label={t('directSales.table.ariaLabel')}>
               <TableHead>
                 <TableRow>
                   <TableCell>{t('directSales.table.title')}</TableCell>
@@ -247,9 +255,9 @@ export default function MyDirectSales() {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel') || t('orders.cancel')}</Button>
+            <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={handleDelete} color="error" variant="contained">
-              {t('common.delete') || 'Supprimer'}
+              {t('common.delete')}
             </Button>
           </DialogActions>
         </Dialog>

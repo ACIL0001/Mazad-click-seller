@@ -911,9 +911,33 @@ export default function CreateTender() {
       const formData = new FormData();
       formData.append('data', JSON.stringify(dataPayload));
 
-      attachments.forEach((file) => {
-        formData.append('attachments[]', file);
+      // Log FormData preparation
+      console.log('📤 Preparing FormData for tender creation:', {
+        attachmentsCount: attachments.length,
+        dataPayload: dataPayload
       });
+      
+      attachments.forEach((file, index) => {
+        formData.append('attachments[]', file);
+        console.log(`📤 Added attachment file ${index + 1}:`, {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          fieldname: 'attachments[]'
+        });
+      });
+
+      // Log FormData contents before sending
+      const formDataEntries: any[] = [];
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          formDataEntries.push({ key, type: 'File', name: value.name, size: value.size, mimeType: value.type });
+        } else {
+          formDataEntries.push({ key, type: typeof value, value: String(value).substring(0, 200) });
+        }
+      }
+      console.log('📤 FormData contents before API call:', formDataEntries);
+      console.log('📤 Total FormData entries:', formDataEntries.length);
 
       await TendersAPI.create(formData);
 
