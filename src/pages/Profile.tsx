@@ -962,8 +962,8 @@ export default function Profile() {
                         <i className={`bi-${isRequired ? 'exclamation-triangle-fill' : 'plus-circle-fill'}`}></i>
                         {sectionTitle}
                     </h3>
-                    <div className={`modern-document-section-badge ${isRequired ? 'required' : 'optional'}`}>
-                        {isRequired ? 'Obligatoire' : 'Optionnel'}
+                    <div className={`modern-document-section-badge ${isRequired ? 'required' : 'required'}`}>
+                        {isRequired ? 'Obligatoire' : 'Requis'}
                     </div>
                 </div>
 
