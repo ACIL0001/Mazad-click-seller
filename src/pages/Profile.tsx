@@ -1928,7 +1928,7 @@ export default function Profile() {
                                                                 exit={{ opacity: 0, height: 0 }}
                                                                 transition={{ duration: 0.3 }}
                                                             >
-                                                                {renderDocumentCards(optionalDocuments, 'Documents Optionnels pour Certification', false)}
+                                                                {renderDocumentCards(optionalDocuments, 'Documents requis pour certification', false)}
                                                             </motion.div>
                                                         )}
                                                     </AnimatePresence>
