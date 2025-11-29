@@ -88,24 +88,6 @@ export default function Profile() {
 
     const optionalDocuments = [
         {
-            key: 'commercialRegister',
-            label: 'Ancien Registre de commerce',
-            description: 'Ancienne version du registre de commerce (si disponible)',
-            required: false,
-        },
-        {
-            key: 'carteAutoEntrepreneur',
-            label: 'Carte auto-entrepreneur',
-            description: 'Carte d\'auto-entrepreneur pour les activités concernées',
-            required: false,
-        },
-        {
-            key: 'nif',
-            label: 'Ancien NIF',
-            description: 'Version précédente du NIF (si disponible)',
-            required: false,
-        },
-        {
             key: 'nis',
             label: 'NIS',
             description: 'Numéro d\'identification sociale',
@@ -1205,7 +1187,7 @@ export default function Profile() {
                 {/* Submit button for optional documents section - show when at least one optional document is uploaded */}
                 {!isRequired && identity && identity._id && (() => {
                     // Check if any optional document is uploaded
-                    const optionalDocKeys = ['commercialRegister', 'carteAutoEntrepreneur', 'nif', 'nis', 'numeroArticle', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
+                    const optionalDocKeys = ['nis', 'numeroArticle', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
                     const hasAnyOptionalDoc = optionalDocKeys.some(key => {
                         const doc = identity[key];
                         return doc && ((doc as any).url || (doc as any).fullUrl);
