@@ -307,8 +307,8 @@ useEffect(() => {
     isHasIdentity: user?.isHasIdentity
   });
   
-  if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) { 
-    console.log('✅ Dashboard: Professional user with identity - setting up dashboard');
+  if (user && user.type === ACCOUNT_TYPE.PROFESSIONAL) {
+    console.log('✅ Dashboard: Professional user - setting up dashboard');
     setIsProfessionalSubscriber(true);
     // Fetch seller stats for professional users immediately
     console.log('📊 Dashboard: Fetching seller stats for professional user');
@@ -1048,12 +1048,12 @@ useEffect(() => {
     }
   }
 
-  // Priority 2: Professional users
-  if (user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true) {
+  // Priority 2: Professional users - allow access regardless of identity status
+  if (user?.type === ACCOUNT_TYPE.PROFESSIONAL) {
     console.log('✅ Dashboard: Showing full dashboard for professional user');
     // Continue to the main dashboard content below
   } else {
-    // Priority 3: Fallback for any other cases
+    // Priority 3: Fallback for any other cases (non-professional users)
     console.log('🚫 Dashboard: Showing Professional Account Required page (fallback)');
     return (
       <ProfessionalRestriction 
@@ -1159,9 +1159,9 @@ useEffect(() => {
           </Box>
         )}
 
-        {/* Main Content - Only shown for Professional users with identity */}
+        {/* Main Content - Shown for Professional users regardless of identity status */}
         <Box sx={{ position: 'relative' }}>
-          {user?.type === ACCOUNT_TYPE.PROFESSIONAL && user.isHasIdentity === true ? (
+          {user?.type === ACCOUNT_TYPE.PROFESSIONAL ? (
             loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
                 <motion.div

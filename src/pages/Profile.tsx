@@ -62,25 +62,26 @@ export default function Profile() {
     const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
     const [uploadingFile, setUploadingFile] = useState<File | null>(null);
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>(null);
 
     // Document field configurations
     const requiredDocuments = [
         {
             key: 'registreCommerceCarteAuto',
             label: 'RC/ Autres',
-            description: 'Registre de commerce ou autres documents',
+            description: 'Registre de commerce ou autres documents (requis avec NIF/N° Articles)',
             required: true,
         },
         {
             key: 'nifRequired',
             label: 'NIF/N° Articles',
-            description: 'NIF ou Numéro d\'articles',
+            description: 'NIF ou Numéro d\'articles (requis avec RC/ Autres)',
             required: true,
         },
         {
             key: 'carteFellah',
             label: 'Carte Fellah',
-            description: 'Carte Fellah pour agriculteurs',
+            description: 'Carte Fellah pour agriculteurs (peut être fournie seule)',
             required: true,
         },
     ];
@@ -659,11 +660,15 @@ export default function Profile() {
             if (response && (response.data || response)) {
                 setIdentity(response.data || response);
             } else {
-                enqueueSnackbar('Aucune identité trouvée', { variant: 'info' });
+                setIdentity(null);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching identity:', error);
-            enqueueSnackbar('Erreur lors du chargement des documents', { variant: 'error' });
+            // Don't show error snackbar for timeout or missing identity - it's expected
+            if (error.response?.status !== 404 && !error.message?.includes('timeout')) {
+                enqueueSnackbar('Erreur lors du chargement des documents', { variant: 'error' });
+            }
+            setIdentity(null);
         } finally {
             setIsLoadingDocuments(false);
         }
@@ -691,35 +696,51 @@ export default function Profile() {
     };
 
     const uploadDocument = async (fieldKey: string, file: File) => {
-        if (!identity || !identity._id) {
-            enqueueSnackbar('Aucune identité trouvée. Veuillez d\'abord soumettre une demande d\'identité.', { variant: 'error' });
-            return;
-        }
-
         try {
             setIsUploadingDocument(fieldKey);
 
-            const response = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
-
-            if (response && (response.success || response.data)) {
-                enqueueSnackbar('Document mis à jour avec succès', { variant: 'success' });
-                // Update local state
-                setIdentity((prev: any) =>
-                    prev
-                        ? {
-                              ...prev,
-                              [fieldKey]: response.data?.[fieldKey] || response[fieldKey] || prev[fieldKey],
-                          }
-                        : null
-                );
-                // Refresh identity data
-                await fetchIdentity();
+            let response;
+            
+            // If identity doesn't exist, create it with this document
+            if (!identity || !identity._id) {
+                const formData = new FormData();
+                formData.append(fieldKey, file);
+                
+                // Create identity with this document (allow incremental uploads)
+                response = await IdentityAPI.create(formData);
+                
+                if (response && response._id) {
+                    enqueueSnackbar('Document sauvegardé avec succès. L\'identité a été créée. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
+                    // Refresh identity data to get the newly created identity
+                    await fetchIdentity();
+                } else {
+                    throw new Error('Failed to create identity with document');
+                }
             } else {
-                throw new Error(response?.message || 'Upload failed');
+                // Update existing identity
+                response = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
+
+                if (response && (response.success || response.data)) {
+                    enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
+                    // Update local state
+                    setIdentity((prev: any) =>
+                        prev
+                            ? {
+                                  ...prev,
+                                  [fieldKey]: response.data?.[fieldKey] || response[fieldKey] || prev[fieldKey],
+                              }
+                            : null
+                    );
+                    // Refresh identity data
+                    await fetchIdentity();
+                } else {
+                    throw new Error(response?.message || 'Upload failed');
+                }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading document:', error);
-            enqueueSnackbar('Erreur lors de la mise à jour du document', { variant: 'error' });
+            const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour du document';
+            enqueueSnackbar(errorMessage, { variant: 'error' });
         } finally {
             setIsUploadingDocument(null);
             setUploadingFile(null);
@@ -921,6 +942,36 @@ export default function Profile() {
     }
 
     // Helper function to render document cards
+    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+
+    const handleSubmitIdentity = async () => {
+        if (!identity || !identity._id) {
+            enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
+            return;
+        }
+
+        try {
+            setIsSubmittingIdentity(true);
+            const response = await IdentityAPI.submitIdentity(identity._id);
+            
+            if (response && response.success) {
+                enqueueSnackbar(
+                    response.message || 'Documents soumis avec succès. En attente de vérification par l\'administrateur.',
+                    { variant: 'success' }
+                );
+                await fetchIdentity(); // Refresh to get updated status
+            } else {
+                throw new Error(response?.message || 'Failed to submit identity');
+            }
+        } catch (error: any) {
+            console.error('Error submitting identity:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la soumission des documents';
+            enqueueSnackbar(errorMessage, { variant: 'error' });
+        } finally {
+            setIsSubmittingIdentity(false);
+        }
+    };
+
     const renderDocumentCards = (documents: any[], sectionTitle: string, isRequired: boolean) => {
         return (
             <div className="modern-document-section">
@@ -934,13 +985,35 @@ export default function Profile() {
                     </div>
                 </div>
 
+                {isRequired && (
+                    <div className="modern-document-optional-note">
+                        <div className="modern-document-note-card">
+                            <i className="bi-info-circle-fill"></i>
+                            <div className="modern-document-note-content">
+                                <h4>Vérification</h4>
+                                <p>
+                                    Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement).
+                                </p>
+                                <p>
+                                    Cliquez sur "Soumettre" pour envoyer à l'administrateur.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {!isRequired && (
                     <div className="modern-document-optional-note">
                         <div className="modern-document-note-card">
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
-                                <h4>Documents Optionnels</h4>
-                                <p>Ajoutez ces documents si vous souhaitez être professionnel certifié</p>
+                                <h4>Certification</h4>
+                                <p>
+                                    Ajoutez ces documents pour la certification professionnelle.
+                                </p>
+                                <p>
+                                    Cliquez sur "Soumettre" pour envoyer à l'administrateur.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -1075,6 +1148,144 @@ export default function Profile() {
                         );
                     })}
                 </div>
+
+                {/* Submit button for required documents section - only show when documents are ready */}
+                {isRequired && identity && identity._id && (() => {
+                    const hasRc = identity.registreCommerceCarteAuto && ((identity.registreCommerceCarteAuto as any).url || (identity.registreCommerceCarteAuto as any).fullUrl);
+                    const hasNif = identity.nifRequired && ((identity.nifRequired as any).url || (identity.nifRequired as any).fullUrl);
+                    const hasCarteFellah = identity.carteFellah && ((identity.carteFellah as any).url || (identity.carteFellah as any).fullUrl);
+                    const canSubmit = (hasRc && hasNif) || hasCarteFellah;
+                    
+                    // Don't show button if documents aren't ready for submission
+                    if (!canSubmit) return null;
+                    
+                    return (
+                        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                            <motion.button
+                                className="modern-btn modern-btn-primary"
+                                onClick={handleSubmitIdentity}
+                                disabled={isSubmittingIdentity || identity?.status === 'WAITING' || identity?.status === 'DONE'}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                style={{
+                                    padding: '0.8rem 2rem',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                    minWidth: '200px',
+                                    opacity: (identity?.status === 'WAITING' || identity?.status === 'DONE') ? 0.6 : 1,
+                                    cursor: (identity?.status === 'WAITING' || identity?.status === 'DONE') ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                {isSubmittingIdentity ? (
+                                    <>
+                                        <div className="modern-spinner-sm" style={{ marginRight: '0.5rem' }}></div>
+                                        Soumission...
+                                    </>
+                                ) : identity?.status === 'WAITING' ? (
+                                    <>
+                                        <i className="bi-clock-history" style={{ marginRight: '0.5rem' }}></i>
+                                        En attente de vérification
+                                    </>
+                                ) : identity?.status === 'DONE' ? (
+                                    <>
+                                        <i className="bi-check-circle-fill" style={{ marginRight: '0.5rem' }}></i>
+                                        Vérifié
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi-send-fill" style={{ marginRight: '0.5rem' }}></i>
+                                        Soumettre pour vérification
+                                    </>
+                                )}
+                            </motion.button>
+                        </div>
+                    );
+                })()}
+
+                {/* Submit button for optional documents section - show when at least one optional document is uploaded */}
+                {!isRequired && identity && identity._id && (() => {
+                    // Check if any optional document is uploaded
+                    const optionalDocKeys = ['commercialRegister', 'carteAutoEntrepreneur', 'nif', 'nis', 'numeroArticle', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
+                    const hasAnyOptionalDoc = optionalDocKeys.some(key => {
+                        const doc = identity[key];
+                        return doc && ((doc as any).url || (doc as any).fullUrl);
+                    });
+                    
+                    // Don't show button if no optional documents are uploaded
+                    if (!hasAnyOptionalDoc) return null;
+                    
+                    const certificationStatus = (identity as any).certificationStatus || 'DRAFT';
+                    const isCertificationWaiting = certificationStatus === 'WAITING';
+                    const isCertificationDone = certificationStatus === 'DONE';
+                    
+                    return (
+                        <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                            <motion.button
+                                className="modern-btn modern-btn-primary"
+                                onClick={async () => {
+                                    if (!identity || !identity._id) {
+                                        enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
+                                        return;
+                                    }
+
+                                    try {
+                                        setIsSubmittingIdentity(true);
+                                        const response = await IdentityAPI.submitCertification(identity._id);
+                                        
+                                        if (response && response.success) {
+                                            enqueueSnackbar(
+                                                response.message || 'Documents de certification soumis avec succès. En attente de vérification par l\'administrateur.',
+                                                { variant: 'success' }
+                                            );
+                                            await fetchIdentity(); // Refresh to get updated status
+                                        } else {
+                                            throw new Error(response?.message || 'Failed to submit certification');
+                                        }
+                                    } catch (error: any) {
+                                        console.error('Error submitting certification:', error);
+                                        const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la soumission des documents de certification';
+                                        enqueueSnackbar(errorMessage, { variant: 'error' });
+                                    } finally {
+                                        setIsSubmittingIdentity(false);
+                                    }
+                                }}
+                                disabled={isSubmittingIdentity || isCertificationWaiting || isCertificationDone}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                style={{
+                                    padding: '0.8rem 2rem',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                    minWidth: '200px',
+                                    opacity: (isCertificationWaiting || isCertificationDone) ? 0.6 : 1,
+                                    cursor: (isCertificationWaiting || isCertificationDone) ? 'not-allowed' : 'pointer',
+                                }}
+                            >
+                                {isSubmittingIdentity ? (
+                                    <>
+                                        <div className="modern-spinner-sm" style={{ marginRight: '0.5rem' }}></div>
+                                        Soumission...
+                                    </>
+                                ) : isCertificationWaiting ? (
+                                    <>
+                                        <i className="bi-clock-history" style={{ marginRight: '0.5rem' }}></i>
+                                        En attente de certification
+                                    </>
+                                ) : isCertificationDone ? (
+                                    <>
+                                        <i className="bi-award-fill" style={{ marginRight: '0.5rem' }}></i>
+                                        Certifié
+                                    </>
+                                ) : (
+                                    <>
+                                        <i className="bi-send-fill" style={{ marginRight: '0.5rem' }}></i>
+                                        Soumettre pour certification
+                                    </>
+                                )}
+                            </motion.button>
+                        </div>
+                    );
+                })()}
             </div>
         );
     };
@@ -1275,8 +1486,8 @@ export default function Profile() {
                                         transition={{ duration: 0.5, delay: 1.3 }}
                                         style={{
                                             display: 'flex',
-                                            gap: '8px',
-                                            marginTop: '8px',
+                                            gap: '6px',
+                                            marginTop: '4px',
                                             flexWrap: 'wrap',
                                             justifyContent: 'center',
                                         }}
@@ -1291,18 +1502,18 @@ export default function Profile() {
                                                 style={{
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
-                                                    gap: '4px',
-                                                    padding: '4px 8px',
+                                                    gap: '3px',
+                                                    padding: '3px 6px',
                                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                                     color: 'white',
-                                                    borderRadius: '12px',
-                                                    fontSize: '12px',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
                                                     fontWeight: '600',
                                                     boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
                                                     border: '1px solid rgba(255, 255, 255, 0.2)',
                                                 }}
                                             >
-                                                <i className="bi bi-star-fill" style={{ fontSize: '10px' }}></i>
+                                                <i className="bi bi-star-fill" style={{ fontSize: '9px' }}></i>
                                                 <span>PRO</span>
                                             </motion.div>
                                         )}
@@ -1317,19 +1528,19 @@ export default function Profile() {
                                                 style={{
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
-                                                    gap: '4px',
-                                                    padding: '4px 8px',
+                                                    gap: '3px',
+                                                    padding: '3px 6px',
                                                     background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
                                                     color: 'white',
-                                                    borderRadius: '12px',
-                                                    fontSize: '12px',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
                                                     fontWeight: '600',
                                                     boxShadow: '0 2px 8px rgba(17, 153, 142, 0.3)',
                                                     border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                    marginRight: '8px',
+                                                    marginRight: '6px',
                                                 }}
                                             >
-                                                <i className="bi bi-check-circle-fill" style={{ fontSize: '10px' }}></i>
+                                                <i className="bi bi-check-circle-fill" style={{ fontSize: '9px' }}></i>
                                                 <span>VERIFIED</span>
                                             </motion.div>
                                         )}
@@ -1343,19 +1554,19 @@ export default function Profile() {
                                                 style={{
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
-                                                    gap: '4px',
-                                                    padding: '4px 8px',
+                                                    gap: '3px',
+                                                    padding: '3px 6px',
                                                     background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                                                     color: 'white',
-                                                    borderRadius: '12px',
-                                                    fontSize: '12px',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
                                                     fontWeight: '600',
                                                     boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
                                                     border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                    marginLeft: '8px',
+                                                    marginLeft: '6px',
                                                 }}
                                             >
-                                                <i className="bi bi-award-fill" style={{ fontSize: '10px' }}></i>
+                                                <i className="bi bi-award-fill" style={{ fontSize: '9px' }}></i>
                                                 <span>CERTIFIÉ</span>
                                             </motion.div>
                                         )}
@@ -1694,42 +1905,87 @@ export default function Profile() {
                                                     <div className="modern-spinner"></div>
                                                     <p>Chargement des documents...</p>
                                                 </div>
-                                            ) : !identity ? (
-                                                <div className="modern-empty-state">
-                                                    <i className="bi-file-earmark-x"></i>
-                                                    <h3>Aucune identité trouvée</h3>
-                                                    <p>Vous devez d'abord soumettre une demande d'identité pour gérer vos documents.</p>
-                                                </div>
                                             ) : (
                                                 <>
-                                                    {renderDocumentCards(requiredDocuments, 'Documents Obligatoires', true)}
-                                                    {renderDocumentCards(optionalDocuments, 'Documents Optionnels', false)}
-
-                                                    <div className="modern-document-footer">
-                                                        <div className="modern-document-status">
-                                                            <div className={`modern-status-badge ${identity.status?.toLowerCase() || 'waiting'}`}>
-                                                                <i
-                                                                    className={`bi-${
-                                                                        identity.status === 'DONE'
-                                                                            ? 'check-circle-fill'
-                                                                            : identity.status === 'REJECTED'
-                                                                            ? 'x-circle-fill'
-                                                                            : 'clock-fill'
-                                                                    }`}
-                                                                ></i>
-                                                                Statut:{' '}
-                                                                {identity.status === 'DONE'
-                                                                    ? 'Approuvé'
-                                                                    : identity.status === 'REJECTED'
-                                                                    ? 'Rejeté'
-                                                                    : 'En attente'}
-                                                            </div>
-                                                        </div>
-                                                        <p className="modern-document-note">
-                                                            <i className="bi-info-circle"></i>
-                                                            Les documents marqués d'un astérisque (*) sont obligatoires. Vous pouvez remplacer ou ajouter des documents à tout moment.
-                                                        </p>
+                                                    <div className="modern-upgrade-buttons">
+                                                        <motion.button
+                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'verified' ? 'active' : ''}`}
+                                                            onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'verified' ? null : 'verified')}
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                        >
+                                                            <i className="bi-shield-check"></i>
+                                                            Passer à Vérifié
+                                                        </motion.button>
+                                                        <motion.button
+                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
+                                                            onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')}
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                        >
+                                                            <i className="bi-award"></i>
+                                                            Passer à Certifié
+                                                        </motion.button>
                                                     </div>
+
+                                                    <AnimatePresence>
+                                                        {activeUpgradeSection === 'verified' && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                {renderDocumentCards(requiredDocuments, 'Documents Obligatoires pour Vérification', true)}
+                                                            </motion.div>
+                                                        )}
+                                                        {activeUpgradeSection === 'certified' && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                                transition={{ duration: 0.3 }}
+                                                            >
+                                                                {renderDocumentCards(optionalDocuments, 'Documents Optionnels pour Certification', false)}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+
+                                                    {identity && (
+                                                        <div className="modern-document-footer">
+                                                            <div className="modern-document-status">
+                                                                <div className={`modern-status-badge ${identity.status?.toLowerCase() || 'waiting'}`}>
+                                                                    <i
+                                                                        className={`bi-${
+                                                                            identity.status === 'DONE'
+                                                                                ? 'check-circle-fill'
+                                                                                : identity.status === 'REJECTED'
+                                                                                ? 'x-circle-fill'
+                                                                                : 'clock-fill'
+                                                                        }`}
+                                                                    ></i>
+                                                                    Statut:{' '}
+                                                                    {identity.status === 'DONE'
+                                                                        ? 'Approuvé'
+                                                                        : identity.status === 'REJECTED'
+                                                                        ? 'Rejeté'
+                                                                        : 'En attente'}
+                                                                </div>
+                                                            </div>
+                                                            <p className="modern-document-note">
+                                                                <i className="bi-info-circle"></i>
+                                                                Les documents marqués d'un astérisque (*) sont obligatoires. Vous pouvez remplacer ou ajouter des documents à tout moment.
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {!identity && (
+                                                        <div className="modern-document-footer">
+                                                            <p className="modern-document-note">
+                                                                <i className="bi-info-circle"></i>
+                                                                Cliquez sur les boutons ci-dessus pour voir les documents requis pour chaque niveau de vérification.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </>
                                             )}
                                         </div>

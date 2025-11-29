@@ -97,30 +97,10 @@ function RootRedirect() {
                 return;
             }
 
-            // Check if user has completed identity verification
-            const hasIdentity = auth.user.isHasIdentity === true;
-            const isVerified = auth.user.isVerified === true || 
-                            (auth.user.isVerified !== false && auth.user.isVerified !== 0);
-            
-            console.log('🔐 RootRedirect - User verification status:', { 
-                isVerified, 
-                hasIdentity, 
-                user: auth.user 
-            });
-            
-            if (isVerified && hasIdentity) {
-                // User is fully verified and has identity, redirect to post-login to choose role
-                console.log('✅ RootRedirect - User is fully verified with identity, redirecting to post-login');
-                setRedirectPath('/post-login');
-            } else if (isVerified && !hasIdentity) {
-                // User is OTP verified but hasn't completed identity verification
-                console.log('📋 RootRedirect - User OTP verified but needs identity verification, redirecting to identity page');
-                setRedirectPath('/identity-verification');
-            } else {
-                // User is not verified, redirect to waiting for verification page
-                console.log('⏳ RootRedirect - User is not verified, redirecting to waiting page');
-                setRedirectPath('/waiting-for-verification');
-            }
+            // Removed verification checks - users can access dashboard without verification
+            // Redirect to post-login to choose role
+            console.log('✅ RootRedirect - User logged in, redirecting to post-login');
+            setRedirectPath('/post-login');
             
             setLoading(false);
         };
@@ -165,7 +145,7 @@ export default function Router() {
             path: '/dashboard',
             element: <DashboardLayout />,
             children: [
-                { path: 'app', element: <RequirePhoneVerification><RequireIdentityVerification><DashboardApp /></RequireIdentityVerification></RequirePhoneVerification> },
+                { path: 'app', element: <RequirePhoneVerification><DashboardApp /></RequirePhoneVerification> },
                 { path: 'users', element: <RequirePhoneVerification><Users /></RequirePhoneVerification> },
                 { path: 'restaurants', element: <RequirePhoneVerification><Restaurants /></RequirePhoneVerification> },
                 { path: 'deliveries', element: <RequirePhoneVerification><Deliveries /></RequirePhoneVerification> },

@@ -25,6 +25,14 @@ export const IdentityAPI = {
     formData.append('field', fieldKey); // Backend expects 'field' not 'fieldKey'
     return requests.put(`/identities/${identityId}/update-document`, formData);
   },
+
+  // Submit identity for admin review
+  submitIdentity: (identityId: string): Promise<any> => 
+    requests.put(`/identities/${identityId}/submit`),
+  
+  // Submit certification documents for admin review
+  submitCertification: (identityId: string): Promise<any> => 
+    requests.put(`/identities/${identityId}/submit-certification`),
   
   // Get identity by ID (admin only)
   getById: (id: string): Promise<any> => requests.get(`/identities/${id}`),

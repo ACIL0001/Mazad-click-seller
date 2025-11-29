@@ -95,17 +95,8 @@ export default function DashboardLayout() {
           return;
         }
 
-        // Check verification status
-        const isVerified = user.isVerified === true || 
-                          (user.isVerified !== false && user.isVerified !== 0);
-        
-        if (!isVerified) {
-          console.log('DashboardLayout: User not verified, redirecting to waiting page');
-          navigate("/waiting-for-verification");
-          return;
-        }
-        
-        console.log('DashboardLayout: User verified, allowing access');
+        // Removed verification check - users can access dashboard without verification
+        console.log('DashboardLayout: Allowing access');
         setSubscriptionChecked(true);
         
         // Optional background token validation (don't block UI)

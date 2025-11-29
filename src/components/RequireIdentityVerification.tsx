@@ -47,26 +47,9 @@ export default function RequireIdentityVerification({ children }: RequireIdentit
           }
           
           // Check if documents were just submitted (to avoid circular redirects)
-          const justSubmitted = localStorage.getItem('identityJustSubmitted') === 'true';
-          
-          // Check identity requirements for PROFESSIONAL users only
-          if (userToCheck && userToCheck.type === 'PROFESSIONAL') {
-            // Check isHasIdentity from user data
-            if (!userToCheck.isHasIdentity && !justSubmitted) {
-              console.log('RequireIdentityVerification: Professional user has not uploaded identity, redirecting to identity verification');
-              setShouldRedirect({ to: '/identity-verification' });
-              return;
-            } else if (justSubmitted) {
-              // Clear the flag after using it once
-              console.log('RequireIdentityVerification: Documents just submitted, allowing access without redirect');
-              localStorage.removeItem('identityJustSubmitted');
-            }
-            
-            console.log('RequireIdentityVerification: Professional user has identity, allowing dashboard access');
-          } else if (userToCheck && (userToCheck.type === 'CLIENT' || userToCheck.type === 'RESELLER')) {
-            // CLIENT and RESELLER users don't need identity verification
-            console.log('RequireIdentityVerification: Client/Reseller user, no identity verification required');
-          }
+          // Removed identity verification requirement - users can access without verification
+          // They can submit documents from profile page later
+          console.log('RequireIdentityVerification: Allowing access - verification not required');
         } else {
           console.log('RequireIdentityVerification: Identity message shown already, skipping checks');
         }
