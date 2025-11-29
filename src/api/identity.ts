@@ -28,11 +28,11 @@ export const IdentityAPI = {
 
   // Submit identity for admin review
   submitIdentity: (identityId: string): Promise<any> => 
-    requests.put(`/identities/${identityId}/submit`),
+    requests.put(`/identities/${identityId}/submit`, {}),
   
   // Submit certification documents for admin review
   submitCertification: (identityId: string): Promise<any> => 
-    requests.put(`/identities/${identityId}/submit-certification`),
+    requests.put(`/identities/${identityId}/submit-certification`, {}),
   
   // Get identity by ID (admin only)
   getById: (id: string): Promise<any> => requests.get(`/identities/${id}`),
