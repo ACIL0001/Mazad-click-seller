@@ -29,6 +29,7 @@ import useMessageNotifications from '@/hooks/useMessageNotifications';
 import { NotificationService } from '@/api/notificationService';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
+import useAuth from '@/hooks/useAuth';
 
 // ----------------------------------------------------------------------
 // ========================================
@@ -46,6 +47,7 @@ export default function MessagesPopover() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { auth } = useAuth();
   
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -56,8 +58,12 @@ export default function MessagesPopover() {
     totalUnreadCount, 
     uniqueChatMessages, 
     fetchNotifications,
-    markAllSocketMessagesAsRead
+    markAllSocketMessagesAsRead,
+    markSocketMessagesAsReadForChat
   } = useMessageNotifications();
+  
+  // Local state to manage optimistic updates for clicked notifications
+  const [clickedNotificationIds, setClickedNotificationIds] = useState<Set<string>>(new Set());
 
   // Final safeguard: additional deduplication in the component
   const finalDedupedMessages = useMemo(() => {
@@ -114,6 +120,30 @@ export default function MessagesPopover() {
     console.log(`📊 Dedup stats - IDs seen: ${seenIds.size}, Content keys seen: ${seenContentKeys.size}`);
     return dedupedMessages;
   }, [uniqueChatMessages]);
+  
+  // Filter out clicked notifications from the displayed messages
+  const filteredMessages = useMemo(() => {
+    return finalDedupedMessages.filter(message => {
+      const messageId = message._id || message.id;
+      const chatId = message.chatId;
+      
+      // Check if this notification was clicked (optimistically removed)
+      if (clickedNotificationIds.has(messageId) || 
+          (chatId && clickedNotificationIds.has(`chat-${chatId}`))) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [finalDedupedMessages, clickedNotificationIds]);
+  
+  // Recalculate unread count from filtered messages
+  const optimisticUnreadCount = useMemo(() => {
+    return filteredMessages.filter(message => {
+      const isUnread = message.isUnRead || (!message.read && !message.isSocket);
+      return isUnread;
+    }).length;
+  }, [filteredMessages]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -150,7 +180,7 @@ export default function MessagesPopover() {
   };
 
   // Check if there are any unread notifications to determine button visibility
-  const hasUnreadNotifications = finalDedupedMessages.some(message => {
+  const hasUnreadNotifications = filteredMessages.some(message => {
     const isUnread = message.isUnRead || (!message.read && !message.isSocket);
     return isUnread;
   });
@@ -158,8 +188,9 @@ export default function MessagesPopover() {
   // Debug logging for button visibility
   console.log('📘 Button visibility check:', {
     hasUnreadNotifications,
-    totalMessages: finalDedupedMessages.length,
-    unreadMessages: finalDedupedMessages.filter(message => {
+    totalMessages: filteredMessages.length,
+    optimisticUnreadCount,
+    unreadMessages: filteredMessages.filter(message => {
       const isUnread = message.isUnRead || (!message.read && !message.isSocket);
       return isUnread;
     }).map(m => ({
@@ -174,12 +205,22 @@ export default function MessagesPopover() {
   const handleMessageClick = async (message) => {
     // Set loading state and clicked message ID
     setLoading(true);
-    setClickedMessageId(message._id || message.id);
+    const messageId = message._id || message.id;
+    const chatId = message.chatId;
+    setClickedMessageId(messageId);
+    
+    // Optimistically remove the notification from UI immediately
+    setClickedNotificationIds(prev => {
+      const newSet = new Set(prev);
+      if (messageId) newSet.add(messageId);
+      if (chatId) newSet.add(`chat-${chatId}`);
+      return newSet;
+    });
     
     try {
       console.log("📖 Handling message click:", {
-        messageId: message._id || message.id,
-        chatId: message.chatId,
+        messageId: messageId,
+        chatId: chatId,
         type: message.type,
         isConversation: message.type === 'conversation',
         isSocket: message.isSocket,
@@ -190,6 +231,15 @@ export default function MessagesPopover() {
       // STEP 1: Mark notification as read (if not already read)
       if (message._id && !message.read) {
         try {
+          // Validate notification ID format (should be a valid MongoDB ObjectId)
+          // Skip if it looks like a chat ID or invalid format
+          const isValidNotificationId = /^[0-9a-fA-F]{24}$/.test(message._id);
+          
+          if (!isValidNotificationId) {
+            console.warn("⚠️ Skipping notification mark as read - invalid ID format:", message._id);
+            // Mark as read locally anyway to prevent repeated attempts
+            message.read = true;
+          } else {
           console.log("🔖 Marking notification as read:", {
             messageId: message._id,
             currentReadStatus: message.read,
@@ -212,7 +262,7 @@ export default function MessagesPopover() {
           } else {
             console.warn("⚠️ Warning: API returned but read status unclear:", result);
           }
-          
+          }
         } catch (markError) {
           console.error("❌ Error marking notification as read:", {
             error: markError,
@@ -221,6 +271,8 @@ export default function MessagesPopover() {
             errorStatus: markError?.response?.status
           });
           // Continue with navigation even if marking as read fails
+          // Mark as read locally to prevent repeated attempts
+          message.read = true;
         }
       } else {
         console.log("ℹ️ Notification already read or no ID available:", {
@@ -233,11 +285,30 @@ export default function MessagesPopover() {
       // STEP 2: Mark socket messages as read (if applicable)
       if (message.isSocket || message.source === 'socket') {
         try {
-          console.log("🔖 Marking socket messages as read");
+          console.log("🔖 Marking socket messages as read for chat:", message.chatId);
+          // Mark only messages for this specific chat as read
+          if (message.chatId) {
+            markSocketMessagesAsReadForChat(message.chatId);
+          } else {
+            // Fallback: mark all if no chatId
           markAllSocketMessagesAsRead();
+          }
           console.log("✅ Socket messages marked as read");
         } catch (socketError) {
           console.error("❌ Error marking socket messages as read:", socketError);
+        }
+      }
+      
+      // STEP 2.5: Mark chat notifications as read on server (for both socket and database messages)
+      if (message.chatId) {
+        try {
+          console.log("🔖 Marking chat notifications as read on server for chat:", message.chatId);
+          const { NotificationAPI } = await import('@/api/notification');
+          await NotificationAPI.markChatAsRead(message.chatId);
+          console.log("✅ Chat notifications marked as read on server");
+        } catch (chatReadError) {
+          console.error("❌ Error marking chat notifications as read:", chatReadError);
+          // Continue even if this fails
         }
       }
       
@@ -247,12 +318,21 @@ export default function MessagesPopover() {
         await fetchNotifications();
         console.log("✅ Fresh notification data fetched");
         
+        // Remove from clicked set after successful refresh (notification is now removed from server)
+        setClickedNotificationIds(prev => {
+          const newSet = new Set(prev);
+          if (messageId) newSet.delete(messageId);
+          if (chatId) newSet.delete(`chat-${chatId}`);
+          return newSet;
+        });
+        
         // Trigger sidebar badge update
         window.dispatchEvent(new CustomEvent('messageNotificationsUpdated', {
           detail: { action: 'messageClicked', messageId: message._id }
         }));
       } catch (fetchError) {
         console.error("❌ Error fetching fresh data:", fetchError);
+        // On error, keep the notification removed optimistically (don't revert)
         // Continue with navigation even if data refresh fails
       }
       
@@ -272,6 +352,9 @@ export default function MessagesPopover() {
       
     } catch (error) {
       console.error("❌ Error handling message click:", error);
+      
+      // On error, keep the notification removed optimistically (don't revert)
+      // The notification will be refreshed from server on next fetch
       
       // Fallback: Ensure navigation happens even if there's an error
       const fallbackChatId = message.chatId || message.data?.chatId;
@@ -306,7 +389,7 @@ export default function MessagesPopover() {
             })
           }}
         >
-          <Badge badgeContent={totalUnreadCount > 0 ? totalUnreadCount : null} color="error">
+          <Badge badgeContent={optimisticUnreadCount > 0 ? optimisticUnreadCount : null} color="error">
             <Iconify icon="eva:message-circle-fill" width={20} height={20} />
           </Badge>
         </IconButton>
@@ -328,8 +411,8 @@ export default function MessagesPopover() {
               {t('common.messages')}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              {totalUnreadCount > 0 
-                ? t('messages.unreadCount', { count: totalUnreadCount })
+              {optimisticUnreadCount > 0 
+                ? t('messages.unreadCount', { count: optimisticUnreadCount })
                 : t('messages.noUnread')}
             </Typography>
           </Box>
@@ -369,7 +452,7 @@ export default function MessagesPopover() {
               </ListSubheader>
             }
           >
-            {finalDedupedMessages.length === 0 ? (
+            {filteredMessages.length === 0 ? (
               <Box sx={{ p: 3, textAlign: 'center' }}>
                 <Typography variant="body2" color="text.secondary">
                   {t('messages.noMessages')}
@@ -378,7 +461,7 @@ export default function MessagesPopover() {
             ) : (
               (() => {
                 // Filter out read notifications - only show unread notifications
-                const unreadMessages = finalDedupedMessages.filter(message => {
+                const unreadMessages = filteredMessages.filter(message => {
                   const isUnread = message.isUnRead || (!message.read && !message.isSocket);
                   return isUnread;
                 });

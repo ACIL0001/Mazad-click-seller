@@ -20,6 +20,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -39,6 +40,7 @@ interface Order {
     firstName: string;
     lastName: string;
     email: string;
+    phone?: string;
   } | null;
   quantity: number;
   unitPrice: number;
@@ -51,6 +53,7 @@ export default function Orders() {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -173,7 +176,7 @@ export default function Orders() {
                       {order.buyer ? `${order.buyer.firstName || ''} ${order.buyer.lastName || ''}`.trim() || t('orders.unknownBuyer') : t('orders.unknownBuyer')}
                       <br />
                       <Typography variant="caption" color="text.secondary">
-                        {order.buyer?.email || t('orders.emailNotAvailable')}
+                        {order.buyer?.phone || t('orders.phoneNotAvailable') || 'Téléphone non disponible'}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">{order.quantity}</TableCell>
@@ -206,19 +209,36 @@ export default function Orders() {
                       })()}
                     </TableCell>
                     <TableCell align="center">
-                      {order.status === 'PENDING' && (
+                      <Stack direction="row" spacing={1} justifyContent="center">
                         <Button
                           size="small"
-                          variant="contained"
-                          color="success"
+                          variant="outlined"
+                          startIcon={<Iconify icon="eva:eye-fill" />}
                           onClick={() => {
-                            setSelectedOrder(order);
-                            setConfirmDialogOpen(true);
+                            if (order.directSale?._id) {
+                              navigate(`/dashboard/direct-sales/${order.directSale._id}`);
+                            } else {
+                              console.error('Direct sale ID not found for order:', order._id);
+                              enqueueSnackbar(t('orders.directSaleNotFound') || 'Produit introuvable', { variant: 'error' });
+                            }
                           }}
                         >
-                          {t('orders.confirm')}
+                          {t('orders.viewDetails') || 'Voir détails'}
                         </Button>
-                      )}
+                        {order.status === 'PENDING' && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="success"
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setConfirmDialogOpen(true);
+                            }}
+                          >
+                            {t('orders.confirm')}
+                          </Button>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -227,7 +247,7 @@ export default function Orders() {
           </TableContainer>
         )}
 
-        <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)} maxWidth="sm" fullWidth>
           <DialogTitle>{t('orders.confirmOrder')}</DialogTitle>
           <DialogContent>
             <Typography>

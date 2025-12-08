@@ -19,7 +19,8 @@ import {
   Link,
   CircularProgress,
   Snackbar,
-  Alert
+  Alert,
+  Chip
 } from '@mui/material';
 // utils
 import { fToNow } from '../../utils/formatTime';
@@ -36,6 +37,7 @@ import { ReviewService } from '@/api/review';
 import { NotificationService } from '@/api/notificationService';
 import { NotificationType } from '@/types/Notification';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ChatAPI } from '@/api/Chat';
 
 // ----------------------------------------------------------------------
 
@@ -233,12 +235,30 @@ export default function NotificationsPopover({
     // Combine notifications and remove duplicates based on ID
     const combinedNotifications = [...processedSocketNotifications, ...unreadNotifications];
     
-    // Remove duplicates based on notification ID (_id)
-    const uniqueNotifications = combinedNotifications.filter((notification, index, self) => {
+    // Remove duplicates based on notification ID (_id) first
+    let uniqueById = combinedNotifications.filter((notification, index, self) => {
       // Find the first occurrence of a notification with this ID
       const firstIndex = self.findIndex(n => n._id === notification._id);
       // Only keep if this is the first occurrence
       return index === firstIndex;
+    });
+    
+    // Sort by date, most recent first
+    uniqueById.sort((a, b) => {
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+    
+    // Further deduplicate by type + title + timestamp (within 1 second) to catch near-duplicates
+    const uniqueNotifications = uniqueById.filter((notification, index, self) => {
+      // Find if there's a duplicate with same type, title, and similar timestamp (within 1 second)
+      const duplicateIndex = self.findIndex((n, idx) => 
+        idx < index && // Only check earlier items (already processed)
+        n.type === notification.type &&
+        n.title === notification.title &&
+        Math.abs(new Date(n.createdAt || 0).getTime() - new Date(notification.createdAt || 0).getTime()) < 1000
+      );
+      // Keep only if no duplicate found (we keep the first/most recent one)
+      return duplicateIndex === -1;
     });
 
     console.log('🔍 DEBUG: Final combined notifications for bell:', {
@@ -516,9 +536,21 @@ function NotificationItem({ notification, onMarkAsRead, onOpenReviewModal }) {
   const { title, message, createdAt, read, auctionId, entityId } = notification;
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { auth } = useAuth();
 
   // Convert createdAt string to Date object if needed
   const createdAtDate = createdAt instanceof Date ? createdAt : new Date(createdAt);
+
+  // Check if this is an order/bill notification
+  const isOrderNotification = notification.type === NotificationType.ORDER || 
+                               notification.type === NotificationType.NEW_OFFER ||
+                               notification.title?.toLowerCase().includes('commande') ||
+                               notification.title?.toLowerCase().includes('order');
+  
+  // Extract price from title if it contains DA
+  const priceMatch = title?.match(/([\d,]+\.?\d*)\s*DA/i);
+  const priceAmount = priceMatch ? priceMatch[1] : null;
+  const titleWithoutPrice = priceAmount ? title.replace(/\s*-\s*[\d,]+\.?\d*\s*DA/i, '').trim() : title;
 
   const handleClick = (event) => {
     
@@ -542,6 +574,93 @@ function NotificationItem({ notification, onMarkAsRead, onOpenReviewModal }) {
     // Mark as read first (only for database notifications that have onMarkAsRead)
     if (onMarkAsRead && !read && notification._id) {
       onMarkAsRead(notification._id);
+    }
+
+    // Check if this is a direct sale order notification
+    const isDirectSaleOrder = notification.type === NotificationType.ORDER || 
+                              notification.type === NotificationType.NEW_OFFER ||
+                              notification.title?.toLowerCase().includes('commande') ||
+                              (notification.data?.purchase || notification.data?.directSale);
+    
+    // Check if this is an offer accepted notification (seller receives when buyer accepts submission)
+    const isOfferAccepted = notification.type === NotificationType.OFFER_ACCEPTED &&
+                            (notification.title?.toLowerCase().includes('offre acceptée') ||
+                             notification.title?.toLowerCase().includes('offer accepted') ||
+                             notification.message?.toLowerCase().includes('acceptée') ||
+                             notification.message?.toLowerCase().includes('accepted') ||
+                             notification.data?.tenderBid ||
+                             notification.data?.tender);
+    
+    // Check if this is a tender bid (soumission) notification (but not accepted)
+    const isTenderBid = notification.type === NotificationType.NEW_OFFER && 
+                        !isOfferAccepted &&
+                        (notification.data?.tender || notification.data?.tenderId || 
+                         notification.message?.toLowerCase().includes('soumission') ||
+                         notification.message?.toLowerCase().includes('appel d\'offres'));
+    
+    // Check if this is an auction bid (enchere) notification
+    const isAuctionBid = notification.type === NotificationType.BID_CREATED ||
+                         notification.type === NotificationType.NEW_OFFER && 
+                         (notification.data?.auction || notification.data?.auctionId ||
+                          notification.message?.toLowerCase().includes('enchère'));
+
+    // Navigate based on notification type
+    if (isDirectSaleOrder) {
+      // For ORDER notifications (order confirmation), always navigate to orders page
+      navigate('/dashboard/direct-sales/orders');
+      return;
+    }
+    
+    // Handle offer accepted - open chat with tender owner (buyer) who accepted the submission
+    if (isOfferAccepted) {
+      const ownerId = notification.data?.ownerId; // Tender owner (buyer) ID
+      if (ownerId && auth?.user?._id) {
+        try {
+          console.log('💬 Opening chat with tender owner who accepted submission:', ownerId);
+          
+          // Get all chats to find existing chat with tender owner
+          ChatAPI.getChats({
+            id: auth.user._id,
+            from: 'seller'
+          }).then((chatsResponse: any) => {
+            // Find existing chat with tender owner
+            const existingChat = chatsResponse?.find((chat: any) => 
+              chat.users?.some((user: any) => {
+                const userIdStr = user._id?.toString() || user._id;
+                return userIdStr === ownerId?.toString() || userIdStr === ownerId;
+              })
+            );
+            
+            if (existingChat) {
+              // Navigate to chat with existing chat ID
+              console.log('✅ Found existing chat with tender owner:', existingChat._id);
+              navigate(`/dashboard/chat?chatId=${existingChat._id}`);
+            } else {
+              // Navigate to chat with tender owner ID - Chat component will create chat if needed
+              console.log('📝 No existing chat found, opening with tender owner ID:', ownerId);
+              navigate(`/dashboard/chat?userId=${ownerId}`);
+            }
+          }).catch((chatError: any) => {
+            console.error('❌ Error opening chat with tender owner:', chatError);
+            // Fallback: navigate to chat page with tender owner ID
+            navigate(`/dashboard/chat?userId=${ownerId}`);
+          });
+        } catch (error) {
+          console.error('❌ Error opening chat with tender owner:', error);
+          // Fallback: navigate to chat page
+          navigate('/dashboard/chat');
+        }
+      } else {
+        // Fallback: navigate to chat page
+        navigate('/dashboard/chat');
+      }
+      return;
+    }
+    
+    if (isTenderBid || isAuctionBid) {
+      // Navigate to tender bids page (offre recue)
+      navigate('/dashboard/tender-bids');
+      return;
     }
 
     // Navigate to auction details if auctionId exists
@@ -577,50 +696,88 @@ function NotificationItem({ notification, onMarkAsRead, onOpenReviewModal }) {
         px: 2.5,
         mt: '1px',
         bgcolor: read ? 'transparent' : 'action.hover',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
       }}
       onClick={handleClick}
     >
-      <ListItemAvatar>
-        <Avatar sx={{ bgcolor: 'background.neutral' }}>
-          <Iconify icon="eva:bell-fill" width={20} height={20} />
-        </Avatar>
-      </ListItemAvatar>
+      <Box sx={{ display: 'flex', width: '100%', alignItems: 'flex-start', gap: 1.5 }}>
+        <ListItemAvatar sx={{ minWidth: 40 }}>
+          <Avatar sx={{ bgcolor: isOrderNotification ? 'primary.lighter' : 'background.neutral', width: 40, height: 40 }}>
+            <Iconify 
+              icon={isOrderNotification ? "eva:shopping-bag-fill" : "eva:bell-fill"} 
+              width={20} 
+              height={20}
+              sx={{ color: isOrderNotification ? 'primary.main' : 'text.secondary' }}
+            />
+          </Avatar>
+        </ListItemAvatar>
 
-      <ListItemText
-        primary={title}
-        secondary={
-          <>
-            {message && (
-              <Typography
-                variant="body2"
-                sx={{
-                  mt: 0.5,
-                  color: 'text.secondary',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {message}
-              </Typography>
-            )}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {/* Header with title and price */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
             <Typography
-              variant="caption"
+              variant="subtitle2"
               sx={{
-                mt: 0.5,
-                display: 'flex',
-                alignItems: 'center',
-                color: 'text.disabled',
+                fontWeight: read ? 500 : 600,
+                color: read ? 'text.secondary' : 'text.primary',
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
               }}
             >
-              <Iconify icon="eva:clock-fill" sx={{ mr: 0.5, width: 16, height: 16 }} />
-              {isValidDate(createdAtDate) ? fToNow(createdAtDate) : 'À l\'instant'}
+              {titleWithoutPrice}
             </Typography>
-          </>
-        }
-      />
+            {priceAmount && (
+              <Chip
+                label={`${priceAmount} DA`}
+                size="small"
+                color="primary"
+                sx={{
+                  height: 22,
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}
+              />
+            )}
+          </Box>
+
+          {/* Message content */}
+          {message && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.secondary',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                mb: 0.5,
+                lineHeight: 1.4,
+              }}
+            >
+              {message}
+            </Typography>
+          )}
+
+          {/* Timestamp */}
+          <Typography
+            variant="caption"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'text.disabled',
+              fontSize: '0.7rem',
+            }}
+          >
+            <Iconify icon="eva:clock-fill" sx={{ mr: 0.5, width: 14, height: 14 }} />
+            {isValidDate(createdAtDate) ? fToNow(createdAtDate) : 'À l\'instant'}
+          </Typography>
+        </Box>
+      </Box>
     </ListItemButton>
   );
 }

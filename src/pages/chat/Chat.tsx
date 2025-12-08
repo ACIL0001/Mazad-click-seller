@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { MessageAPI } from '@/api/message'
 import { useCreateSocket } from '@/contexts/SocketContext'
-import auth from '@/_mock/auth'
+import useAuth from '@/hooks/useAuth'
 import { useLocation, useNavigate } from 'react-router-dom'
 import useMessageNotifications from '@/hooks/useMessageNotifications'
 import { 
@@ -128,9 +128,10 @@ const MessageGroup = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1.5),
 }))
 
-const MessageBubbleContainer = styled(motion.div)<{ sender?: boolean }>(({ theme, sender }) => ({
+// MessageBubbleContainer - use $ prefix for transient props (won't be forwarded to DOM)
+const MessageBubbleContainer = styled(motion.div)<{ $sender?: boolean }>(({ theme, $sender }) => ({
   display: 'flex',
-  justifyContent: sender ? 'flex-end' : 'flex-start',
+  justifyContent: $sender ? 'flex-start' : 'flex-end',
   marginBottom: theme.spacing(1),
   position: 'relative',
   alignItems: 'flex-end',
@@ -140,11 +141,13 @@ const MessageBubbleContainer = styled(motion.div)<{ sender?: boolean }>(({ theme
   },
 }))
 
-const MessageBubble = styled(Box)<{ sender?: boolean }>(({ theme, sender }) => ({
+const MessageBubble = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'sender',
+})<{ sender?: boolean }>(({ theme, sender }) => ({
   maxWidth: '75%',
   minWidth: 'min-content',
   padding: theme.spacing(1.2, 1.8),
-  borderRadius: sender ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+  borderRadius: sender ? '18px 18px 18px 4px' : '18px 18px 4px 18px',
   backgroundColor: sender 
     ? '#0063b1' 
     : theme.palette.background.paper,
@@ -244,19 +247,52 @@ const MessageBubbleVariants = {
 export default function Chat() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { idReciver } = location.state
+  const { auth } = useAuth()
+  const idReciverFromState = location.state?.idReciver || null
   
   const [text, setText] = useState('')
   const [reget, setReget] = useState(false)
+  const [idReciver, setIdReciver] = useState<string | null>(idReciverFromState)
+  const [chatData, setChatData] = useState<any>(null)
   const idChat = window.location.href.replace(`${window.location.origin}/dashboard/chat/`, '')
   const socketContext = useCreateSocket()
   const socketMessages = (socketContext?.messages || []) as Message[]
   
   console.log("socketMessages )))) ",socketMessages);
   
+  // Fetch chat data to get receiver ID if not in state
+  useEffect(() => {
+    if (!idChat || idReciver || !auth?.user?._id) return; // Skip if we already have receiver ID or no user
+    
+    const fetchChatData = async () => {
+      try {
+        // Get all chats and find the one matching idChat
+        const { ChatAPI } = await import('@/api/Chat');
+        const chats = await ChatAPI.getChats({
+          id: auth.user._id,
+          from: 'seller'
+        });
+        
+        const chat = chats?.find((c: any) => c._id === idChat);
+        if (chat && chat.users) {
+          setChatData(chat);
+          // Find the other user (receiver) - the one who is not the current user
+          const receiver = chat.users.find((user: any) => user._id !== auth.user._id);
+          if (receiver) {
+            setIdReciver(receiver._id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching chat data:', error);
+      }
+    };
+    
+    fetchChatData();
+  }, [idChat, idReciver, auth?.user?._id]);
+  
   // Join chat room when component mounts and socket is ready
   useEffect(() => {
-    if (!socketContext?.socket || !idChat) return;
+    if (!socketContext?.socket || !idChat || !auth?.user?._id) return;
     
     console.log('Joining chat room:', idChat);
     socketContext.socket.emit('joinChat', { chatId: idChat, userId: auth.user._id });
@@ -265,7 +301,7 @@ export default function Chat() {
       console.log('Leaving chat room:', idChat);
       socketContext.socket.emit('leaveChat', { chatId: idChat, userId: auth.user._id });
     };
-  }, [socketContext?.socket, idChat, auth.user._id]);
+  }, [socketContext?.socket, idChat, auth?.user?._id]);
   
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
@@ -419,6 +455,25 @@ export default function Chat() {
     try {
       const res = await MessageAPI.getByConversation(idChat)
       setMessages(res)
+      
+      // If receiver ID is not available, try to extract it from messages
+      if (!idReciver && res && res.length > 0 && auth?.user?._id) {
+        // Find a message where the current user is the sender, then the receiver is the other user
+        const messageWithReceiver = res.find((msg: any) => 
+          msg.sender === auth.user._id && msg.reciver && msg.reciver !== auth.user._id
+        );
+        if (messageWithReceiver && messageWithReceiver.reciver) {
+          setIdReciver(messageWithReceiver.reciver);
+        } else {
+          // Try the opposite - find a message where current user is receiver
+          const messageWithSender = res.find((msg: any) => 
+            msg.reciver === auth.user._id && msg.sender && msg.sender !== auth.user._id
+          );
+          if (messageWithSender && messageWithSender.sender) {
+            setIdReciver(messageWithSender.sender);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error fetching messages:", error)
     } finally {
@@ -428,6 +483,59 @@ export default function Chat() {
   
   const createMessage = async () => {
     if (!text.trim()) return
+    
+    if (!idReciver || !auth?.user?._id) {
+      console.error('Receiver ID or user not available. Please wait for chat to load.');
+      // Try to fetch receiver ID one more time
+      if (!idReciver && idChat && auth?.user?._id) {
+        try {
+          const { ChatAPI } = await import('@/api/Chat');
+          const chats = await ChatAPI.getChats({
+            id: auth.user._id,
+            from: 'seller'
+          });
+          const chat = chats?.find((c: any) => c._id === idChat);
+          if (chat && chat.users) {
+            const receiver = chat.users.find((user: any) => user._id !== auth.user._id);
+            if (receiver && receiver._id) {
+              setIdReciver(receiver._id);
+              // Store message text and retry after receiver ID is set
+              const messageText = text;
+              setTimeout(async () => {
+                if (receiver._id && messageText.trim() && auth?.user?._id) {
+                  try {
+                    setIsTyping(true);
+                    const messageData = {
+                      idChat,
+                      message: messageText,
+                      sender: auth.user._id,
+                      reciver: receiver._id
+                    };
+                    
+                    if (socketContext?.socket) {
+                      socketContext.socket.emit('sendMessage', messageData);
+                    }
+                    
+                    await MessageAPI.send(messageData);
+                    setText('');
+                    setReget(prev => !prev);
+                  } catch (error) {
+                    console.error("Error sending message:", error);
+                  } finally {
+                    setIsTyping(false);
+                  }
+                }
+              }, 200);
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching receiver ID:', error);
+        }
+      }
+      setIsTyping(false);
+      return;
+    }
     
     // Simulate typing indicator
     setIsTyping(true)
@@ -657,15 +765,15 @@ export default function Chat() {
                         display: 'flex',
                         flexDirection: 'row',
                         mb: 0.5, // Reduced margin
-                        justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
+                        justifyContent: isCurrentUser ? 'flex-start' : 'flex-end',
                         alignItems: 'center',
                         gap: 1
                       }}
                     >
-                      {!isCurrentUser && (
+                      {isCurrentUser && (
                         <UserAvatar
                           src={imageBuyer} 
-                          alt="Contact"
+                          alt="You"
                         />
                       )}
                       
@@ -676,21 +784,28 @@ export default function Chat() {
                       >
                         {isCurrentUser ? 'You' : 'Contact'}
                       </Typography>
+                      
+                      {!isCurrentUser && (
+                        <UserAvatar
+                          src={imageBuyer} 
+                          alt="Contact"
+                        />
+                      )}
                     </Box>
                     
                     <Box
                       sx={{
                         display: 'flex',
                         flexDirection: 'column',
-                        pl: !isCurrentUser ? 5 : 0, // Adjusted for avatar alignment
-                        pr: isCurrentUser ? 5 : 0, // Adjusted for avatar alignment
+                        pl: isCurrentUser ? 5 : 0, // Adjusted for avatar alignment
+                        pr: !isCurrentUser ? 5 : 0, // Adjusted for avatar alignment
                         width: 'auto'
                       }}
                     >
                       {item.messages.map((message, msgIndex) => (
                         <MessageBubbleContainer 
                           key={message._id || `msg-${index}-${msgIndex}`}
-                          sender={isCurrentUser}
+                          $sender={isCurrentUser}
                           variants={MessageBubbleVariants}
                           initial="initial"
                           animate="animate"

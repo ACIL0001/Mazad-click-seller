@@ -2,6 +2,7 @@
 export enum NotificationType {
     BID_CREATED = 'BID_CREATED',
     NEW_OFFER = 'NEW_OFFER',
+    OFFER_ACCEPTED = 'OFFER_ACCEPTED',
     BID_ENDED = 'BID_ENDED',
     BID_WON = 'BID_WON',
     CHAT_CREATED = 'CHAT_CREATED',

@@ -144,6 +144,7 @@ import {
 // API imports
 import { ChatAPI } from "@/api/Chat";
 import { MessageAPI } from "@/api/message";
+import { UserAPI } from "@/api/user";
 import useAuth from "@/hooks/useAuth";
 import { useCreateSocket } from "@/contexts/SocketContext";
 import useMessageNotifications from "@/hooks/useMessageNotifications";
@@ -155,11 +156,21 @@ import imageBuyer from '../../assets/logo/buyerImage.jpg';
 const ModernChatContainer = styled(Box)(({ theme }) => ({
   height: 'calc(100vh - 64px)',
   display: 'flex',
-  background: 'linear-gradient(135deg, #0063b1 0%, #3366FF 100%)',
-  borderRadius: '24px',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+  borderRadius: '20px',
   overflow: 'hidden',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3), transparent 50%)',
+    pointerEvents: 'none',
+  },
   [theme.breakpoints.down('md')]: {
     height: 'calc(100vh - 56px)',
     borderRadius: '16px',
@@ -171,15 +182,16 @@ const ModernChatContainer = styled(Box)(({ theme }) => ({
 }));
 
 const SidebarContainer = styled(Box)(({ theme }) => ({
-  width: '400px',
-  background: 'rgba(255,255,255,0.1)',
-  backdropFilter: 'blur(20px)',
-  borderRight: '1px solid rgba(255,255,255,0.2)',
+  width: '380px',
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(30px)',
+  borderRight: '1px solid rgba(255, 255, 255, 0.3)',
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
+  boxShadow: '4px 0 20px rgba(0, 0, 0, 0.1)',
   [theme.breakpoints.down('lg')]: {
-    width: '350px',
+    width: '340px',
   },
   [theme.breakpoints.down('md')]: {
     width: '100%',
@@ -197,53 +209,71 @@ const SidebarContainer = styled(Box)(({ theme }) => ({
 }));
 
 const SidebarHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3, 2.5),
-  borderBottom: '1px solid rgba(255,255,255,0.2)',
-  background: 'rgba(255,255,255,0.05)',
+  padding: theme.spacing(2.5, 2.5),
+  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
   backdropFilter: 'blur(10px)',
+  position: 'relative',
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: 'linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent)',
+  },
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2.5, 2.5, 2),
+  padding: theme.spacing(2, 2.5),
+  background: 'rgba(102, 126, 234, 0.03)',
 }));
 
 const ContactsList = styled(Box)(({ theme }) => ({
   flex: 1,
   overflowY: 'auto',
-  padding: theme.spacing(1),
+  padding: theme.spacing(1.5),
+  background: 'rgba(255, 255, 255, 0.5)',
   '&::-webkit-scrollbar': {
-    width: '6px',
+    width: '8px',
   },
   '&::-webkit-scrollbar-track': {
-    background: 'rgba(255,255,255,0.1)',
+    background: 'rgba(0, 0, 0, 0.02)',
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'rgba(255,255,255,0.3)',
+    background: 'linear-gradient(135deg, #667eea, #764ba2)',
     borderRadius: '10px',
     '&:hover': {
-      background: 'rgba(255,255,255,0.5)',
+      background: 'linear-gradient(135deg, #764ba2, #667eea)',
     },
   },
 }));
 
 const ContactCard = styled(motion.div)<{ active?: boolean }>(({ theme, active }) => ({
-  padding: theme.spacing(2.5, 2),
-  margin: theme.spacing(1, 1.5),
-  borderRadius: '16px',
+  padding: theme.spacing(2, 2.5),
+  margin: theme.spacing(0.75, 1),
+  borderRadius: '18px',
   background: active 
-    ? 'rgba(255,255,255,0.2)' 
-    : 'rgba(255,255,255,0.05)',
+    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)' 
+    : 'rgba(255, 255, 255, 0.8)',
   backdropFilter: 'blur(10px)',
   border: active 
-    ? '1px solid rgba(255,255,255,0.3)' 
-    : '1px solid rgba(255,255,255,0.1)',
+    ? '2px solid rgba(102, 126, 234, 0.4)' 
+    : '1px solid rgba(0, 0, 0, 0.06)',
   cursor: 'pointer',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: active 
+    ? '0 8px 24px rgba(102, 126, 234, 0.2)' 
+    : '0 2px 8px rgba(0, 0, 0, 0.04)',
   '&:hover': {
-    background: 'rgba(255,255,255,0.15)',
-    transform: 'translateY(-2px)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+    background: active 
+      ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)' 
+      : 'rgba(255, 255, 255, 0.95)',
+    transform: 'translateY(-3px)',
+    boxShadow: '0 12px 32px rgba(102, 126, 234, 0.15)',
+    borderColor: active ? 'rgba(102, 126, 234, 0.5)' : 'rgba(102, 126, 234, 0.2)',
   },
 }));
 
@@ -251,82 +281,130 @@ const ChatArea = styled(Box)(({ theme }) => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  background: 'white',
+  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
   position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.05), transparent 50%)',
+    pointerEvents: 'none',
+  },
   [theme.breakpoints.down('md')]: {
     width: '100%',
   },
 }));
 
 const ChatHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2, 3),
-  borderBottom: '1px solid #e0e0e0',
-  background: 'white',
+  padding: theme.spacing(2.5, 3),
+  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+  background: 'rgba(255, 255, 255, 0.9)',
+  backdropFilter: 'blur(20px)',
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(2),
+  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+  position: 'relative',
+  zIndex: 1,
 }));
 
 const MessagesContainer = styled(Box)(({ theme }) => ({
   flex: 1,
-  padding: theme.spacing(3),
+  padding: theme.spacing(3, 4),
   overflowY: 'auto',
-  background: 'white',
+  background: 'transparent',
+  position: 'relative',
+  zIndex: 0,
   '&::-webkit-scrollbar': {
-    width: '6px',
+    width: '8px',
   },
   '&::-webkit-scrollbar-track': {
-    background: '#f5f5f5',
+    background: 'rgba(0, 0, 0, 0.02)',
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: '#ccc',
+    background: 'linear-gradient(135deg, #667eea, #764ba2)',
     borderRadius: '10px',
     '&:hover': {
-      background: '#999',
+      background: 'linear-gradient(135deg, #764ba2, #667eea)',
     },
   },
 }));
 
 const MessageBubble = styled(motion.div)<{ sender?: boolean }>(({ theme, sender }) => ({
-  maxWidth: '70%',
-  padding: theme.spacing(1.5, 2),
-  borderRadius: sender ? '20px 20px 6px 20px' : '20px 20px 20px 6px',
+  maxWidth: '65%',
+  padding: theme.spacing(1.5, 2.5),
+  borderRadius: sender ? '20px 20px 20px 4px' : '20px 20px 4px 20px',
   background: sender 
-    ? 'linear-gradient(135deg, #0063b1 0%, #3366FF 100%)' 
-    : '#f8f9fa',
-  color: sender ? 'white' : '#333',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  marginBottom: theme.spacing(1),
-  alignSelf: sender ? 'flex-end' : 'flex-start',
+    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+    : 'rgba(255, 255, 255, 0.95)',
+  color: sender ? 'white' : '#2d3748',
+  boxShadow: sender 
+    ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
+    : '0 2px 8px rgba(0, 0, 0, 0.1)',
+  marginBottom: theme.spacing(1.5),
+  alignSelf: sender ? 'flex-start' : 'flex-end',
   position: 'relative',
+  backdropFilter: 'blur(10px)',
+  border: sender ? 'none' : '1px solid rgba(0, 0, 0, 0.05)',
+  '&::before': sender ? {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: -8,
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderWidth: '0 8px 12px 0',
+    borderColor: `transparent #667eea transparent transparent`,
+  } : {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    right: -8,
+    width: 0,
+    height: 0,
+    borderStyle: 'solid',
+    borderWidth: '0 0 12px 8px',
+    borderColor: `transparent transparent rgba(255, 255, 255, 0.95) transparent`,
+  },
 }));
 
 const MessageTime = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
-  color: '#666',
+  fontSize: '0.7rem',
+  color: 'rgba(0, 0, 0, 0.5)',
   marginTop: theme.spacing(0.5),
-  opacity: 0.8,
+  opacity: 0.7,
+  fontWeight: 400,
 }));
 
 const InputContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2.5),
-  background: 'white',
-  borderTop: '1px solid #e0e0e0',
+  padding: theme.spacing(2.5, 3),
+  background: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.05)',
+  position: 'relative',
+  zIndex: 1,
 }));
 
 const InputWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1.5),
-  background: '#f8f9fa',
-  padding: theme.spacing(1, 2),
-  borderRadius: '25px',
-  border: '1px solid #e0e0e0',
+  background: 'rgba(255, 255, 255, 0.9)',
+  padding: theme.spacing(1.25, 2.5),
+  borderRadius: '30px',
+  border: '2px solid rgba(102, 126, 234, 0.2)',
   transition: 'all 0.3s ease',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   '&:focus-within': {
-    borderColor: '#0063b1',
-    boxShadow: '0 0 0 3px rgba(0, 99, 177, 0.1)',
+    borderColor: 'rgba(102, 126, 234, 0.5)',
+    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.2)',
+    background: 'rgba(255, 255, 255, 1)',
   },
 }));
 
@@ -338,7 +416,9 @@ const EmptyState = styled(Box)(({ theme }) => ({
   height: '100%',
   padding: theme.spacing(4),
   textAlign: 'center',
-  background: 'white',
+  background: 'transparent',
+  position: 'relative',
+  zIndex: 0,
 }));
 
 const MobileHeader = styled(Box)(({ theme }) => ({
@@ -348,9 +428,10 @@ const MobileHeader = styled(Box)(({ theme }) => ({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: theme.spacing(2),
-    background: 'rgba(255,255,255,0.1)',
+    background: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(255,255,255,0.2)',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
   },
 }));
 
@@ -363,7 +444,8 @@ const SidebarOverlay = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
+    background: 'rgba(0, 0, 0, 0.6)',
+    backdropFilter: 'blur(4px)',
     zIndex: 1100,
     opacity: 0,
     visibility: 'hidden',
@@ -377,15 +459,16 @@ const SidebarOverlay = styled(Box)(({ theme }) => ({
 
 const FloatingButton = styled(Fab)(({ theme }) => ({
   position: 'fixed',
-  bottom: theme.spacing(2),
-  right: theme.spacing(2),
+  bottom: theme.spacing(3),
+  right: theme.spacing(3),
   zIndex: 1000,
-  background: 'linear-gradient(45deg, #FF6B6B, #FF8E8E)',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   color: 'white',
-  boxShadow: '0 8px 32px rgba(255,107,107,0.4)',
+  boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
   '&:hover': {
-    background: 'linear-gradient(45deg, #FF5252, #FF7A7A)',
+    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
     transform: 'scale(1.1)',
+    boxShadow: '0 12px 32px rgba(102, 126, 234, 0.5)',
   },
   [theme.breakpoints.up('md')]: {
     display: 'none',
@@ -412,6 +495,7 @@ export default function ModernChat() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [error, setError] = useState(null);
+  const [lastMessages, setLastMessages] = useState<Record<string, any>>({}); // Map of chatId to last message
 
   // Socket and notifications
   const { messages: socketMessages, setMessages: setSocketMessages, socket } = useCreateSocket();
@@ -455,19 +539,147 @@ export default function ModernChat() {
   // ===== API FUNCTIONS =====
 
   const fetchChats = async () => {
-    if (!auth?.user?._id) return;
+    if (!auth?.user?._id) {
+      console.warn('⚠️ Cannot fetch chats: No user ID available');
+      return;
+    }
     
+    console.log('🔄 Fetching chats for seller:', auth.user._id);
     setLoading(true);
+    setError(null);
+    
     try {
       const response = await ChatAPI.getChats({ 
         id: auth.user._id, 
         from: 'seller' 
       });
-      setChats(response);
+      
+      console.log('📥 Raw API response:', response);
+      console.log('📥 Response type:', typeof response);
+      console.log('📥 Is array:', Array.isArray(response));
+      
+      // Ensure response is an array - handle multiple possible response formats
+      let chatsArray: any[] = [];
+      if (Array.isArray(response)) {
+        chatsArray = response;
+      } else if (response?.data && Array.isArray(response.data)) {
+        chatsArray = response.data;
+      } else if (response?.chats && Array.isArray(response.chats)) {
+        chatsArray = response.chats;
+      } else if (response?.result && Array.isArray(response.result)) {
+        chatsArray = response.result;
+      } else {
+        console.warn('⚠️ Unexpected response format:', response);
+        chatsArray = [];
+      }
+      
+      console.log('📊 Extracted chats array:', chatsArray.length, 'chats');
+      
+      // Filter out invalid chats (must have users array with at least 2 users)
+      const validChats = chatsArray.filter((chat: any) => {
+        const isValid = chat && 
+                       chat._id && 
+                       Array.isArray(chat.users) && 
+                       chat.users.length >= 2; // Each chat should have exactly 2 users
+        
+        if (!isValid) {
+          console.warn('⚠️ Invalid chat filtered out:', {
+            hasId: !!chat?._id,
+            hasUsers: !!chat?.users,
+            usersIsArray: Array.isArray(chat?.users),
+            usersLength: chat?.users?.length
+          });
+        }
+        
+        return isValid;
+      });
+      
+      console.log('✅ Valid chats:', validChats.length, 'out of', chatsArray.length);
+      if (validChats.length > 0) {
+        console.log('📋 Sample valid chat:', {
+          _id: validChats[0]._id,
+          users: validChats[0].users?.map((u: any) => ({
+            _id: u._id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            AccountType: u.AccountType
+          })),
+          createdAt: validChats[0].createdAt
+        });
+      }
+      
+      // If no chats, set empty and return early
+      if (validChats.length === 0) {
+        console.log('ℹ️ No chats found for this seller');
+        setChats([]);
+        setLastMessages({});
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      
+      // Fetch last message for each chat in parallel (with timeout to prevent hanging)
+      const lastMessagesMap: Record<string, any> = {};
+      const lastMessagePromises = validChats.map(async (chat: any) => {
+        try {
+          // Add timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+          );
+          
+          const messagesPromise = MessageAPI.getByConversation(chat._id);
+          const messages = await Promise.race([messagesPromise, timeoutPromise]) as any[];
+          
+          if (Array.isArray(messages) && messages.length > 0) {
+            // Sort messages to get the most recent
+            const sortedMessages = [...messages].sort((a: any, b: any) => {
+              const dateA = new Date(a.createdAt || 0).getTime();
+              const dateB = new Date(b.createdAt || 0).getTime();
+              return dateB - dateA; // Most recent first
+            });
+            lastMessagesMap[chat._id] = sortedMessages[0];
+          }
+        } catch (error) {
+          console.warn(`Error fetching last message for chat ${chat._id}:`, error);
+          // Continue even if one fails - conversations will still display
+        }
+      });
+      
+      // Wait for all promises but don't block if some fail
+      const results = await Promise.allSettled(lastMessagePromises);
+      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const failCount = results.filter(r => r.status === 'rejected').length;
+      console.log(`📨 Last messages fetched: ${successCount} succeeded, ${failCount} failed`);
+      
+      setLastMessages(lastMessagesMap);
+      
+      // Sort chats by most recent activity (last message time or chat creation time)
+      const sortedChats = [...validChats].sort((a: any, b: any) => {
+        const lastMsgA = lastMessagesMap[a._id];
+        const lastMsgB = lastMessagesMap[b._id];
+        
+        const timeA = lastMsgA 
+          ? new Date(lastMsgA.createdAt || 0).getTime()
+          : new Date(a.createdAt || 0).getTime();
+        const timeB = lastMsgB
+          ? new Date(lastMsgB.createdAt || 0).getTime()
+          : new Date(b.createdAt || 0).getTime();
+        
+        return timeB - timeA; // Most recent first
+      });
+      
+      console.log('✅ Setting chats:', sortedChats.length);
+      setChats(sortedChats);
       setError(null);
-    } catch (error) {
-      console.error('Error fetching chats:', error);
-      setError('Failed to load chats');
+    } catch (error: any) {
+      console.error('❌ Error fetching chats:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        response: error?.response?.data
+      });
+      setError('Failed to load chats. Please try refreshing.');
+      setChats([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -495,25 +707,33 @@ export default function ModernChat() {
     const messageText = newMessage.trim();
     setNewMessage(''); // Clear input immediately for better UX
 
+    // Find the other user (receiver) - the one who is not the current user
+    const receiver = selectedChat.users?.find((user: any) => user._id !== auth.user._id) || selectedChat.users?.[0];
+    if (!receiver || !receiver._id) {
+      console.error('Receiver not found in chat users');
+      setNewMessage(messageText); // Restore text
+      return;
+    }
+
     // Add message to UI immediately for instant feedback
     const tempMessage = {
       _id: `temp_${Date.now()}`,
       idChat: selectedChat._id,
       message: messageText,
       sender: auth.user._id,
-      reciver: selectedChat.users[1]._id,
+      reciver: receiver._id,
       createdAt: new Date().toISOString(),
       isSocket: true
     };
 
     // Add message to UI instantly
     setMessages(prev => [...prev, tempMessage]);
-
+    
     const messageData = {
       idChat: selectedChat._id,
       message: messageText,
       sender: auth.user._id,
-      reciver: selectedChat.users[1]._id
+      reciver: receiver._id
     };
 
     // Emit socket message for real-time delivery
@@ -532,6 +752,14 @@ export default function ModernChat() {
               : msg
           )
         );
+        
+        // Update last message for this chat
+        if (selectedChat._id) {
+          setLastMessages((prev: Record<string, any>) => ({
+            ...prev,
+            [selectedChat._id]: { ...response, idChat: selectedChat._id }
+          }));
+        }
       }
       setSocketMessages([]);
       setError(null);
@@ -609,27 +837,137 @@ export default function ModernChat() {
   }, [combinedMessages]);
 
   useEffect(() => {
+    // Check URL query parameters first (for cross-app navigation from buyer app)
+    const urlParams = new URLSearchParams(window.location.search);
+    const userIdFromUrl = urlParams.get('userId') || urlParams.get('buyerId');
+    
     if (location.state?.chat) {
       handleChatSelect(location.state.chat);
+    } else if ((location.state?.userId || userIdFromUrl) && auth?.user?._id) {
+      // Handle opening chat with specific userId (from state or URL)
+      const openChatWithUser = async () => {
+        try {
+          const userId = location.state?.userId || userIdFromUrl;
+          console.log('💬 Opening chat with user:', userId, 'from:', location.state?.userId ? 'state' : 'URL');
+          
+          // Get all chats
+          const chatsResponse = await ChatAPI.getChats({
+            id: auth.user._id,
+            from: 'seller'
+          });
+          
+          // Find existing chat with this user
+          const existingChat = chatsResponse?.find((chat: any) => 
+            chat.users?.some((user: any) => {
+              const userIdStr = user._id?.toString() || user._id;
+              return userIdStr === userId?.toString() || userIdStr === userId;
+            })
+          );
+          
+          if (existingChat) {
+            // Open existing chat
+            console.log('✅ Found existing chat:', existingChat._id);
+            handleChatSelect(existingChat);
+            // Clean up URL parameters
+            if (userIdFromUrl) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          } else if (location.state?.createChat || userIdFromUrl) {
+            // Create new chat with this user (if createChat flag is set or coming from URL)
+            try {
+              console.log('📝 Creating new chat with user:', userId);
+              
+              // Fetch buyer user details
+              const buyerUser = await UserAPI.findById(userId);
+              
+              if (!buyerUser) {
+                console.error('❌ Buyer user not found:', userId);
+                return;
+              }
+              
+              // Create proper user objects for chat creation
+              const sellerUser = {
+                _id: auth.user._id,
+                firstName: auth.user.firstName || '',
+                lastName: auth.user.lastName || '',
+                AccountType: (auth.user as any).AccountType || 'seller',
+                phone: auth.user.phone || ''
+              };
+              
+              const buyerUserObj = {
+                _id: buyerUser._id || userId,
+                firstName: buyerUser.firstName || '',
+                lastName: buyerUser.lastName || '',
+                AccountType: buyerUser.AccountType || 'client',
+                phone: buyerUser.phone || ''
+              };
+              
+              const newChatResponse = await ChatAPI.createChat({
+                users: [sellerUser, buyerUserObj],
+                createdAt: new Date().toISOString()
+              });
+              
+              if (newChatResponse && newChatResponse._id) {
+                // Select the newly created chat
+                console.log('✅ Created new chat:', newChatResponse._id);
+                handleChatSelect(newChatResponse);
+                // Clean up URL parameters
+                if (userIdFromUrl) {
+                  window.history.replaceState({}, '', window.location.pathname);
+                }
+              } else {
+                // Fallback: refresh chats and find the new chat
+                await fetchChats();
+                const updatedChats = await ChatAPI.getChats({
+                  id: auth.user._id,
+                  from: 'seller'
+                });
+                const newChat = updatedChats?.find((chat: any) => 
+                  chat.users?.some((user: any) => {
+                    const userIdStr = user._id?.toString() || user._id;
+                    return userIdStr === userId?.toString() || userIdStr === userId;
+                  })
+                );
+                if (newChat) {
+                  handleChatSelect(newChat);
+                  // Clean up URL parameters
+                  if (userIdFromUrl) {
+                    window.history.replaceState({}, '', window.location.pathname);
+                  }
+                }
+              }
+            } catch (createError) {
+              console.error('❌ Error creating chat:', createError);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error opening chat with user:', error);
+        }
+      };
+      
+      openChatWithUser();
     }
-  }, [location.state]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, auth?.user?._id]);
 
   // Periodically merge socket messages into main messages to prevent accumulation
   useEffect(() => {
     if (socketMessages.length > 0) {
-      const timer = setTimeout(() => {
-        setMessages(prev => {
-          const newMessages = socketMessages.filter(socketMsg => 
-            !prev.some(msg => msg._id === socketMsg._id)
-          );
-          return [...prev, ...newMessages];
-        });
-        setSocketMessages([]);
-      }, 1000); // Merge after 1 second
-      
-      return () => clearTimeout(timer);
+      // Merge socket messages immediately for the selected chat
+      setMessages(prev => {
+        const newMessages = socketMessages.filter(socketMsg => 
+          socketMsg.idChat === selectedChat?._id && // Only merge messages for selected chat
+          !prev.some(msg => msg._id === socketMsg._id)
+        );
+        return newMessages.length > 0 ? [...prev, ...newMessages] : prev;
+      });
+      // Clear processed messages
+      const filtered = socketMessages.filter((msg: any) => msg.idChat !== selectedChat?._id);
+      if (filtered.length !== socketMessages.length) {
+        setSocketMessages(filtered);
+      }
     }
-  }, [socketMessages]);
+  }, [socketMessages, selectedChat?._id]);
 
   // Listen for real-time messages
   useEffect(() => {
@@ -637,44 +975,63 @@ export default function ModernChat() {
 
     const handleNewMessage = (data: any) => {
       console.log('📨 New message received:', data);
-      if (data.idChat === selectedChat?._id) {
-        // Add to socket messages instead of main messages to avoid duplicates
-        const newMessage = {
-          _id: data._id,
-          idChat: data.idChat,
-          message: data.message,
-          sender: data.sender,
-          reciver: data.reciver,
-          createdAt: data.createdAt
-        };
-        
-        // Check if message already exists to avoid duplicates
-        const currentMessages = socketMessages || [];
-        const exists = currentMessages.some(msg => msg._id === data._id);
-        if (!exists) {
-          setSocketMessages([...currentMessages, newMessage]);
+      // Check if message is for any of the user's chats, not just the selected one
+      const isForUserChat = chats.some(chat => chat._id === data.idChat);
+      
+      if (isForUserChat) {
+        // If it's for the selected chat, add it directly to messages immediately
+        if (data.idChat === selectedChat?._id) {
+          const newMessage = {
+            _id: data._id,
+            idChat: data.idChat,
+            message: data.message,
+            sender: data.sender,
+            reciver: data.reciver,
+            createdAt: data.createdAt
+          };
+          
+          // Add directly to messages state for immediate display
+          setMessages(prev => {
+            const exists = prev.some(msg => msg._id === data._id);
+            return exists ? prev : [...prev, newMessage];
+          });
         }
+        // Refresh chat list to show unread indicator even if chat is not selected
+        fetchChats();
       }
     };
 
     const handleBuyerToSellerMessage = (data: any) => {
       console.log('📨 Buyer to seller message received:', data);
-      if (data.chatId === selectedChat?._id) {
+      // Check if message is for any of the user's chats
+      const isForUserChat = chats.some(chat => chat._id === data.chatId);
+      
+      if (isForUserChat) {
         const newMessage = {
-          _id: data.messageId,
+          _id: data.messageId || data._id,
           idChat: data.chatId,
           message: data.message,
           sender: data.sender,
           reciver: data.reciver,
-          createdAt: data.timestamp
+          createdAt: data.timestamp || data.createdAt
         };
         
-        // Check if message already exists to avoid duplicates
-        const currentMessages = socketMessages || [];
-        const exists = currentMessages.some(msg => msg._id === data.messageId);
-        if (!exists) {
-          setSocketMessages([...currentMessages, newMessage]);
+        // Update last message for this chat
+        setLastMessages((prev: Record<string, any>) => ({
+          ...prev,
+          [data.chatId]: newMessage
+        }));
+        
+        // If it's for the selected chat, add it directly to messages immediately
+        if (data.chatId === selectedChat?._id) {
+          // Add directly to messages state for immediate display
+          setMessages(prev => {
+            const exists = prev.some(msg => msg._id === newMessage._id);
+            return exists ? prev : [...prev, newMessage];
+          });
         }
+        // Refresh chat list to show unread indicator even if chat is not selected
+        fetchChats();
       }
     };
 
@@ -716,6 +1073,14 @@ export default function ModernChat() {
         const exists = currentMessages.some(msg => msg._id === data._id);
         if (!exists) {
           setSocketMessages([...currentMessages, newMessage]);
+          
+          // Update last message if this is for a chat in our list
+          if (data.idChat && chats.some((chat: any) => chat._id === data.idChat)) {
+            setLastMessages((prev: Record<string, any>) => ({
+              ...prev,
+              [data.idChat]: newMessage
+            }));
+          }
         }
       }
     };
@@ -732,13 +1097,45 @@ export default function ModernChat() {
       socket.off('chatMessageUpdate', handleChatMessageUpdate);
       socket.off('adminMessage', handleAdminMessage);
     };
-  }, [socket, selectedChat?._id]);
+  }, [socket, selectedChat?._id, chats]);
 
   // ===== UTILITY FUNCTIONS =====
 
   const formatTime = (dateStr) => {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    // If less than 1 minute ago
+    if (diffMins < 1) return 'Just now';
+    // If less than 1 hour ago
+    if (diffMins < 60) return `${diffMins}m ago`;
+    // If less than 24 hours ago
+    if (diffHours < 24) return `${diffHours}h ago`;
+    // If less than 7 days ago
+    if (diffDays < 7) return `${diffDays}d ago`;
+    // Otherwise show date
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+  
+  const formatTimeShort = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const isYesterday = new Date(now.getTime() - 86400000).toDateString() === date.toDateString();
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (isYesterday) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
   };
 
   const getChatNotificationStatus = (chatId) => {
@@ -757,18 +1154,90 @@ export default function ModernChat() {
     return { isNew, hasUnread, unreadCount };
   };
 
-  const filteredChats = chats.filter(chat => {
-    if (!searchQuery) return true;
-    const user = chat.users[1];
-    return user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           user.lastName.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const filteredChats = useMemo(() => {
+    console.log('Filtering chats. Total chats:', chats.length, 'Search query:', searchQuery);
+    
+    let filtered = chats.filter(chat => {
+      if (!searchQuery) return true;
+      // Find the other user (not the current user)
+      const otherUser = chat.users?.find((user: any) => user._id !== auth?.user?._id) || chat.users?.[0];
+      if (!otherUser) return false;
+      const nameMatch = (otherUser.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        (otherUser.lastName || '').toLowerCase().includes(searchQuery.toLowerCase());
+      // Also search in last message
+      const lastMessage = lastMessages[chat._id];
+      const messageMatch = lastMessage?.message?.toLowerCase().includes(searchQuery.toLowerCase());
+      return nameMatch || messageMatch;
+    });
+    
+    console.log('Filtered chats count:', filtered.length);
+    
+    // Maintain sort order by most recent activity
+    const sorted = filtered.sort((a: any, b: any) => {
+      const lastMsgA = lastMessages[a._id];
+      const lastMsgB = lastMessages[b._id];
+      
+      const timeA = lastMsgA 
+        ? new Date(lastMsgA.createdAt || 0).getTime()
+        : new Date(a.createdAt || 0).getTime();
+      const timeB = lastMsgB
+        ? new Date(lastMsgB.createdAt || 0).getTime()
+        : new Date(b.createdAt || 0).getTime();
+      
+      return timeB - timeA; // Most recent first
+    });
+    
+    return sorted;
+  }, [chats, searchQuery, lastMessages, auth?.user?._id]);
 
   // ===== RENDER FUNCTIONS =====
 
   const renderContactCard = (chat, index) => {
     const notificationStatus = getChatNotificationStatus(chat._id);
     const isActive = selectedChat?._id === chat._id;
+    const lastMessage = lastMessages[chat._id];
+    
+    // Find the other user (not the current user) - handle both string and ObjectId formats
+    const currentUserId = auth?.user?._id?.toString() || auth?.user?._id;
+    const otherUser = chat.users?.find((user: any) => {
+      const userId = user._id?.toString() || user._id;
+      return userId !== currentUserId;
+    }) || chat.users?.[0];
+    
+    if (!otherUser) {
+      console.warn('⚠️ Chat has no other user:', {
+        chatId: chat._id,
+        users: chat.users,
+        currentUserId: currentUserId
+      });
+      return null;
+    }
+    
+    // Ensure user data is properly formatted
+    const formattedOtherUser = {
+      _id: otherUser._id?.toString() || otherUser._id,
+      firstName: otherUser.firstName || '',
+      lastName: otherUser.lastName || '',
+      AccountType: otherUser.AccountType || '',
+      phone: otherUser.phone || ''
+    };
+    
+    // Determine last message preview text
+    let lastMessageText = '';
+    let lastMessageTime = chat.createdAt;
+    
+    if (lastMessage) {
+      lastMessageTime = lastMessage.createdAt;
+      const isLastMessageFromMe = lastMessage.sender === auth?.user?._id;
+      const messageText = lastMessage.message || '';
+      // Truncate to 50 characters
+      const truncatedText = messageText.length > 50 
+        ? messageText.substring(0, 50) + '...' 
+        : messageText;
+      lastMessageText = isLastMessageFromMe ? `You: ${truncatedText}` : truncatedText;
+    } else {
+      lastMessageText = 'No messages yet';
+    }
 
     return (
       <motion.div
@@ -788,16 +1257,19 @@ export default function ModernChat() {
               <Avatar
                 src={imageBuyer}
                 sx={{
-                  width: 50,
-                  height: 50,
+                  width: 52,
+                  height: 52,
                   border: isActive 
-                    ? '3px solid rgba(255,255,255,0.8)' 
+                    ? '3px solid rgba(102, 126, 234, 0.5)' 
                     : notificationStatus.hasUnread 
-                      ? '2px solid rgba(255,255,255,0.6)'
-                      : '2px solid rgba(255,255,255,0.3)',
+                      ? '2px solid rgba(102, 126, 234, 0.4)'
+                      : '2px solid rgba(0, 0, 0, 0.08)',
                   boxShadow: notificationStatus.isNew 
-                    ? '0 0 20px rgba(255,255,255,0.3)' 
-                    : '0 4px 16px rgba(0,0,0,0.1)',
+                    ? '0 0 20px rgba(102, 126, 234, 0.3)' 
+                    : isActive
+                      ? '0 4px 16px rgba(102, 126, 234, 0.2)'
+                      : '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  transition: 'all 0.3s ease',
                 }}
               />
               {notificationStatus.hasUnread && (
@@ -824,12 +1296,12 @@ export default function ModernChat() {
                   variant="subtitle1"
                   fontWeight={isActive ? 700 : notificationStatus.hasUnread ? 600 : 500}
                   sx={{
-                    color: 'white',
-                    opacity: isActive ? 1 : notificationStatus.hasUnread ? 0.9 : 0.8,
+                    color: isActive ? '#667eea' : '#2d3748',
+                    fontSize: '0.95rem',
                   }}
                   noWrap
                 >
-                  {chat.users[1].firstName} {chat.users[1].lastName}
+                  {formattedOtherUser.firstName} {formattedOtherUser.lastName}
                   {notificationStatus.isNew && (
                     <Chip
                       label="New"
@@ -837,36 +1309,38 @@ export default function ModernChat() {
                       sx={{
                         ml: 1,
                         fontSize: '0.6rem',
-                        height: '16px',
-                        background: 'rgba(255,255,255,0.2)',
+                        height: '18px',
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
                         color: 'white',
                         fontWeight: 'bold',
+                        boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)',
                       }}
                     />
                   )}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                  sx={{ 
+                    color: isActive ? 'rgba(102, 126, 234, 0.7)' : 'rgba(0, 0, 0, 0.5)', 
+                    fontSize: '0.7rem',
+                    fontWeight: 500,
+                  }}
                 >
-                  {formatTime(chat.createdAt)}
+                  {formatTimeShort(lastMessageTime)}
                 </Typography>
               </Box>
               
               <Typography
                 variant="body2"
                 sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  opacity: notificationStatus.hasUnread ? 1 : 0.7,
+                  color: isActive ? 'rgba(102, 126, 234, 0.8)' : (notificationStatus.hasUnread ? '#2d3748' : 'rgba(0, 0, 0, 0.6)'),
+                  fontWeight: notificationStatus.hasUnread ? 500 : 400,
+                  fontSize: '0.8rem',
+                  mt: 0.5,
                 }}
                 noWrap
               >
-                {notificationStatus.isNew 
-                  ? 'New conversation started'
-                  : notificationStatus.hasUnread 
-                    ? `${notificationStatus.unreadCount} unread messages`
-                    : 'No new messages'
-                }
+                {lastMessageText}
               </Typography>
             </Box>
           </Box>
@@ -886,7 +1360,7 @@ export default function ModernChat() {
         transition={{ delay: index * 0.05 }}
         style={{
           display: 'flex',
-          justifyContent: isSender ? 'flex-end' : 'flex-start',
+          justifyContent: isSender ? 'flex-start' : 'flex-end',
           marginBottom: theme.spacing(1),
         }}
       >
@@ -968,23 +1442,41 @@ export default function ModernChat() {
       <SidebarContainer className={sidebarOpen ? 'open' : ''}>
         <SidebarHeader>
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-            <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
+            <Typography variant="h6" fontWeight={700} sx={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
               {t('chat.title')}
             </Typography>
             <Box display="flex" gap={1}>
               <IconButton 
                 onClick={fetchChats}
-                sx={{ color: 'white' }}
+                sx={{ 
+                  color: '#667eea',
+                  '&:hover': { 
+                    background: 'rgba(102, 126, 234, 0.1)',
+                    transform: 'rotate(180deg)',
+                    transition: 'transform 0.5s ease',
+                  }
+                }}
               >
                 <RefreshRounded />
               </IconButton>
-              <IconButton sx={{ color: 'white' }}>
+              <IconButton sx={{ 
+                color: '#667eea',
+                '&:hover': { background: 'rgba(102, 126, 234, 0.1)' }
+              }}>
                 <MoreVertRounded />
               </IconButton>
               {isMobile && (
                 <IconButton 
                   onClick={() => setSidebarOpen(false)}
-                  sx={{ color: 'white' }}
+                  sx={{ 
+                    color: '#667eea',
+                    '&:hover': { background: 'rgba(102, 126, 234, 0.1)' }
+                  }}
                 >
                   <CloseRounded />
                 </IconButton>
@@ -1001,28 +1493,31 @@ export default function ModernChat() {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRounded sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                  <SearchRounded sx={{ color: 'rgba(102, 126, 234, 0.6)' }} />
                 </InputAdornment>
               ),
               sx: {
                 borderRadius: '20px',
-                background: 'rgba(255,255,255,0.1)',
-                color: 'white',
+                background: 'rgba(255, 255, 255, 0.9)',
+                border: '1px solid rgba(102, 126, 234, 0.2)',
                 '& input': {
-                  color: 'white',
+                  color: '#2d3748',
                   '&::placeholder': {
-                    color: 'rgba(255,255,255,0.7)',
+                    color: 'rgba(102, 126, 234, 0.5)',
                     opacity: 1,
                   },
                 },
                 '& fieldset': {
-                  borderColor: 'rgba(255,255,255,0.2)',
+                  border: 'none',
                 },
-                '&:hover fieldset': {
-                  borderColor: 'rgba(255,255,255,0.3)',
+                '&:hover': {
+                  background: 'rgba(255, 255, 255, 1)',
+                  borderColor: 'rgba(102, 126, 234, 0.3)',
                 },
-                '&.Mui-focused fieldset': {
-                  borderColor: 'rgba(255,255,255,0.5)',
+                '&.Mui-focused': {
+                  background: 'rgba(255, 255, 255, 1)',
+                  borderColor: 'rgba(102, 126, 234, 0.5)',
+                  boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
                 },
               }
             }}
@@ -1030,19 +1525,38 @@ export default function ModernChat() {
         </SidebarHeader>
 
         <ContactsList>
-          {loading && filteredChats.length === 0 ? (
-            <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-              <CircularProgress sx={{ color: 'white' }} />
+          {loading && chats.length === 0 ? (
+            <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" height="100%" gap={2}>
+              <CircularProgress sx={{ color: '#667eea' }} />
+              <Typography variant="body2" sx={{ color: 'rgba(102, 126, 234, 0.7)' }}>
+                Loading conversations...
+              </Typography>
             </Box>
           ) : filteredChats.length > 0 ? (
-            <AnimatePresence>
-              {filteredChats.map((chat, index) => renderContactCard(chat, index))}
-            </AnimatePresence>
+            <Box>
+              {filteredChats.map((chat, index) => {
+                const card = renderContactCard(chat, index);
+                return card; // Filter out null cards
+              }).filter(Boolean)}
+            </Box>
+          ) : chats.length > 0 && searchQuery ? (
+            <EmptyState>
+              <ChatRounded sx={{ fontSize: 48, color: 'rgba(102, 126, 234, 0.3)', mb: 2 }} />
+              <Typography variant="body1" sx={{ color: '#2d3748', mb: 1, fontWeight: 500 }}>
+                No conversations match your search
+              </Typography>
+            </EmptyState>
           ) : (
             <EmptyState>
-              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                No conversations found
+              <ChatRounded sx={{ fontSize: 48, color: 'rgba(102, 126, 234, 0.3)', mb: 2 }} />
+              <Typography variant="body1" sx={{ color: '#2d3748', mb: 1, fontWeight: 500 }}>
+                {searchQuery ? 'No conversations match your search' : 'No conversations yet'}
               </Typography>
+              {!searchQuery && (
+                <Typography variant="body2" sx={{ color: 'rgba(0, 0, 0, 0.5)' }}>
+                  Start a conversation from an order notification
+                </Typography>
+              )}
             </EmptyState>
           )}
         </ContactsList>
@@ -1065,7 +1579,14 @@ export default function ModernChat() {
                 />
                 <Box>
                   <Typography variant="h6" fontWeight={600}>
-                    {selectedChat.users[1].firstName} {selectedChat.users[1].lastName}
+                    {(() => {
+                      const currentUserId = auth?.user?._id?.toString() || auth?.user?._id;
+                      const otherUser = selectedChat.users?.find((user: any) => {
+                        const userId = user._id?.toString() || user._id;
+                        return userId !== currentUserId;
+                      }) || selectedChat.users?.[0];
+                      return otherUser ? `${otherUser.firstName || ''} ${otherUser.lastName || ''}`.trim() || 'Unknown User' : 'Unknown User';
+                    })()}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Online now
@@ -1088,7 +1609,7 @@ export default function ModernChat() {
             <MessagesContainer ref={chatContentRef}>
               {loading ? (
                 <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                  <CircularProgress sx={{ color: '#0063b1' }} />
+                  <CircularProgress sx={{ color: '#667eea' }} />
                 </Box>
               ) : combinedMessages.length > 0 ? (
                 <>
@@ -1099,11 +1620,11 @@ export default function ModernChat() {
                 </>
               ) : (
                 <EmptyState>
-                  <ChatRounded sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
-                  <Typography variant="h6" gutterBottom fontWeight={600}>
+                  <ChatRounded sx={{ fontSize: 64, color: 'rgba(102, 126, 234, 0.3)', mb: 2 }} />
+                  <Typography variant="h6" gutterBottom fontWeight={600} sx={{ color: '#2d3748' }}>
                     No messages yet
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: 'rgba(0, 0, 0, 0.5)' }}>
                     Start the conversation by sending a message below
                   </Typography>
                 </EmptyState>
@@ -1146,13 +1667,20 @@ export default function ModernChat() {
                   onClick={sendMessage}
                   sx={{
                     background: newMessage.trim() 
-                      ? 'linear-gradient(45deg, #0063b1, #3366FF)' 
-                      : '#ccc',
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : '#e2e8f0',
                     color: 'white',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
                       background: newMessage.trim() 
-                        ? 'linear-gradient(45deg, #103996, #1939B7)' 
-                        : '#ccc',
+                        ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' 
+                        : '#e2e8f0',
+                      transform: 'scale(1.1)',
+                      boxShadow: newMessage.trim() ? '0 4px 12px rgba(102, 126, 234, 0.4)' : 'none',
+                    },
+                    '&:disabled': {
+                      background: '#e2e8f0',
+                      color: '#cbd5e0',
                     },
                   }}
                 >
@@ -1163,11 +1691,11 @@ export default function ModernChat() {
           </>
         ) : (
           <EmptyState>
-            <ChatRounded sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
-            <Typography variant="h6" gutterBottom fontWeight={600}>
+            <ChatRounded sx={{ fontSize: 64, color: 'rgba(102, 126, 234, 0.3)', mb: 2 }} />
+            <Typography variant="h6" gutterBottom fontWeight={600} sx={{ color: '#2d3748' }}>
               Select a conversation
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'rgba(0, 0, 0, 0.5)' }}>
               Choose a chat from the sidebar to start messaging
             </Typography>
           </EmptyState>

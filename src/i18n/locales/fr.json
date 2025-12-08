@@ -245,7 +245,8 @@
     "currentlyInBuyerMode": "Vous êtes actuellement en mode acheteur",
     "seller": "Vendeur",
     "sellerType": "Vendeur",
-    "buyerType": "Acheteur"
+    "buyerType": "Acheteur",
+    "account": "Compte"
   },
   "auctions": {
     "details": "Détails de l'enchère",
@@ -624,54 +625,6 @@
       "verification_note": "Vérification d'identité requise pour les comptes professionnels"
     }
   },
-  "directSales": {
-    "createTitle": "Créer une vente directe",
-    "createSubtitle": "Vendez vos produits et services à prix fixe",
-    "step": "Étape {{current}} sur {{total}}",
-    "progress": "{{percent}}% terminé",
-    "myDirectSales": "Mes ventes directes",
-    "loadError": "Erreur lors du chargement des ventes directes",
-    "create": {
-      "step1": {
-        "type": "Type",
-        "title": "Choisissez le type",
-        "description": "Choisissez le type",
-        "productDesc": "Vendre des objets physiques",
-        "serviceDesc": "Offrir vos services"
-      },
-      "step2": {
-        "description": "Sélectionnez la catégorie"
-      },
-      "step3": {
-        "description": "Remplissez les informations"
-      },
-      "form": {
-        "title": "Titre",
-        "description": "Description",
-        "price": "Prix (DA)",
-        "quantity": "Quantité (0 = illimité)",
-        "quantityHelper": "Mettez 0 pour quantité illimitée",
-        "wilaya": "Wilaya",
-        "selectWilaya": "Sélectionnez une wilaya",
-        "place": "Lieu",
-        "professionalSale": "Vente professionnelle",
-        "anonymousSale": "Vente anonyme",
-        "imagesAndVideos": "Images et vidéos"
-      },
-      "errors": {
-        "titleMinLength": "Le titre doit contenir au moins 3 caractères",
-        "titleRequired": "Le titre est requis",
-        "descriptionMinLength": "La description doit contenir au moins 10 caractères",
-        "descriptionRequired": "La description est requise",
-        "priceRequired": "Le prix est requis",
-        "pricePositive": "Le prix doit être positif",
-        "quantityRequired": "La quantité est requise",
-        "quantityPositive": "La quantité doit être positive",
-        "wilayaRequired": "La wilaya est requise",
-        "placeRequired": "Le lieu est requis"
-      }
-    }
-  },
   "tenders": {
     "mySubmissions": "Mes soumissions",
     "submissionDate": "Date de soumission"
@@ -792,7 +745,9 @@
     "cancel": "Annuler",
     "loadError": "Erreur lors du chargement des commandes",
     "confirmError": "Erreur lors de la confirmation",
-    "confirmSuccess": "Commande confirmée avec succès"
+    "confirmSuccess": "Commande confirmée avec succès",
+    "viewDetails": "Voir détails",
+    "phoneNotAvailable": "Téléphone non disponible"
   },
   "directSales": {
     "createTitle": "Créer une vente directe",
@@ -806,6 +761,7 @@
     "noDirectSales": "Aucune vente directe",
     "noDirectSalesDescription": "Commencez par créer votre première vente directe",
     "table": {
+      "ariaLabel": "Tableau des ventes directes",
       "title": "Titre",
       "description": "Description",
       "price": "Prix",
@@ -825,9 +781,6 @@
     "unlimited": "Illimité",
     "deleteSuccess": "Vente directe supprimée avec succès",
     "deleteError": "Erreur lors de la suppression",
-    "table": {
-      "ariaLabel": "Tableau des ventes directes"
-    },
     "detail": {
       "title": "Détails de la vente directe",
       "notFound": "Vente directe introuvable",
@@ -855,8 +808,10 @@
       "loadPurchasesError": "Erreur lors du chargement des commandes",
       "table": {
         "buyer": "Acheteur",
-        "totalPrice": "Prix total"
+        "totalPrice": "Prix total",
+        "status": "Statut"
       },
+      "place": "Lieu",
       "status": {
         "refunded": "Remboursé"
       }

@@ -239,7 +239,8 @@
     "currentlyInBuyerMode": "أنت حاليًا في وضع المشتري",
     "seller": "بائع",
     "sellerType": "بائع",
-    "buyerType": "مشتري"
+    "buyerType": "مشتري",
+    "account": "حساب"
   },
   "auctions": {
     "details": "تفاصيل المزاد",
@@ -1108,70 +1109,6 @@
     "submitSuccess": "تم إرسال التقييم بنجاح",
     "alreadyReviewed": "لقد قمت بتقييم هذا المستخدم من قبل"
   },
-  "directSales": {
-    "createTitle": "إنشاء بيع مباشر",
-    "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
-    "step": "الخطوة {{current}} من {{total}}",
-    "progress": "{{percent}}% مكتمل",
-    "create": {
-      "step1": {
-        "type": "النوع",
-        "title": "اختر النوع",
-        "description": "اختر النوع",
-        "productDesc": "بيع الأشياء المادية",
-        "serviceDesc": "تقديم خدماتك"
-      },
-      "step2": {
-        "description": "اختر الفئة"
-      },
-      "step3": {
-        "description": "املأ المعلومات"
-      },
-      "form": {
-        "title": "العنوان",
-        "description": "الوصف",
-        "price": "السعر (دج)",
-        "quantity": "الكمية (0 = غير محدود)",
-        "quantityHelper": "ضع 0 للكمية غير المحدودة",
-        "wilaya": "الولاية",
-        "selectWilaya": "اختر ولاية",
-        "place": "المكان",
-        "professionalSale": "بيع احترافي",
-        "anonymousSale": "بيع مجهول",
-        "imagesAndVideos": "الصور والفيديوهات"
-      },
-      "errors": {
-        "titleMinLength": "يجب أن يحتوي العنوان على 3 أحرف على الأقل",
-        "titleRequired": "العنوان مطلوب",
-        "descriptionMinLength": "يجب أن تحتوي الوصف على 10 أحرف على الأقل",
-        "descriptionRequired": "الوصف مطلوب",
-        "invalidType": "نوع غير صالح",
-        "typeRequired": "النوع مطلوب",
-        "categoryRequired": "الفئة مطلوبة",
-        "pricePositive": "يجب أن يكون السعر موجباً",
-        "priceRequired": "السعر مطلوب",
-        "wilayaRequired": "الولاية مطلوبة",
-        "placeRequired": "المكان مطلوب",
-        "quantityNegative": "لا يمكن أن تكون الكمية سالبة",
-        "selectType": "يرجى اختيار نوع",
-        "selectCategory": "يرجى اختيار فئة",
-        "selectTypeFirst": "يرجى أولاً اختيار نوع البيع",
-        "noImages": "يرجى تحميل صورة واحدة على الأقل أو فيديو",
-        "lowRating": "تقييمك منخفض جداً، لا يمكنك إنشاء بيع مباشر",
-        "loadCategoriesFailed": "خطأ في تحميل الفئات",
-        "createFailed": "خطأ في إنشاء البيع المباشر"
-      },
-      "success": {
-        "created": "تم إنشاء البيع المباشر بنجاح!"
-      },
-      "createButton": "إنشاء البيع المباشر",
-      "confirmDialog": {
-        "title": "تأكيد الإنشاء",
-        "message": "هل أنت متأكد من رغبتك في إنشاء هذا البيع المباشر؟ بمجرد إنشائه، سيكون مرئياً لجميع المشترين.",
-        "confirm": "تأكيد"
-      }
-    }
-  },
   "createTender": {
     "title": "إنشاء طلب عروض",
     "pageTitle": "إنشاء طلب عروض جديد",
@@ -1250,14 +1187,6 @@
       "message": "هل تريد حقاً إنشاء طلب العروض هذا؟"
     }
   },
-  "directSales": {
-    "createTitle": "إنشاء بيع مباشر",
-    "createSubtitle": "بيع منتجاتك وخدماتك بأسعار ثابتة",
-    "step": "الخطوة {{current}} من {{total}}",
-    "progress": "{{percent}}% مكتمل",
-    "myDirectSales": "مبيعاتي المباشرة",
-    "loadError": "خطأ في تحميل المبيعات المباشرة"
-  },
   "tenders": {
     "mySubmissions": "طلبات العروض الخاصة بي",
     "submissionDate": "تاريخ التقديم",
@@ -1309,6 +1238,8 @@
     "total": "الإجمالي:",
     "cancel": "إلغاء",
     "loadError": "خطأ في تحميل الطلبات",
+    "viewDetails": "عرض التفاصيل",
+    "phoneNotAvailable": "الهاتف غير متاح",
     "confirmError": "خطأ في تأكيد الطلب",
     "confirmSuccess": "تم تأكيد الطلب بنجاح"
   },
@@ -1324,6 +1255,7 @@
     "noDirectSales": "لا توجد مبيعات مباشرة",
     "noDirectSalesDescription": "ابدأ بإنشاء أول بيع مباشر",
     "table": {
+      "ariaLabel": "جدول المبيعات المباشرة",
       "title": "العنوان",
       "description": "الوصف",
       "price": "السعر",
@@ -1343,8 +1275,63 @@
     "unlimited": "غير محدود",
     "deleteSuccess": "تم حذف البيع المباشر بنجاح",
     "deleteError": "خطأ في حذف البيع المباشر",
-    "table": {
-      "ariaLabel": "جدول المبيعات المباشرة"
+    "create": {
+      "step1": {
+        "type": "النوع",
+        "title": "اختر النوع",
+        "description": "اختر النوع",
+        "productDesc": "بيع الأشياء المادية",
+        "serviceDesc": "تقديم خدماتك"
+      },
+      "step2": {
+        "description": "اختر الفئة"
+      },
+      "step3": {
+        "description": "املأ المعلومات"
+      },
+      "form": {
+        "title": "العنوان",
+        "description": "الوصف",
+        "price": "السعر (دج)",
+        "quantity": "الكمية (0 = غير محدود)",
+        "quantityHelper": "ضع 0 للكمية غير المحدودة",
+        "wilaya": "الولاية",
+        "selectWilaya": "اختر ولاية",
+        "place": "المكان",
+        "professionalSale": "بيع احترافي",
+        "anonymousSale": "بيع مجهول",
+        "imagesAndVideos": "الصور والفيديوهات"
+      },
+      "errors": {
+        "titleMinLength": "يجب أن يحتوي العنوان على 3 أحرف على الأقل",
+        "titleRequired": "العنوان مطلوب",
+        "descriptionMinLength": "يجب أن تحتوي الوصف على 10 أحرف على الأقل",
+        "descriptionRequired": "الوصف مطلوب",
+        "invalidType": "نوع غير صالح",
+        "typeRequired": "النوع مطلوب",
+        "categoryRequired": "الفئة مطلوبة",
+        "pricePositive": "يجب أن يكون السعر موجباً",
+        "priceRequired": "السعر مطلوب",
+        "wilayaRequired": "الولاية مطلوبة",
+        "placeRequired": "المكان مطلوب",
+        "quantityNegative": "لا يمكن أن تكون الكمية سالبة",
+        "selectType": "يرجى اختيار نوع",
+        "selectCategory": "يرجى اختيار فئة",
+        "selectTypeFirst": "يرجى أولاً اختيار نوع البيع",
+        "noImages": "يرجى تحميل صورة واحدة على الأقل أو فيديو",
+        "lowRating": "تقييمك منخفض جداً، لا يمكنك إنشاء بيع مباشر",
+        "loadCategoriesFailed": "خطأ في تحميل الفئات",
+        "createFailed": "خطأ في إنشاء البيع المباشر"
+      },
+      "success": {
+        "created": "تم إنشاء البيع المباشر بنجاح!"
+      },
+      "createButton": "إنشاء البيع المباشر",
+      "confirmDialog": {
+        "title": "تأكيد الإنشاء",
+        "message": "هل أنت متأكد من رغبتك في إنشاء هذا البيع المباشر؟ بمجرد إنشائه، سيكون مرئياً لجميع المشترين.",
+        "confirm": "تأكيد"
+      }
     },
     "detail": {
       "title": "تفاصيل البيع المباشر",
@@ -1373,8 +1360,10 @@
       "loadPurchasesError": "خطأ في تحميل الطلبات",
       "table": {
         "buyer": "المشتري",
-        "totalPrice": "السعر الإجمالي"
+        "totalPrice": "السعر الإجمالي",
+        "status": "الحالة"
       },
+      "place": "المكان",
       "status": {
         "refunded": "مسترد"
       }

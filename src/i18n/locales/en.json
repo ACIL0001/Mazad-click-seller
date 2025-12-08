@@ -239,7 +239,8 @@
     "currentlyInBuyerMode": "You are currently in buyer mode",
     "seller": "Seller",
     "sellerType": "Seller",
-    "buyerType": "Buyer"
+    "buyerType": "Buyer",
+    "account": "Account"
   },
   "auctions": {
     "details": "Auction Details",
@@ -938,6 +939,62 @@
       "message": "Do you really want to create this tender?"
     }
   },
+  "tenders": {
+    "mySubmissions": "My Submissions",
+    "submissionDate": "Submission Date",
+    "pageTitle": "Tenders",
+    "currentOffer": "Current Offer",
+    "noTenders": "No tenders at the moment",
+    "noTendersDescription": "You haven't created any tenders yet. Create your first tender to start receiving proposals.",
+    "createFirstTender": "Create my first tender",
+    "errors": {
+      "sessionExpired": "Session expired. Please log in again.",
+      "accessDenied": "Access denied to tenders.",
+      "genericError": "Error: {message}",
+      "loadFailed": "Unable to load tenders. Please try again."
+    },
+    "auctionType": {
+      "classic": "Classic",
+      "express": "Express"
+    }
+  },
+  "orders": {
+    "title": "My Orders",
+    "description": "Manage orders received for your direct sales",
+    "loading": "Loading...",
+    "noOrders": "No orders",
+    "noOrdersDescription": "You haven't received any orders yet",
+    "table": {
+      "product": "Product",
+      "buyer": "Buyer",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "total": "Total",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "unknownProduct": "Unknown product",
+    "unknownBuyer": "Unknown buyer",
+    "emailNotAvailable": "Email not available",
+    "confirm": "Confirm",
+    "confirmOrder": "Confirm Order",
+    "confirmOrderMessage": "Are you sure you want to confirm the order from {buyer} for \"{product}\"?",
+    "quantity": "Quantity:",
+    "total": "Total:",
+    "cancel": "Cancel",
+    "loadError": "Error loading orders",
+    "viewDetails": "View Details",
+    "phoneNotAvailable": "Phone not available",
+    "confirmError": "Error confirming order",
+    "confirmSuccess": "Order confirmed successfully"
+  },
   "directSales": {
     "createTitle": "Create Direct Sale",
     "createSubtitle": "Sell your products and services at fixed prices",
@@ -945,6 +1002,31 @@
     "progress": "{{percent}}% completed",
     "myDirectSales": "My Direct Sales",
     "loadError": "Error loading direct sales",
+    "createDirectSale": "Create Direct Sale",
+    "loading": "Loading...",
+    "noDirectSales": "No direct sales",
+    "noDirectSalesDescription": "Start by creating your first direct sale",
+    "table": {
+      "ariaLabel": "Direct sales table",
+      "title": "Title",
+      "description": "Description",
+      "price": "Price",
+      "quantity": "Quantity",
+      "status": "Status",
+      "createdAt": "Creation Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "soldOut": "Sold Out",
+      "inactive": "Inactive"
+    },
+    "viewDetails": "View Details",
+    "deleteTitle": "Delete Direct Sale",
+    "deleteMessage": "Are you sure you want to delete \"{title}\"? This action is irreversible.",
+    "unlimited": "Unlimited",
+    "deleteSuccess": "Direct sale deleted successfully",
+    "deleteError": "Error deleting direct sale",
     "create": {
       "step1": {
         "type": "Type",
@@ -1002,95 +1084,6 @@
         "message": "Are you sure you want to create this direct sale? Once created, it will be visible to all buyers.",
         "confirm": "Confirm"
       }
-    }
-  },
-  "tenders": {
-    "mySubmissions": "My Submissions",
-    "submissionDate": "Submission Date",
-    "pageTitle": "Tenders",
-    "currentOffer": "Current Offer",
-    "noTenders": "No tenders at the moment",
-    "noTendersDescription": "You haven't created any tenders yet. Create your first tender to start receiving proposals.",
-    "createFirstTender": "Create my first tender",
-    "errors": {
-      "sessionExpired": "Session expired. Please log in again.",
-      "accessDenied": "Access denied to tenders.",
-      "genericError": "Error: {message}",
-      "loadFailed": "Unable to load tenders. Please try again."
-    },
-    "auctionType": {
-      "classic": "Classic",
-      "express": "Express"
-    }
-  },
-  "orders": {
-    "title": "My Orders",
-    "description": "Manage orders received for your direct sales",
-    "loading": "Loading...",
-    "noOrders": "No orders",
-    "noOrdersDescription": "You haven't received any orders yet",
-    "table": {
-      "product": "Product",
-      "buyer": "Buyer",
-      "quantity": "Quantity",
-      "unitPrice": "Unit Price",
-      "total": "Total",
-      "status": "Status",
-      "date": "Date",
-      "actions": "Actions"
-    },
-    "status": {
-      "confirmed": "Confirmed",
-      "pending": "Pending",
-      "cancelled": "Cancelled",
-      "completed": "Completed"
-    },
-    "unknownProduct": "Unknown product",
-    "unknownBuyer": "Unknown buyer",
-    "emailNotAvailable": "Email not available",
-    "confirm": "Confirm",
-    "confirmOrder": "Confirm Order",
-    "confirmOrderMessage": "Are you sure you want to confirm the order from {buyer} for \"{product}\"?",
-    "quantity": "Quantity:",
-    "total": "Total:",
-    "cancel": "Cancel",
-    "loadError": "Error loading orders",
-    "confirmError": "Error confirming order",
-    "confirmSuccess": "Order confirmed successfully"
-  },
-  "directSales": {
-    "createTitle": "Create Direct Sale",
-    "createSubtitle": "Sell your products and services at fixed prices",
-    "step": "Step {{current}} of {{total}}",
-    "progress": "{{percent}}% completed",
-    "myDirectSales": "My Direct Sales",
-    "loadError": "Error loading direct sales",
-    "createDirectSale": "Create Direct Sale",
-    "loading": "Loading...",
-    "noDirectSales": "No direct sales",
-    "noDirectSalesDescription": "Start by creating your first direct sale",
-    "table": {
-      "title": "Title",
-      "description": "Description",
-      "price": "Price",
-      "quantity": "Quantity",
-      "status": "Status",
-      "createdAt": "Creation Date",
-      "actions": "Actions"
-    },
-    "status": {
-      "active": "Active",
-      "soldOut": "Sold Out",
-      "inactive": "Inactive"
-    },
-    "viewDetails": "View Details",
-    "deleteTitle": "Delete Direct Sale",
-    "deleteMessage": "Are you sure you want to delete \"{title}\"? This action is irreversible.",
-    "unlimited": "Unlimited",
-    "deleteSuccess": "Direct sale deleted successfully",
-    "deleteError": "Error deleting direct sale",
-    "table": {
-      "ariaLabel": "Direct sales table"
     },
     "detail": {
       "title": "Direct Sale Details",
@@ -1119,8 +1112,10 @@
       "loadPurchasesError": "Error loading orders",
       "table": {
         "buyer": "Buyer",
-        "totalPrice": "Total Price"
+        "totalPrice": "Total Price",
+        "status": "Status"
       },
+      "place": "Place",
       "status": {
         "refunded": "Refunded"
       }

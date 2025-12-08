@@ -498,12 +498,26 @@ export default function useMessageNotifications() {
     );
   }, []);
 
+  // Mark specific socket messages for a chat as read
+  const markSocketMessagesAsReadForChat = useCallback((chatId: string) => {
+    console.log('📝 Marking socket messages as read for chat:', chatId);
+    setSocketMessages(prev => 
+      prev.map(msg => {
+        if (msg.chatId === chatId) {
+          return { ...msg, isUnRead: false };
+        }
+        return msg;
+      })
+    );
+  }, []);
+
   return {
     totalUnreadCount,
     uniqueChatMessages,
     socketMessages,
     chatNotifications,
     fetchNotifications: refreshNotifications,
-    markAllSocketMessagesAsRead
+    markAllSocketMessagesAsRead,
+    markSocketMessagesAsReadForChat
   };
 } 

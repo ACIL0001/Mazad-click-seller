@@ -30,8 +30,6 @@ import Iconify from '@/components/Iconify';
 import { DirectSaleAPI } from '@/api/direct-sale';
 import { useSnackbar } from 'notistack';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import PersonIcon from '@mui/icons-material/Person';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 interface DirectSale {
@@ -61,6 +59,7 @@ interface DirectSale {
   };
   wilaya: string;
   location: string;
+  place?: string;
   thumbs?: Array<{ url: string; _id: string; filename?: string }>;
   videos?: Array<{ url: string; _id: string; filename?: string }>;
   isPro?: boolean;
@@ -284,176 +283,8 @@ export default function DirectSaleDetail() {
         <Grid container spacing={3}>
           {/* Main Direct Sale Info */}
           <Grid item xs={12} md={8}>
-            {/* Images Section */}
-            {directSale.thumbs && directSale.thumbs.length > 0 && (
-              <Card sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  {t('directSales.detail.images')}
-                </Typography>
-                <Grid container spacing={2}>
-                  {directSale.thumbs.map((thumb, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={thumb._id || index}>
-                      <Box
-                        component="img"
-                        src={getImageUrl(thumb.url)}
-                        alt={`${directSale.title} - Image ${index + 1}`}
-                        sx={{
-                          width: '100%',
-                          height: 200,
-                          objectFit: 'cover',
-                          borderRadius: 2,
-                          cursor: 'pointer',
-                          '&:hover': {
-                            opacity: 0.8,
-                          },
-                        }}
-                        onClick={() => window.open(getImageUrl(thumb.url), '_blank')}
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </Card>
-            )}
-
-            {/* Product Details */}
+            {/* Purchases Table - Moved to top */}
             <Card sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                {directSale.title}
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                {directSale.description}
-              </Typography>
-              
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('common.price')}
-                  </Typography>
-                  <Typography variant="h4" color="primary.main" sx={{ fontWeight: 700 }}>
-                    {directSale.price.toLocaleString()} DA
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('directSales.detail.availableQuantity')}
-                  </Typography>
-                  <Typography variant="h6">
-                    {availableQuantity}
-                    {directSale.quantity !== 0 && (
-                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                        {t('directSales.detail.outOf', { total: directSale.quantity })}
-                      </Typography>
-                    )}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Card>
-
-            {/* Seller Information */}
-            {directSale.owner && (
-              <Card sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon /> {t('directSales.detail.sellerInfo')}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Avatar 
-                    src={directSale.owner.avatar?.url ? getImageUrl(directSale.owner.avatar.url) : undefined}
-                    sx={{ width: 56, height: 56 }}
-                  >
-                    {(directSale.owner.firstName || directSale.owner.username || 'U').charAt(0).toUpperCase()}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {directSale.owner.firstName && directSale.owner.lastName 
-                        ? `${directSale.owner.firstName} ${directSale.owner.lastName}`
-                        : directSale.owner.username || t('common.user')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {directSale.owner.email}
-                    </Typography>
-                    {directSale.owner.phone && (
-                      <Typography variant="body2" color="text.secondary">
-                        {directSale.owner.phone}
-                      </Typography>
-                    )}
-                  </Box>
-                </Stack>
-              </Card>
-            )}
-
-            {/* Purchase Statistics */}
-            {purchases.length > 0 && (
-              <Card sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TrendingUpIcon /> {t('directSales.detail.salesStats')}
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        textAlign: 'center',
-                        bgcolor: 'success.lighter',
-                        border: '1px solid',
-                        borderColor: 'success.light',
-                        borderRadius: 2
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {t('directSales.detail.totalRevenue')}
-                      </Typography>
-                      <Typography variant="h5" color="success.dark" fontWeight={700}>
-                        {totalRevenue.toLocaleString()} DA
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        textAlign: 'center',
-                        bgcolor: 'info.lighter',
-                        border: '1px solid',
-                        borderColor: 'info.light',
-                        borderRadius: 2
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {t('directSales.detail.quantitySold')}
-                      </Typography>
-                      <Typography variant="h5" color="info.dark" fontWeight={700}>
-                        {totalQuantitySold}
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        textAlign: 'center',
-                        bgcolor: 'primary.lighter',
-                        border: '1px solid',
-                        borderColor: 'primary.light',
-                        borderRadius: 2
-                      }}
-                    >
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {t('directSales.detail.averageCart')}
-                      </Typography>
-                      <Typography variant="h5" color="primary.dark" fontWeight={700}>
-                        {averagePurchaseValue.toFixed(0)} DA
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Card>
-            )}
-
-            {/* Purchases Table */}
-            <Card sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <ShoppingCartIcon /> {t('directSales.detail.orders', { count: purchases.length })}
               </Typography>
@@ -469,7 +300,7 @@ export default function DirectSaleDetail() {
                         <TableCell>{t('directSales.detail.table.buyer')}</TableCell>
                         <TableCell align="right">{t('common.quantity')}</TableCell>
                         <TableCell align="right">{t('directSales.detail.table.totalPrice')}</TableCell>
-                        <TableCell>{t('common.status')}</TableCell>
+                        <TableCell>{t('directSales.detail.table.status') || 'Statut'}</TableCell>
                         <TableCell align="right">{t('common.date')}</TableCell>
                       </TableRow>
                     </TableHead>
@@ -495,7 +326,7 @@ export default function DirectSaleDetail() {
                                   {purchase.buyer.firstName} {purchase.buyer.lastName}
                                 </Typography>
                                 <Typography variant="caption" color="text.secondary">
-                                  {purchase.buyer.email}
+                                  {purchase.buyer.phone || t('orders.phoneNotAvailable') || 'Téléphone non disponible'}
                                 </Typography>
                               </Box>
                             </Stack>
@@ -549,6 +380,41 @@ export default function DirectSaleDetail() {
                 </Paper>
               )}
             </Card>
+
+            {/* Product Details */}
+            <Card sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                {directSale.title}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                {directSale.description}
+              </Typography>
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {t('common.price')}
+                  </Typography>
+                  <Typography variant="h4" color="primary.main" sx={{ fontWeight: 700 }}>
+                    {directSale.price.toLocaleString()} DA
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    {t('directSales.detail.availableQuantity')}
+                  </Typography>
+                  <Typography variant="h6">
+                    {availableQuantity}
+                    {directSale.quantity !== 0 && (
+                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                        {t('directSales.detail.outOf', { total: directSale.quantity })}
+                      </Typography>
+                    )}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Card>
+
           </Grid>
 
           {/* Sidebar Information */}
@@ -594,18 +460,41 @@ export default function DirectSaleDetail() {
                 {t('common.location')}
               </Typography>
               <Stack spacing={2}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('directSales.create.form.wilaya')}
+                {directSale.wilaya && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {t('directSales.create.form.wilaya')}
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {directSale.wilaya}
+                    </Typography>
+                  </Box>
+                )}
+                {directSale.place && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {t('directSales.detail.place')}
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {directSale.place}
+                    </Typography>
+                  </Box>
+                )}
+                {directSale.location && (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {t('common.address')}
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {directSale.location}
+                    </Typography>
+                  </Box>
+                )}
+                {(!directSale.wilaya && !directSale.place && !directSale.location) && (
+                  <Typography variant="body2" color="text.secondary">
+                    {t('directSales.detail.notSpecified')}
                   </Typography>
-                  <Typography variant="body1">{directSale.wilaya || t('directSales.detail.notSpecified')}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {t('common.address')}
-                  </Typography>
-                  <Typography variant="body1">{directSale.location || t('directSales.detail.notSpecified')}</Typography>
-                </Box>
+                )}
               </Stack>
             </Card>
 
